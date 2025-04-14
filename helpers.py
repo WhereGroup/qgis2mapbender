@@ -71,7 +71,7 @@ def show_fail_box_yes_no(title, text):
     return failBox.exec_()
 
 
-def show_succes_box_ok(title, text):
+def show_succes_box_ok(title: object, text: object) -> int:
     successBox = QMessageBox()
     successBox.setIconPixmap(QPixmap(':/images/themes/default/mIconSuccess.svg'))
     successBox.setWindowTitle(title)

@@ -250,7 +250,7 @@ class MainDialog(BASE, WIDGET):
         paths = Paths.get_paths(server_config.projects_path)
         upload = QgisServerApiUpload(paths)
         wms_url = upload.get_wms_url(server_config)
-        upload.api_upload(server_config)
+        upload.api_upload(paths.source_project_zip_file_path)
         return
         # version 2024:
         connect_kwargs = {"password": server_config.password}

@@ -18,9 +18,9 @@ class QgisServerUpload:
         self.source_project_zip_file_path = paths.source_project_zip_file_path
         self.server_project_parent_dir_path = paths.server_project_parent_dir_path
 
-    @staticmethod
-    def get_url_protocol(url):
-        return urlparse(url).scheme
+    # @staticmethod
+    # def get_url_protocol(url):
+    #     return urlparse(url).scheme
 
     def get_wms_url(self, server_config: ServerConfig) -> str:
         wms_service_version_request = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities&map="

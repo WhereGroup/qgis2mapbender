@@ -4,6 +4,7 @@ import requests
 
 from qgis.core import QgsMessageLog, Qgis
 
+from .api_request import ApiRequest
 from .helpers import show_fail_box_ok, waitCursor
 from .server_config import ServerConfig
 from .settings import TAG
@@ -51,55 +52,35 @@ class QgisServerApiUpload:
             if os.path.isfile(self.source_project_zip_file_path):
                 os.remove(self.source_project_zip_file_path)
 
-    def api_upload(self, server_config: ServerConfig):
+    @staticmethod
+    def api_upload(file_path):
+        print(file_path)
+        try:
+            with open(file_path, 'rb') as file:
+                print('open')
+                file = {'file': file}
+                #response_upload = requests.post(api_url + "/upload/zip" , files=files, headers=header)
+                status_code, response_json = ApiRequest.upload_zip(file)
+                print(status_code, response_json)
+                print(f"success: {response_json.get('success')}, "
+                  f"error: {response_json.get('error')}")
 
-        # POST request
-        # Uploads a ZIP file to the server and extracts its contents into the upload directory,
-        # which is configured using the 'api_upload_dir' parameter.
-        # Users must have the 'access api' and 'upload files' permissions
-        print('api upload')
-        api_url = "http://" + server_config.url + "/mapbender/api"
-        # credentials
-        payload = {
-            "username": server_config.username,
-            "password": server_config.password
-        }
-        response_login_check = requests.post(api_url + "/login_check", json=payload)
-        print(f"response login: {response_login_check}")
-        # check response
-        if response_login_check.status_code == 200:
-            # Token
-            token = response_login_check.json().get("token")
-        elif response_login_check.status_code == 404:
-            return (f"Error: {response_login_check.status_code}: URL is invalid, please check your details.\n"
-                    f"Server address is correct?\n")
-        else:
-            return (
-                f"Error: {response_login_check.status_code}: Unable to validate credentials, please check your details.\n"
-                f"Login, password are correct? \n")
-
-        with open(self.source_project_zip_file_path, 'rb') as file:
-            print(self.source_project_zip_file_path)
-            header = {"Authorization": f"Bearer {token}"}
-            files = {'file': file}
-            response_upload = requests.post(api_url + "/upload/zip" , files=files, headers=header)
-            print(f"response upload: {response_upload}, success: {response_upload.json().get('success')}, "
-                  f"error: {response_upload.json().get('error')}")
-            print(response_upload.json())
-        if response_upload.status_code == 200:
-            print('ZIP file uploaded and extracted successfully')
-        elif response_upload.status_code == 400:
-            return (f"Error {response_upload.status_code}: Invalid request, e.g., no file uploaded or wrong file type.\n"
-                    f"Message: {response_upload.json().get('message')}.\n")
-        elif response_upload.status_code == 401: #JWT Tocken not found
-            return (f"Error {response_upload.status_code}: Unauthorized.\n"
-                    f"Message: {response_upload.json().get('message')}.")
-        elif response_upload.status_code == 403:
-            return (f"Error {response_upload.status_code}: Unauthorized.\n"
-                    f"Error: {response_upload.json().get('error')}. Access Denied: Missing permissions - Upload Files.\n")
-        elif response_upload.status_code == 500: # Warning: mkdir(): Permission denied (500 Internal Server Error
-            # (user: carmen, root)
-            return (f"Error {response_upload.status_code}: Server error, e.g., failed to move or extract the file.\n"
-                    f"Message: {response_upload.json().get('message')}.\n")
-        else:
-            return f"Error {response_upload.status_code}"
+            if status_code == 200:
+                print('ZIP file uploaded and extracted successfully')
+            elif status_code == 400:
+                return (f"Error {status_code}: Invalid request, e.g., no file uploaded or wrong file type.\n"
+                        f"Message: {response_json.get('message')}.\n")
+            elif status_code == 401: #JWT Tocken not found
+                return (f"Error {status_code}: Unauthorized.\n"
+                        f"Message: {response_json.get('message')}.")
+            elif status_code == 403:
+                return (f"Error {status_code}: Unauthorized.\n"
+                        f"Error: {response_json.get('error')}. Access Denied: Missing permissions - Upload Files.\n")
+            elif status_code == 500: # Warning: mkdir(): Permission denied (500 Internal Server Error
+                # (user: carmen, root)
+                return (f"Error {status_code}: Server error, e.g., failed to move or extract the file.\n"
+                        f"Message: {response_json.get('message')}.\n")
+            else:
+                return f"Error {status_code}"
+        except FileNotFoundError:
+            return f"Error: File not found at {file_path}"
