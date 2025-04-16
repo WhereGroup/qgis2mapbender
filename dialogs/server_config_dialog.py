@@ -124,67 +124,93 @@ class ServerConfigDialog(BASE, WIDGET):
         """
         self.testButton.setIcon(QIcon())
         with waitCursor():
-            errorMsg = self.execTestsImpl()
+            errorMsg, successMsg  = self.execTestsImpl()
 
         if errorMsg:
-            show_fail_box_ok("Failed", errorMsg)
+            show_fail_box_ok(
+                "Test Results",
+                f"**Failed Tests:**\n{errorMsg}\n\n**Successful Tests:**\n{successMsg}"
+            )
         else:
             self.testButton.setIcon(self.checkedIcon)
+            self.testButton.setIcon(self.checkedIcon)
             show_succes_box_ok(
-                "Success",
-                "The following tests were successfully carried out:\n\n"
-                "1. The provided URLs are valid.\n"
-                "2. The provided credentials (username and password) are validated.\n"
-                "3. A token to authenticate API requests is generated.\n"
-                "4. Successfully accessed the QGIS project path on the server.\n"
-                "5. Upload rights are granted to the user.\n"
-                "6. Mapbender rights are granted to the user.(???)"
+                "Test Results",
+                f"**All tests were successful:**\n{successMsg}"
             )
+            # show_succes_box_ok(
+            #     "Success",
+            #     "The following tests were successfully carried out:\n\n"
+            #     "1. The provided URLs are valid.\n"
+            #     "2. The provided credentials (username and password) are validated.\n"
+            #     "3. A token to authenticate API requests is generated.\n"
+            #     "4. Successfully accessed the QGIS project path on the server.\n"
+            #     "5. Upload rights are granted to the user.\n"
+            #     "6. Mapbender rights are granted to the user.(???)"
+            # )
 
-    def execTestsImpl(self) -> Optional[str]:
+    def execTestsImpl(self) -> tuple[Optional[str], Optional[str]]:
         """
-        Performs a series of tests to validate the server configuration. The tests include:
+        Runs a series of tests and returns a messages with:
+        -  failed tests.
+        -  successful tests.
 
-        1. Validating the provided URLs.
-        2. Validating the credentials (username and password) and generating an authentication token.
-        3. Testing the upload of a ZIP file to verify paths and permissions.
-        4. Verifying the connection to the QGIS server and validating the response (HTTP status 200).
-        5. Verifying the connection to Mapbender and validating the response (HTTP status 200).
+        Returns:
+            tuple: (Error message, Success message)
+        """
 
-    Returns:
-        An error message if a test fails, or `None` if all tests pass successfully.
-    """
         configFromForm = self.getServerConfigFromFormular()
+        failed_tests = []
+        successful_tests = []
 
-        # Tests 1 (url), 2 (credentials for token) and 3 (token generated)
+        # Test 1: Server URL validation
+        serverUrl = (f'{self.protocolQgisServerCmbBox.currentText()}'
+                        f'{configFromForm.url}')
+        if not uri_validator(serverUrl):
+            failed_tests.append("The provided server URL is invalid.")
+        else:
+            successful_tests.append("The provided server URL is valid.")
+
+        # Test 2: Token generation
         try:
             api_request = ApiRequest(configFromForm)
+            if not api_request._token_is_available():
+                failed_tests.append("Token generation failed. Please check your credentials.")
+            else:
+                successful_tests.append("Token generation was successful.")
+                # Test 3: ZIP upload
+                test_zip_path = os.path.join(os.path.dirname(__file__), 'data/test_upload.zip')
+                status_code, response_upload = api_request.upload_zip(test_zip_path)
+                if status_code != 200:
+                    failed_tests.append(
+                        f"ZIP upload failed with status code {status_code}: {response_upload.get('error')}.")
+                else:
+                    successful_tests.append("ZIP upload was successful.")
         except Exception as e:
             show_fail_box_ok("Error", f"An error occurred during API initialization: {str(e)}")
 
-        # Tests 4 and 5 (upload: tests paths and permissions)
-        test_zip_path = os.path.join(os.path.dirname(__file__), 'data/test_upload.zip')
-        status_code, response_upload = api_request.upload_zip(test_zip_path)
-        if not status_code == 200:
-             return (f"Error {status_code}.\n"
-                     f"{response_upload.get('error')}.\n")
-
-        # Further tests:
+        # Test 4: QGIS server connection
         wmsServiceRequest = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities"
         qgiServerUrl = (f'{self.protocolQgisServerCmbBox.currentText()}'
                         f'{configFromForm.qgis_server_path}'
                         f'{wmsServiceRequest}')
         errorStr = self.testHttpConn(qgiServerUrl, 'Qgis Server', configFromForm.qgis_server_path)
         if errorStr:
-            return errorStr
+            failed_tests.append(errorStr)
+        else:
+            successful_tests.append("Connection to QGIS Server was successful.")
 
+        # Test 5: Mapbender connection
         mapbenderUrl = (f'{configFromForm.mb_protocol}'
                         f'{configFromForm.mb_basis_url}')
         errorStr = self.testHttpConn(mapbenderUrl, 'Mapbender', configFromForm.mb_basis_url)
         if errorStr:
-            return errorStr
+            failed_tests.append(errorStr)
+        else:
+            successful_tests.append("Connection to Mapbender was successful.")
 
-        return None
+        return "\n".join(failed_tests) if failed_tests else None, "\n".join(
+            successful_tests) if successful_tests else None
 
     def testHttpConn(self, url: str, serverName: str, lastPart: str) -> Optional[str]:
         # if not starts_with_single_slash_or_colon(lastPart):
