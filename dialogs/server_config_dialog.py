@@ -129,25 +129,16 @@ class ServerConfigDialog(BASE, WIDGET):
         if errorMsg:
             show_fail_box_ok(
                 "Test Results",
-                f"**Failed Tests:**\n{errorMsg}\n\n**Successful Tests:**\n{successMsg}"
+                f"<b>Failed Tests:</b><ul>{''.join(f'<li>{test}</li>' for test in errorMsg.splitlines())}</ul>"
+                f"<b>Successful Tests:</b><ul>{''.join(f'<li>{test}</li>' for test in successMsg.splitlines())}</ul>"
             )
         else:
             self.testButton.setIcon(self.checkedIcon)
-            self.testButton.setIcon(self.checkedIcon)
             show_succes_box_ok(
                 "Test Results",
-                f"**All tests were successful:**\n{successMsg}"
+                f"<b>All tests were successful:</b><ul>{''.join(f'<li>{test}</li>' for test in successMsg.splitlines())}</ul>"
             )
-            # show_succes_box_ok(
-            #     "Success",
-            #     "The following tests were successfully carried out:\n\n"
-            #     "1. The provided URLs are valid.\n"
-            #     "2. The provided credentials (username and password) are validated.\n"
-            #     "3. A token to authenticate API requests is generated.\n"
-            #     "4. Successfully accessed the QGIS project path on the server.\n"
-            #     "5. Upload rights are granted to the user.\n"
-            #     "6. Mapbender rights are granted to the user.(???)"
-            # )
+
 
     def execTestsImpl(self) -> tuple[Optional[str], Optional[str]]:
         """
@@ -177,15 +168,15 @@ class ServerConfigDialog(BASE, WIDGET):
             if not api_request._token_is_available():
                 failed_tests.append("Token generation failed. Please check your credentials.")
             else:
-                successful_tests.append("Token generation was successful.")
+                successful_tests.extend(["Credentials are valid.","Token generation was successful."])
                 # Test 3: ZIP upload
                 test_zip_path = os.path.join(os.path.dirname(__file__), 'data/test_upload.zip')
                 status_code, response_upload = api_request.upload_zip(test_zip_path)
                 if status_code != 200:
                     failed_tests.append(
-                        f"ZIP upload failed with status code {status_code}: {response_upload.get('error')}.")
+                        f"Server upload is not validated (status code {status_code}): {response_upload.get('error')}.")
                 else:
-                    successful_tests.append("ZIP upload was successful.")
+                    successful_tests.append("Server upload is validated.")
         except Exception as e:
             show_fail_box_ok("Error", f"An error occurred during API initialization: {str(e)}")
 
