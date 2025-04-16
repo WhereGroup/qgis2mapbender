@@ -7,6 +7,7 @@ from PyQt5.QtCore import QRegExp, QSettings
 from PyQt5.QtGui import QIntValidator, QRegExpValidator, QIcon
 from PyQt5.QtWidgets import QDialogButtonBox, QLineEdit, QRadioButton, QLabel, QComboBox, QPushButton
 from fabric2 import Connection
+from qgis._core import QgsMessageLog, Qgis
 from qgis.gui import QgsFileWidget
 
 from ..qgis_server_api_upload import QgisServerApiUpload
@@ -14,7 +15,7 @@ from ..helpers import show_succes_box_ok, list_qgs_settings_child_groups, show_f
     uri_validator, starts_with_single_slash_or_colon, waitCursor, check_if_project_folder_exists_on_server, \
     ends_with_single_slash
 from ..server_config import ServerConfig
-from ..settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY
+from ..settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
 
 from ..api_request import ApiRequest
 
@@ -199,6 +200,11 @@ class ServerConfigDialog(BASE, WIDGET):
             failed_tests.append(errorStr)
         else:
             successful_tests.append("Connection to Mapbender was successful.")
+
+        if failed_tests:
+            QgsMessageLog.logMessage(f"Fehlgeschlagene Tests:\n{chr(10).join(failed_tests)}", TAG, level=Qgis.Warning)
+        if successful_tests:
+            QgsMessageLog.logMessage(f"Erfolgreiche Tests:\n{chr(10).join(successful_tests)}", TAG, level=Qgis.Info)
 
         return "\n".join(failed_tests) if failed_tests else None, "\n".join(
             successful_tests) if successful_tests else None
