@@ -156,24 +156,11 @@ class ServerConfigDialog(BASE, WIDGET):
     """
         configFromForm = self.getServerConfigFromFormular()
 
-        api_request = ApiRequest(configFromForm)
         # Tests 1 (url), 2 (credentials for token) and 3 (token generated)
         try:
-            if not api_request._token_is_available():
-                error_message = (
-                    api_request.response_json.get('message', 'Unknown')
-                    if api_request.response_json
-                    else 'URL is invalid, please check your details. Server address is correct?'
-                )
-                raise ValueError(
-                    f"Error: {api_request.status_code_login}: {error_message} "
-                    f"Unable to validate credentials, please check your details. "
-                    f"User and password are correct?"
-                )
-        except ValueError as e:
-            show_fail_box_ok("Validation Error", str(e))
+            api_request = ApiRequest(configFromForm)
         except Exception as e:
-            show_fail_box_ok("Unexpected Error", f"An unexpected error occurred: {str(e)}")
+            show_fail_box_ok("Error", f"An error occurred during API initialization: {str(e)}")
 
         # Tests 4 and 5 (upload: tests paths and permissions)
         test_zip_path = os.path.join(os.path.dirname(__file__), 'data/test_upload.zip')
