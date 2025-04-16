@@ -1,6 +1,8 @@
+import logging
 import os
 import platform
 import re
+from typing import Optional
 from urllib.parse import urlparse
 from fabric2 import Connection
 from PyQt5.QtCore import Qt
@@ -10,7 +12,8 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QMessageBox
 from qgis.core import QgsApplication, QgsProject, QgsSettings
 
-from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY
+from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
+
 
 def get_os():
     os = platform.system()
@@ -167,3 +170,20 @@ def check_if_project_folder_exists_on_server(conn: Connection, path: str) -> boo
     if conn.run(f'test -d {path}', warn=True).failed:
        return False
     return True
+
+def handle_error(error: Exception, user_message: Optional[str] = None) -> None:
+    """
+    Handles errors by logging them and optionally displaying a user-friendly message.
+
+    Args:
+        error (Exception): The exception to handle.
+        user_message (Optional[str]): A user-friendly message to display (optional).
+    """
+    logging.error(f"{TAG} - {str(error)}")
+    if user_message:
+        msg_box = QMessageBox()
+        msg_box.setIcon(QMessageBox.Critical)
+        msg_box.setWindowTitle("Error")
+        msg_box.setText(user_message)
+        msg_box.setStandardButtons(QMessageBox.Ok)
+        msg_box.exec_()

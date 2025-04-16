@@ -1,15 +1,45 @@
+import logging
+
 import requests
 from typing import Any, Dict, Optional
 
+from .helpers import handle_error
+
+
 class ApiRequest:
+    """
+        Handles API requests, authentication, and interactions with the server.
+    """
+
     def __init__(self, server_config):
+        """
+        Initializes the ApiRequest instance with server configuration.
+
+        Args:
+            server_config: Configuration object containing server details.
+        """
+
         self.server_config = server_config
         self.session = requests.Session()
         self.api_url = f"{self.server_config.mb_protocol}{self.server_config.url}/mapbender/api"
         self.headers = {}
-        self.token = self._authenticate()
-        if self.token:
-            self.headers["Authorization"] = f"Bearer {self.token}"
+        self.token = None
+        self.response_json = None
+        self.status_code_login = None
+        self._initialize_authentication()
+
+    def _initialize_authentication(self) -> None:
+        """
+        Authenticates and sets the token in the headers if successful.
+        """
+        try:
+            self.token = self._authenticate()
+            if self.token:
+                self.headers["Authorization"] = f"Bearer {self.token}"
+        except ValueError as e:
+            handle_error(e, "Authentifizierungsfehler: Bitte überprüfen Sie Ihre Zugangsdaten.")
+        except ConnectionError as e:
+            handle_error(e, "Verbindungsfehler: Bitte überprüfen Sie Ihre Netzwerkverbindung.")
 
     def _authenticate(self) -> Optional[str]:
         """
@@ -30,6 +60,26 @@ class ApiRequest:
                 raise ValueError("Invalid credentials. Please verify your username and password.")
         except requests.RequestException as e:
             raise ConnectionError(f"Error authenticating with the API: {e}")
+
+    def _ensure_token(self) -> None:
+        """
+        Ensures that a valid token is available. If the token is missing or invalid, it re-authenticates.
+        """
+        if not self._token_is_available():
+            self.token = self._authenticate()
+            if self.token:
+                self.headers["Authorization"] = f"Bearer {self.token}"
+            else:
+                raise ValueError("Failed to authenticate and obtain a valid token.")
+
+    def _token_is_available(self) -> bool:
+        """
+        Checks if the token is available and valid.
+
+        Returns:
+            bool: True if the token is valid, False otherwise.
+        """
+        return self.token is not None
 
     def _send_request(self, endpoint: str, method: str, **kwargs) -> Optional[requests.Response]:
         """
@@ -62,8 +112,9 @@ class ApiRequest:
             file_path (str): Path to the ZIP file.
 
         Returns:
-            Dict[str, Any]: JSON response from the API if the upload was successful.
+            tuple[int, Optional[dict]]: Status code and JSON response from the API.
         """
+
         endpoint = "/upload/zip"
         try:
             with open(file_path, "rb") as file:

@@ -54,7 +54,6 @@ class QgisServerApiUpload:
 
     @staticmethod
     def api_upload(file_path):
-        print(file_path)
         try:
             with open(file_path, 'rb') as file:
                 print('open')

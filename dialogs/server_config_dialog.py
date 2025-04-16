@@ -119,8 +119,9 @@ class ServerConfigDialog(BASE, WIDGET):
         self.testButton.clicked.connect(self.execTests)
 
     def execTests(self) -> None:
-        """Run a few tests (described in the method <testConnection> method). It displays a message if errors are found"""
-        errorMsg = None
+        """
+        Runs a series of tests (described in the method <execTestsImpl>). Displays a message if errors are found.
+        """
         self.testButton.setIcon(QIcon())
         with waitCursor():
             errorMsg = self.execTestsImpl()
@@ -129,50 +130,50 @@ class ServerConfigDialog(BASE, WIDGET):
             show_fail_box_ok("Failed", errorMsg)
         else:
             self.testButton.setIcon(self.checkedIcon)
-            show_succes_box_ok("Success", """Following tests are carried out:
-            1. The provided url is valid
-            2. The provided credentials (username and password) are validated
-            3. A token to authenticate API requests is generated
-            4. Successfully accessed the QGIS project path on the server
-            5. Upload rights are granted
-            6. (Successfully accessed the Mapbender path)
-            7. Mapbender's is validated and its response is 200
-            8. QGIS's URL is valid and its response is 200
-            """)
-
+            show_succes_box_ok(
+                "Success",
+                "The following tests were successfully carried out:\n\n"
+                "1. The provided URLs are valid.\n"
+                "2. The provided credentials (username and password) are validated.\n"
+                "3. A token to authenticate API requests is generated.\n"
+                "4. Successfully accessed the QGIS project path on the server.\n"
+                "5. Upload rights are granted to the user.\n"
+                "6. Mapbender rights are granted to the user.(???)"
+            )
 
     def execTestsImpl(self) -> Optional[str]:
         """
-        This method performs the following steps:
-            1. The provided url is valid
-            ----
-            2. Attempts to access a specified QGIS Project path.
-            3. Attempts to access a specified Mapbender's path.
-            4. Check the validity of the Mapbender URL and verify that the response is 200.
-            5. Check the validity of the QGIS URL and verify that the response is 200.
+        Performs a series of tests to validate the server configuration. The tests include:
 
-        Return:
-            If found, error message
-        """
+        1. Validating the provided URLs.
+        2. Validating the credentials (username and password) and generating an authentication token.
+        3. Testing the upload of a ZIP file to verify paths and permissions.
+        4. Verifying the connection to the QGIS server and validating the response (HTTP status 200).
+        5. Verifying the connection to Mapbender and validating the response (HTTP status 200).
+
+    Returns:
+        An error message if a test fails, or `None` if all tests pass successfully.
+    """
         configFromForm = self.getServerConfigFromFormular()
-        # print(configFromForm)
-        #connect_kwargs = {"password": configFromForm.password}
-
-        # if not ends_with_single_slash(configFromForm.projects_path):
-        #     return f"QGIS project path '{configFromForm.projects_path}' should end with one '/'"
-        #
-        # if not ends_with_single_slash(configFromForm.mb_app_path):
-        #     return f"Mapbender application path '{configFromForm.mb_app_path}' should end with one '/'"
 
         api_request = ApiRequest(configFromForm)
-        # Tests 1 (url), 2 (credentials for token) and 3 (token)
-        if not api_request.token:
-            if api_request.response_json:
-                error_message = api_request.response_json.get('message', 'Unknown')
-            else:
-                error_message = 'URL is invalid, please check your details. Server address is correct?'
-            return (f"Error: {api_request.status_code_login}: {error_message} Unable to validate credentials, "
-                    f"please check your details. User and password are correct?")
+        # Tests 1 (url), 2 (credentials for token) and 3 (token generated)
+        try:
+            if not api_request._token_is_available():
+                error_message = (
+                    api_request.response_json.get('message', 'Unknown')
+                    if api_request.response_json
+                    else 'URL is invalid, please check your details. Server address is correct?'
+                )
+                raise ValueError(
+                    f"Error: {api_request.status_code_login}: {error_message} "
+                    f"Unable to validate credentials, please check your details. "
+                    f"User and password are correct?"
+                )
+        except ValueError as e:
+            show_fail_box_ok("Validation Error", str(e))
+        except Exception as e:
+            show_fail_box_ok("Unexpected Error", f"An unexpected error occurred: {str(e)}")
 
         # Tests 4 and 5 (upload: tests paths and permissions)
         test_zip_path = os.path.join(os.path.dirname(__file__), 'data/test_upload.zip')
@@ -181,11 +182,7 @@ class ServerConfigDialog(BASE, WIDGET):
              return (f"Error {status_code}.\n"
                      f"{response_upload.get('error')}.\n")
 
-        # Further tests (Successfully accessed the Mapbender path):
-        # see WMS
-        #response_view_sources = requests.
-
-        # Test n. x
+        # Further tests:
         wmsServiceRequest = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities"
         qgiServerUrl = (f'{self.protocolQgisServerCmbBox.currentText()}'
                         f'{configFromForm.qgis_server_path}'
@@ -194,7 +191,6 @@ class ServerConfigDialog(BASE, WIDGET):
         if errorStr:
             return errorStr
 
-        # Test n. x
         mapbenderUrl = (f'{configFromForm.mb_protocol}'
                         f'{configFromForm.mb_basis_url}')
         errorStr = self.testHttpConn(mapbenderUrl, 'Mapbender', configFromForm.mb_basis_url)
@@ -264,7 +260,6 @@ class ServerConfigDialog(BASE, WIDGET):
         )
 
     def onChangeServerName(self, newValue) -> None:
-        # print('newValue', newValue)
         self.qgisServerPathLineEdit.setPlaceholderText(newValue + '/cgi-bin/qgis_mapserv.fcgi')
         self.mbBasisUrlLineEdit.setPlaceholderText(newValue + '/mapbender/index.php/')
         self.validateFields()
