@@ -1,5 +1,4 @@
 import json
-import requests
 
 from qgis.core import QgsMessageLog, Qgis
 
@@ -7,56 +6,13 @@ from .helpers import waitCursor
 from .settings import TAG
 
 
-class MapbenderUpload:
+class MapbenderApiUpload:
     def __init__(self, connection, server_config, wms_url):
         self.server_config = server_config
         self.wms_url = wms_url
         self.connection = connection
 
-        # API's URL
-        self.api_url = "http://" + self.server_config.url + "/mapbender/api"
-        # credentials
-        self.credentials = {
-            "username": self.server_config.username,
-            "password": self.server_config.password
-        }
 
-        self.exit_status_login, self.token = self.get_token()
-        print(self.token)
-
-    def send_api_request(self, endpoint: str) -> tuple:
-        with waitCursor():
-            response = requests.get(self.api_url + endpoint, json=self.credentials)
-            response_status_code = response.status_code
-            response_json = response.json()
-            return response_status_code, response_json
-
-    def get_token(self):
-        exit_status, response_json = self.send_api_request("/login_check")
-        token = response_json.get("token")
-        return exit_status, token
-
-
-    def run_mapbender_command(self, command: str) -> tuple:
-        """
-            Executes a Mapbender command using the provided connection.
-
-            Args:
-                command: a bin/console Mapbender command
-
-            Returns:
-                exit_status (int): The exit status of the executed command.
-                output (str): The standard output (stdout) from the command.
-                error_output (str): The standard error output (stderr) from the command.
-            """
-        with waitCursor():
-            result = self.connection.run(
-                f"cd ..; cd {self.server_config.mb_app_path}; {self.server_config.bin_console_command} mapbender:{command}",
-                warn=True)
-            exit_status = result.exited
-            output = result.stdout
-            error_output = result.stderr
-            return exit_status, output, error_output
 
     def wms_show(self):
         """

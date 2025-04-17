@@ -143,3 +143,94 @@ class ApiRequest:
         except requests.RequestException as e:
             return 500, {"error": f"Error during the request: {e}"}
 
+    def wms_show(self, wms_url: str) -> tuple[int, Optional[dict]]:
+        """
+        Displays a WMS layer using the provided WMS URL.
+
+        Args:
+            wms_url (str): The WMS URL to display.
+
+        Returns:
+            tuple[int, Optional[dict]]: Status code and JSON response from the API.
+        """
+        endpoint = "/wms/show"
+        data = {"wmsUrl": wms_url}
+        self._ensure_token()
+        response = self._send_request(endpoint, "post", json=data)
+        if response:
+            return response.status_code, response.json()
+        return 500, {"error": "Failed to receive a valid response from the server."}
+
+    def wms_add(self, wms_url: str) -> tuple[int, Optional[dict]]:
+        """
+        Adds a WMS layer using the provided WMS URL.
+
+        Args:
+            wms_url (str): The WMS URL to add.
+
+        Returns:
+            tuple[int, Optional[dict]]: Status code and JSON response from the API.
+        """
+        endpoint = "/wms/add"
+        data = {"wmsUrl": wms_url}
+        self._ensure_token()
+        response = self._send_request(endpoint, "post", json=data)
+        if response:
+            return response.status_code, response.json()
+        return 500, {"error": "Failed to receive a valid response from the server."}
+
+    def wms_reload(self, source_id: str, wms_url: str) -> tuple[int, Optional[dict]]:
+        """
+        Reloads a WMS layer using the provided source ID and WMS URL.
+
+        Args:
+            source_id (str): The source ID of the WMS layer.
+            wms_url (str): The WMS URL to reload.
+
+        Returns:
+            tuple[int, Optional[dict]]: Status code and JSON response from the API.
+        """
+        endpoint = "/wms/reload"
+        data = {"sourceId": source_id, "wmsUrl": wms_url}
+        self._ensure_token()
+        response = self._send_request(endpoint, "post", json=data)
+        if response:
+            return response.status_code, response.json()
+        return 500, {"error": "Failed to receive a valid response from the server."}
+
+    def wms_assign(self, source_id: str, layer_id: str) -> tuple[int, Optional[dict]]:
+        """
+        Assigns a WMS layer using the provided source ID and layer ID.
+
+        Args:
+            source_id (str): The source ID of the WMS layer.
+            layer_id (str): The layer ID to assign.
+
+        Returns:
+            tuple[int, Optional[dict]]: Status code and JSON response from the API.
+        """
+        endpoint = "/wms/assign"
+        data = {"sourceId": source_id, "layerId": layer_id}
+        self._ensure_token()
+        response = self._send_request(endpoint, "post", json=data)
+        if response:
+            return response.status_code, response.json()
+        return 500, {"error": "Failed to receive a valid response from the server."}
+
+    def app_clone(self, template_slug: str) -> tuple[int, Optional[dict]]:
+        """
+        Clones an application using the provided template slug.
+
+        Args:
+            template_slug (str): The slug of the template application to clone.
+
+        Returns:
+            tuple[int, Optional[dict]]: Status code and JSON response from the API.
+        """
+        endpoint = "/application/clone"
+        data = {"templateSlug": template_slug}
+        self._ensure_token()
+        response = self._send_request(endpoint, "post", json=data)
+        if response:
+            return response.status_code, response.json()
+        return 500, {"error": "Failed to receive a valid response from the server."}

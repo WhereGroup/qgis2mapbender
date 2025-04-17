@@ -1,7 +1,6 @@
 import os
 from typing import Optional
 
-from fabric2 import Connection
 
 from PyQt5 import uic
 from PyQt5.QtCore import QSettings, QRegExp, Qt
@@ -12,13 +11,14 @@ from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView, QWidget,
 from qgis.core import Qgis, QgsSettings, QgsMessageLog
 from qgis.utils import iface
 
+from .api_request import ApiRequest
 from .qgis_server_api_upload import QgisServerApiUpload
 from .dialogs.server_config_dialog import ServerConfigDialog
 from .helpers import qgis_project_is_saved, \
     show_fail_box_ok, show_fail_box_yes_no, show_succes_box_ok, \
     list_qgs_settings_child_groups, show_question_box, \
     update_mb_slug_in_settings
-from .mapbender_upload import MapbenderUpload
+from .mapbender_api_upload import MapbenderApiUpload
 from .paths import Paths
 from .server_config import ServerConfig
 from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
@@ -51,6 +51,11 @@ class MainDialog(BASE, WIDGET):
         super().__init__(parent)
         self.setupUi(self)
         self.setupConnections()
+
+        # initialize API request
+        self.server_config = ServerConfig.getParamsFromSettings(self.serverConfigComboBox.currentText())
+        self.api_request = ApiRequest(self.server_config)
+
 
     def setupUi(self, widget) -> None:
         super().setupUi(widget)
@@ -263,112 +268,27 @@ class MainDialog(BASE, WIDGET):
         QgsMessageLog.logMessage("Preparing for project upload to QGIS server...", TAG, level=Qgis.Info)
 
         # Get server config params and project paths
-        server_config = ServerConfig.getParamsFromSettings(self.serverConfigComboBox.currentText())
-        paths = Paths.get_paths(server_config.projects_path)
+        paths = Paths.get_paths(self.server_config.projects_path)
         upload = QgisServerApiUpload(paths)
 
-        result = upload.process_and_upload_project(server_config)
+        result = upload.process_and_upload_project(self.server_config)
         if result:
             show_fail_box_ok("Failed", result)
         else:
-            show_succes_box_ok("Success", "Project uploaded successfully to QGIS server.")
+            wms_url = upload.get_wms_url(self.server_config)
+            self.mb_publish(wms_url)
         return
 
-    def mb_publish(self, connection, server_config, wms_url):
-        # Get Mapbender params:
-        if self.cloneTemplateRadioButton.isChecked():
-            clone_app = True
-        if self.addToAppRadioButton.isChecked():
-            clone_app = False
-        # Template slug:
-        layer_set = self.layerSetLineEdit.text()
+    def mb_publish(self, wms_url: str) -> None:
+        """
+        Publishes the WMS on Mapbender using the ApiRequest class.
 
-        mapbender_uploader = MapbenderUpload(connection, server_config, wms_url)
+        Args:
+            wms_url: The WMS URL to be published.
+        """
+        QgsMessageLog.logMessage(f"Starting mb publish", TAG, level=Qgis.Info)
+        return
 
-        exit_status_wms_show, sources_ids = mapbender_uploader.wms_show()
-        if exit_status_wms_show == 1:  ## Failed
-            show_fail_box_ok("Failed",
-                             f"WMS layer information could not be displayed. "
-                             f"Mapbender upload will be interrupted.")
-            return
-
-        if len(sources_ids) > 0:  # URL exists one or multiple times as Mapbender source: reload
-            exit_status_wms_reload_list = []
-            for source_id in sources_ids:
-                exit_status_wms_reload, output, error = mapbender_uploader.wms_reload(source_id)
-                exit_status_wms_reload_list.append(exit_status_wms_reload)
-            if not all(exit_status_wms_reload == 0 for exit_status_wms_reload in exit_status_wms_reload_list):
-                show_fail_box_ok("Failed",
-                                 f"QGIS-Project is successfuly uploaded to the server but WMS could not be reloaded in Mapbender.")
-                return
-            # Default: source (or source with higher ID, if multiple IDs) will be selected be added to the given Mapbender application
-            source_id = sources_ids[-1]
-        else:
-            # Source does not exist yet in Mapbender: add
-            exit_status_wms_add, source_id, error = mapbender_uploader.wms_add()
-            if exit_status_wms_add != 0:
-                show_fail_box_ok("Failed",
-                                 f"QGIS-Project is successfully uploaded to the server but WMS could not be added to "
-                                 f"Mapbender. Reason: {error}")
-                return
-
-        if clone_app:  # The given Mapbender's template app will be cloned and the WMS will be assigned to the cloned
-            # app
-            template_slug = self.mbSlugComboBox.currentText()
-            exit_status_app_clone, output, slug, error = mapbender_uploader.app_clone(template_slug)
-            if exit_status_app_clone != 0:
-                show_fail_box_ok("Failed",
-                                 f"Application could not be cloned.\nError: {error}, Output: {output}")
-                update_mb_slug_in_settings(template_slug, is_mb_slug=False)
-                self.update_slug_combo_box()
-                return
-            update_mb_slug_in_settings(template_slug, is_mb_slug=True)
-            self.update_slug_combo_box()
-
-            exit_status_wms_assign, output_wms_assign, error_wms_assign = (
-                mapbender_uploader.wms_assign(slug, source_id, layer_set))
-
-        else:  # The WMS will be assigned to the given Mapbender app
-            slug = self.mbSlugComboBox.currentText()
-            exit_status_wms_assign, output_wms_assign, error_wms_assign = (
-                mapbender_uploader.wms_assign(slug, source_id, layer_set))
-
-        if exit_status_wms_assign != 0:
-            show_fail_box_ok("Failed",
-                             f"WMS could not be assigned to Mapbender application.\n{output_wms_assign}")
-            return
-
-        show_succes_box_ok("Success report",
-                           "WMS successfully created:\n \n" + wms_url +
-                           "\n \n And added to Mapbender application: \n \n" + server_config.mb_protocol +
-                           server_config.mb_basis_url + "/application/" + slug)
-        self.close()
-
-    def mb_update(self, connection, server_config, wms_url):
-        mapbender_uploader = MapbenderUpload(connection, server_config, wms_url)
-        exit_status_wms_show, sources_ids = mapbender_uploader.wms_show()
-        QgsMessageLog.logMessage(f"Output wms_show: {exit_status_wms_show}, {sources_ids}", TAG,
-                                 level=Qgis.Info)
-        if exit_status_wms_show != 0:
-            show_fail_box_ok("Failed",
-                             f"WMS layer information could not be displayed. "
-                             f"Mapbender upload will be interrupted.")
-            return
-        if len(sources_ids) == 0:
-            show_fail_box_ok("Failed",
-                             f"WMS is not an existing source in Mapbender and could not be updated")
-        # URL exists one or multiple times as Mapbender source: reload
-        exit_status_wms_reload_list = []
-        for source_id in sources_ids:
-            exit_status_wms_reload, output, error = mapbender_uploader.wms_reload(source_id)
-            exit_status_wms_reload_list.append(exit_status_wms_reload)
-        if not all(exit_status_wms_reload == 0 for exit_status_wms_reload in exit_status_wms_reload_list):
-            show_fail_box_ok("Failed",
-                             f"QGIS-Project is successfuly uploaded to the server but WMS could not be reloaded in Mapbender. "
-                             f"Reason {output} and {error}. "
-                             f"Mapbender upload will be interrupted.")
-            return
-        show_succes_box_ok("Success report",
-                           "WMS successfully updated:\n \n" + wms_url +
-                           "\n \non Mapbender source(s): " + str(sources_ids))
-        self.close()
+    def mb_update(self, wms_url):
+        # TODO please review new logic according to the new API and develop accordingly
+        return
