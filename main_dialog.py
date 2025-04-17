@@ -245,63 +245,21 @@ class MainDialog(BASE, WIDGET):
         self.upload_project_qgis_server()
 
     def upload_project_qgis_server(self) -> None:
+        QgsMessageLog.logMessage("Preparing for project upload to QGIS server...", TAG, level=Qgis.Info)
+
         # Get server config params and project paths
         server_config = ServerConfig.getParamsFromSettings(self.serverConfigComboBox.currentText())
         paths = Paths.get_paths(server_config.projects_path)
         upload = QgisServerApiUpload(paths)
-        wms_url = upload.get_wms_url(server_config)
-        upload.api_upload(paths.source_project_zip_file_path)
+
+        result = upload.process_and_upload_project(server_config)
+        if result:
+            QgsMessageLog.logMessage(f"Project upload failed: {result}", TAG, level=Qgis.Critical)
+            show_fail_box_ok("Failed", result)
+        else:
+            QgsMessageLog.logMessage("Project uploaded successfully to QGIS server.", TAG, level=Qgis.Info)
+            show_succes_box_ok("Success", "Project uploaded successfully.")
         return
-        # version 2024:
-        connect_kwargs = {"password": server_config.password}
-        if server_config.windows_pk_path:
-            connect_kwargs["key_filename"] = server_config.windows_pk_path
-
-        with Connection(host=server_config.url, user=server_config.username, port=server_config.port,
-                        connect_kwargs=connect_kwargs) as connection:
-            try:
-                connection.open()
-            except Exception as e:
-                show_fail_box_ok("Connection failed", f"Connection failed. Reason: {e}")
-                return
-
-            upload = QgisServerUpload(connection, paths)
-            wms_url = upload.get_wms_url(server_config)
-            project_folder_exists_on_server = upload.check_if_project_folder_exists_on_server()
-            # User's input = publish
-            if project_folder_exists_on_server and self.publishRadioButton.isChecked():
-                if show_fail_box_yes_no("Failed",
-                                        f"Project directory already exists on the server. \n \nDo you want to"
-                                        f" overwrite the existing project directory '{paths.source_project_dir_name},' "
-                                        f"update the WMS as source in Mapbender and add it to the given "
-                                        f"application?") == QMessageBox.No:
-                    return
-                if not upload.remove_project_folder_from_server():
-                    return
-                if not upload.zip_upload_unzip_clean():
-                    return
-                QgsMessageLog.logMessage(f"WMS get capabilitites URL: {wms_url}", TAG,
-                                         level=Qgis.Info)
-                self.mb_publish(connection, server_config, wms_url)
-            # User's input = update
-            if project_folder_exists_on_server and self.updateRadioButton.isChecked():
-                if not upload.remove_project_folder_from_server():
-                    return
-                if not upload.zip_upload_unzip_clean():
-                    return
-                self.mb_update(connection, server_config, wms_url)
-            if not project_folder_exists_on_server and self.publishRadioButton.isChecked():
-                if not upload.zip_upload_unzip_clean():
-                    return
-                QgsMessageLog.logMessage(f"WMS get capabilitites URL: {wms_url}", TAG,
-                                         level=Qgis.Info)
-                self.mb_publish(connection, server_config, wms_url)
-            if not project_folder_exists_on_server and self.updateRadioButton.isChecked():
-                show_fail_box_ok("Failed",
-                                 "Project directory " + paths.source_project_dir_name + " does not exist on the server and therefore "
-                                                                                        "can not be updated. \n \nIf you want to upload a new"
-                                                                                        " QGIS-Project please select the option 'Publish "
-                                                                                        " in Mapbender app'")
 
     def mb_publish(self, connection, server_config, wms_url):
         # Get Mapbender params:

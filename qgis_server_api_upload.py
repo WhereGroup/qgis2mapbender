@@ -1,6 +1,6 @@
 import os
 import shutil
-import requests
+from typing import Optional
 
 from qgis.core import QgsMessageLog, Qgis
 
@@ -18,68 +18,155 @@ class QgisServerApiUpload:
         self.server_project_parent_dir_path = paths.server_project_parent_dir_path
 
     def get_wms_url(self, server_config: ServerConfig) -> str:
+        """
+        Constructs the WMS URL for the uploaded project.
+
+        Args:
+            server_config: The server configuration object.
+
+        Returns:
+            str: The constructed WMS URL.
+        """
         wms_service_version_request = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities&map="
         wms_url = (f'{server_config.qgis_server_protocol}{server_config.qgis_server_path}'
                    f'{wms_service_version_request}{server_config.projects_path}{self.source_project_dir_name}/'
                    f'{self.source_project_file_name}')
+        QgsMessageLog.logMessage(f"Constructed WMS URL: {wms_url}", TAG, level=Qgis.Info)
         return wms_url
 
     def zip_local_project_dir(self) -> bool:
-        # Copy source directory and remove unwanted files
-        if os.path.isdir(f'{self.source_project_dir_path}_copy_tmp'):
-            shutil.rmtree(f'{self.source_project_dir_path}_copy_tmp')
-        os.mkdir(f'{self.source_project_dir_path}_copy_tmp')
-        shutil.copytree(self.source_project_dir_path, f'{self.source_project_dir_path}_copy_tmp/'
-                                                      f'{self.source_project_dir_name}')
-        for folder_name, subfolders, filenames in os.walk(f'{self.source_project_dir_path}_copy_tmp'):
-            for filename in filenames:
-                file_path = os.path.join(folder_name, filename)
-                if filename.split(".")[-1] in ('gpkg-wal', 'gpkg-shm'):
-                    os.remove(file_path)
-        # Compress tmp copy of project folder
-        shutil.make_archive(self.source_project_dir_path, 'zip', f'{self.source_project_dir_path}_copy_tmp')
-        # Remove temporary copy of source directory
-        shutil.rmtree(f'{self.source_project_dir_path}_copy_tmp')
-        # Check
-        if os.path.isfile(self.source_project_zip_file_path):
-            QgsMessageLog.logMessage("Zip-project folder successfully created", TAG, level=Qgis.Info)
-            return True
-        else:
+        """
+        Zips the local project directory, excluding unwanted files.
+
+        Returns:
+            bool: True if the ZIP file was created successfully, False otherwise.
+        """
+        try:
+            temp_dir = f'{self.source_project_dir_path}_copy_tmp'
+
+            if os.path.isdir(temp_dir):
+                shutil.rmtree(temp_dir)
+            shutil.copytree(self.source_project_dir_path, temp_dir)
+
+            for folder_name, subfolders, filenames in os.walk(temp_dir):
+                for filename in filenames:
+                    file_path = os.path.join(folder_name, filename)
+                    if filename.split(".")[-1] in ('gpkg-wal', 'gpkg-shm'):
+                        os.remove(file_path)
+
+            shutil.make_archive(self.source_project_dir_path, 'zip', temp_dir)
+            shutil.rmtree(temp_dir)
+
+            if os.path.isfile(self.source_project_zip_file_path):
+                QgsMessageLog.logMessage("Zip-project folder successfully created", TAG, level=Qgis.Info)
+                return True
+            else:
+                return False
+        except Exception as e:
+            QgsMessageLog.logMessage(f"Error while zipping project directory: {e}", TAG, level=Qgis.Critical)
             return False
 
     def delete_local_project_zip_file(self) -> None:
+        """
+        Deletes the local ZIP file of the project.
+        """
         with waitCursor():
-            if os.path.isfile(self.source_project_zip_file_path):
-                os.remove(self.source_project_zip_file_path)
+            try:
+                if os.path.isfile(self.source_project_zip_file_path):
+                    os.remove(self.source_project_zip_file_path)
+                    QgsMessageLog.logMessage("Local ZIP file deleted successfully.", TAG, level=Qgis.Info)
+            except Exception as e:
+                QgsMessageLog.logMessage(f"Error while deleting ZIP file: {e}", TAG, level=Qgis.Critical)
 
-    @staticmethod
-    def api_upload(file_path):
+    def api_upload(self, file_path: str, server_config: ServerConfig) -> Optional[str]:
+        """
+        Uploads the ZIP file to the server using the ApiRequest class.
+
+        Args:
+            file_path (str): Path to the ZIP file.
+            server_config (ServerConfig): Server configuration object.
+
+        Returns:
+            Optional[str]: Error message if the upload fails, None otherwise.
+        """
         try:
-            with open(file_path, 'rb') as file:
-                print('open')
-                file = {'file': file}
-                #response_upload = requests.post(api_url + "/upload/zip" , files=files, headers=header)
-                status_code, response_json = ApiRequest.upload_zip(file)
-                print(status_code, response_json)
-                print(f"success: {response_json.get('success')}, "
-                  f"error: {response_json.get('error')}")
+            if not os.path.isfile(file_path):
+                QgsMessageLog.logMessage(f"File not found: {file_path}", TAG, level=Qgis.Critical)
+                return f"Error: File not found at {file_path}"
+
+            api_request = ApiRequest(server_config)
+            status_code, response_json = api_request.upload_zip(file_path)
+
+            # with open(file_path, 'rb') as file:
+            #     print('open')
+            #     file = {'file': file}
+            #     #response_upload = requests.post(api_url + "/upload/zip" , files=files, headers=header)
+            #     status_code, response_json = ApiRequest.upload_zip(file)
+            #     print(status_code, response_json)
+            #     print(f"success: {response_json.get('success')}, "
+            #       f"error: {response_json.get('error')}")
 
             if status_code == 200:
-                print('ZIP file uploaded and extracted successfully')
+                QgsMessageLog.logMessage("ZIP file uploaded and extracted successfully.", TAG, level=Qgis.Info)
+                return None
             elif status_code == 400:
-                return (f"Error {status_code}: Invalid request, e.g., no file uploaded or wrong file type.\n"
-                        f"Message: {response_json.get('message')}.\n")
-            elif status_code == 401: #JWT Tocken not found
-                return (f"Error {status_code}: Unauthorized.\n"
-                        f"Message: {response_json.get('message')}.")
+                error_message = (f"Error {status_code}: Invalid request. "
+                                 f"Message: {response_json.get('message')}.")
+                QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Warning)
+                return error_message
+            elif status_code == 401:
+                error_message = (f"Error {status_code}: Unauthorized. "
+                                 f"Message: {response_json.get('message')}.")
+                QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Warning)
+                return error_message
             elif status_code == 403:
-                return (f"Error {status_code}: Unauthorized.\n"
-                        f"Error: {response_json.get('error')}. Access Denied: Missing permissions - Upload Files.\n")
-            elif status_code == 500: # Warning: mkdir(): Permission denied (500 Internal Server Error
-                # (user: carmen, root)
-                return (f"Error {status_code}: Server error, e.g., failed to move or extract the file.\n"
-                        f"Message: {response_json.get('message')}.\n")
+                error_message = (f"Error {status_code}: Access Denied. "
+                                 f"Error: {response_json.get('error')}.")
+                QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Warning)
+                return error_message
+            elif status_code == 500:
+                error_message = (f"Error {status_code}: Server error. "
+                                 f"Message: {response_json.get('message')}.")
+                QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Critical)
+                return error_message
             else:
-                return f"Error {status_code}"
-        except FileNotFoundError:
-            return f"Error: File not found at {file_path}"
+                error_message = f"Unexpected error with status code {status_code}."
+                QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Warning)
+                return error_message
+        except Exception as e:
+            QgsMessageLog.logMessage(f"Error during file upload: {e}", TAG, level=Qgis.Critical)
+            return f"Error during file upload: {e}"
+
+    def process_and_upload_project(self, server_config: ServerConfig) -> Optional[str]:
+        """
+        Executes the steps to zip the project, upload it, and delete the ZIP file.
+
+        Args:
+            server_config (ServerConfig): Server configuration.
+
+
+        Returns:
+            Optional[str]: Error message if any step fails, None otherwise.
+        """
+        try:
+            # Step 1: Create a ZIP of the local project directory
+            if not self.zip_local_project_dir():
+                return "Failed to create ZIP file for the project."
+
+            # Step 2: Upload the ZIP file
+            upload_result = self.api_upload(self.source_project_zip_file_path, server_config)
+            if upload_result:
+                QgsMessageLog.logMessage(f"Upload failed: {upload_result}", TAG, level=Qgis.Critical)
+                return f"Upload failed: {upload_result}"
+
+            QgsMessageLog.logMessage("ZIP file uploaded successfully.", TAG, level=Qgis.Info)
+
+            # Step 3: Delete the local ZIP file
+            self.delete_local_project_zip_file()
+            QgsMessageLog.logMessage("Local ZIP file deleted successfully.", TAG, level=Qgis.Info)
+
+            return None
+        except Exception as e:
+            error_message = f"An unexpected error occurred: {e}"
+            QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Critical)
+            return error_message
