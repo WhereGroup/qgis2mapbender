@@ -201,10 +201,10 @@ class ServerConfigDialog(BASE, WIDGET):
         else:
             successful_tests.append("Connection to Mapbender was successful.")
 
-        if failed_tests:
-            QgsMessageLog.logMessage(f"Fehlgeschlagene Tests:\n{chr(10).join(failed_tests)}", TAG, level=Qgis.Warning)
-        if successful_tests:
-            QgsMessageLog.logMessage(f"Erfolgreiche Tests:\n{chr(10).join(successful_tests)}", TAG, level=Qgis.Info)
+        # if failed_tests:
+        #     QgsMessageLog.logMessage(f"Fehlgeschlagene Tests:\n{chr(10).join(failed_tests)}", TAG, level=Qgis.Warning)
+        # if successful_tests:
+        #     QgsMessageLog.logMessage(f"Erfolgreiche Tests:\n{chr(10).join(successful_tests)}", TAG, level=Qgis.Info)
 
         return "\n".join(failed_tests) if failed_tests else None, "\n".join(
             successful_tests) if successful_tests else None
