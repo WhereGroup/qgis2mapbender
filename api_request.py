@@ -37,11 +37,9 @@ class ApiRequest:
         Authenticates and sets the token in the headers if successful.
         """
         try:
-            QgsMessageLog.logMessage("Starting authentication process.", TAG, level=Qgis.Info)
             self.token = self._authenticate()
             if self.token:
                 self.headers["Authorization"] = f"Bearer {self.token}"
-                QgsMessageLog.logMessage("Authentication successful. Token set in headers.", TAG, level=Qgis.Info)
         except ValueError as e:
             handle_error(e, "Authentication error: Please check your credentials.")
         except ConnectionError as e:
