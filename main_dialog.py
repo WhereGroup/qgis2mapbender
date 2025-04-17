@@ -254,11 +254,9 @@ class MainDialog(BASE, WIDGET):
 
         result = upload.process_and_upload_project(server_config)
         if result:
-            QgsMessageLog.logMessage(f"Project upload failed: {result}", TAG, level=Qgis.Critical)
             show_fail_box_ok("Failed", result)
         else:
-            QgsMessageLog.logMessage("Project uploaded successfully to QGIS server.", TAG, level=Qgis.Info)
-            show_succes_box_ok("Success", "Project uploaded successfully.")
+            show_succes_box_ok("Success", "Project uploaded successfully to QGIS server.")
         return
 
     def mb_publish(self, connection, server_config, wms_url):

@@ -107,7 +107,7 @@ class QgisServerApiUpload:
             #       f"error: {response_json.get('error')}")
 
             if status_code == 200:
-                QgsMessageLog.logMessage("ZIP file uploaded and extracted successfully.", TAG, level=Qgis.Info)
+                QgsMessageLog.logMessage("Project ZIP file succesfully uploaded to QGIS server", TAG, level=Qgis.Info)
                 return None
             elif status_code == 400:
                 error_message = (f"Error {status_code}: Invalid request. "
@@ -159,13 +159,10 @@ class QgisServerApiUpload:
                 QgsMessageLog.logMessage(f"Upload failed: {upload_result}", TAG, level=Qgis.Critical)
                 return f"Upload failed: {upload_result}"
 
-            QgsMessageLog.logMessage("ZIP file uploaded successfully.", TAG, level=Qgis.Info)
-
             # Step 3: Delete the local ZIP file
             self.delete_local_project_zip_file()
-            QgsMessageLog.logMessage("Local ZIP file deleted successfully.", TAG, level=Qgis.Info)
-
             return None
+
         except Exception as e:
             error_message = f"An unexpected error occurred: {e}"
             QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Critical)
