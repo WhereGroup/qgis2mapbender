@@ -25,13 +25,13 @@ class QgisServerApiUpload:
             server_config: The server configuration object.
 
         Returns:
-            str: The constructed WMS URL.
+            str: The WMS URL.
         """
         wms_service_version_request = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities&map="
         wms_url = (f'{server_config.qgis_server_protocol}{server_config.qgis_server_path}'
                    f'{wms_service_version_request}{server_config.projects_path}{self.source_project_dir_name}/'
                    f'{self.source_project_file_name}')
-        QgsMessageLog.logMessage(f"Constructed WMS URL: {wms_url}", TAG, level=Qgis.Info)
+        QgsMessageLog.logMessage(f"WMS URL: {wms_url}", TAG, level=Qgis.Info)
         return wms_url
 
     def zip_local_project_dir(self) -> bool:
@@ -152,7 +152,10 @@ class QgisServerApiUpload:
 
             # Step 3: Delete the local ZIP file
             self.delete_local_project_zip_file()
-            return None
+
+            # Step 4: Get WMS URL
+            self.get_wms_url(server_config)
+            return None # successful upload
 
         except Exception as e:
             error_message = f"An unexpected error occurred: {e}"
