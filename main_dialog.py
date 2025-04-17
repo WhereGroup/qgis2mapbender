@@ -101,7 +101,7 @@ class MainDialog(BASE, WIDGET):
         self.mbSlugComboBox.lineEdit().textChanged.connect(self.validate_slug_not_empty)
         self.mbSlugComboBox.currentIndexChanged.connect(self.validate_slug_not_empty)
         self.publishButton.clicked.connect(self.publish_project)
-        self.updateButton.clicked.connect(self.update_project)
+        #self.updateButton.clicked.connect(self.update_project)
         self.buttonBoxTab1.rejected.connect(self.reject)
         self.addServerConfigButton.clicked.connect(self.on_add_server_config_clicked)
         self.duplicateServerConfigButton.clicked.connect(self.on_duplicate_server_config_clicked)
@@ -247,17 +247,19 @@ class MainDialog(BASE, WIDGET):
             # Restore default cursor
             QApplication.restoreOverrideCursor()
 
-    def update_project(self) -> None:
-        if not qgis_project_is_saved():
-            return
+    # # Update project option wil be no longer available in the API Version of the plugin
+    # def update_project(self) -> None:
+    #     if not qgis_project_is_saved():
+    #         return
+    #
+    #     # Set waiting cursor
+    #     QApplication.setOverrideCursor(Qt.WaitCursor)
+    #     try:
+    #         self.upload_project_qgis_server()
+    #     finally:
+    #         # Restore default cursor
+    #         QApplication.restoreOverrideCursor()
 
-        # Set waiting cursor
-        QApplication.setOverrideCursor(Qt.WaitCursor)
-        try:
-            self.upload_project_qgis_server()
-        finally:
-            # Restore default cursor
-            QApplication.restoreOverrideCursor()
     def upload_project_qgis_server(self) -> None:
         QgsMessageLog.logMessage("Preparing for project upload to QGIS server...", TAG, level=Qgis.Info)
 
