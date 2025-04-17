@@ -4,10 +4,10 @@ from typing import Optional
 from fabric2 import Connection
 
 from PyQt5 import uic
-from PyQt5.QtCore import QSettings, QRegExp
+from PyQt5.QtCore import QSettings, QRegExp, Qt
 from PyQt5.QtGui import QRegExpValidator, QPixmap, QIcon
 from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView, QWidget, QTabWidget, QRadioButton, QPushButton, \
-    QTableWidget, QComboBox, QDialogButtonBox, QToolButton, QLabel
+    QTableWidget, QComboBox, QDialogButtonBox, QToolButton, QLabel, QApplication
 
 from qgis.core import Qgis, QgsSettings, QgsMessageLog
 from qgis.utils import iface
@@ -232,18 +232,32 @@ class MainDialog(BASE, WIDGET):
     def publish_project(self) -> None:
         if not qgis_project_is_saved():
             return
+
         # Check Mapbender params:
         if self.mbSlugComboBox.currentText() == '':
             show_fail_box_ok("Please complete Mapbender parameters",
                              "Please enter a valid Mapbender URL title")
             return
-        self.upload_project_qgis_server()
+
+        # Set waiting cursor
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            self.upload_project_qgis_server()
+        finally:
+            # Restore default cursor
+            QApplication.restoreOverrideCursor()
 
     def update_project(self) -> None:
         if not qgis_project_is_saved():
             return
-        self.upload_project_qgis_server()
 
+        # Set waiting cursor
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            self.upload_project_qgis_server()
+        finally:
+            # Restore default cursor
+            QApplication.restoreOverrideCursor()
     def upload_project_qgis_server(self) -> None:
         QgsMessageLog.logMessage("Preparing for project upload to QGIS server...", TAG, level=Qgis.Info)
 
