@@ -3,6 +3,9 @@ import logging
 import requests
 from typing import Any, Dict, Optional
 
+from qgis._core import QgsMessageLog, Qgis
+
+from .settings import TAG
 from .helpers import handle_error
 
 
@@ -18,14 +21,15 @@ class ApiRequest:
         Args:
             server_config: Configuration object containing server details.
         """
-
         self.server_config = server_config
         self.session = requests.Session()
+        # should this be as per server config: mapbender application path (first release) or it remains always server url/mapbender/api?
         self.api_url = f"{self.server_config.mb_protocol}{self.server_config.url}/mapbender/api"
         self.headers = {}
         self.token = None
-        self.response_json = None
-        self.status_code_login = None
+        QgsMessageLog.logMessage("Initializing ApiRequest with server configuration.", TAG, level=Qgis.Info)
+        # self.response_json = None
+        # self.status_code_login = None
         self._initialize_authentication()
 
     def _initialize_authentication(self) -> None:
@@ -33,32 +37,42 @@ class ApiRequest:
         Authenticates and sets the token in the headers if successful.
         """
         try:
+            QgsMessageLog.logMessage("Starting authentication process.", TAG, level=Qgis.Info)
             self.token = self._authenticate()
             if self.token:
                 self.headers["Authorization"] = f"Bearer {self.token}"
+                QgsMessageLog.logMessage("Authentication successful. Token set in headers.", TAG, level=Qgis.Info)
         except ValueError as e:
-            handle_error(e, "Authentifizierungsfehler: Bitte überprüfen Sie Ihre Zugangsdaten.")
+            handle_error(e, "Authentication error: Please check your credentials.")
         except ConnectionError as e:
-            handle_error(e, "Verbindungsfehler: Bitte überprüfen Sie Ihre Netzwerkverbindung.")
+            handle_error(e, "Connection error: Please check your network connection.")
 
     def _authenticate(self) -> Optional[str]:
         """
-        Authenticates against the API to obtain an access token.
-        """
+         Authenticates against the API to obtain an access token.
+
+         Returns:
+             Optional[str]: The authentication token, or None if authentication fails.
+         """
         endpoint = "/login_check"
         credentials = {
             "username": self.server_config.username,
             "password": self.server_config.password
         }
         try:
+            QgsMessageLog.logMessage(f"Sending authentication request to endpoint: {endpoint}", TAG, level=Qgis.Info)
             response = self._send_request(endpoint, "post", json=credentials)
             if response and response.status_code == 200:
+                QgsMessageLog.logMessage("Authentication request successful.", TAG, level=Qgis.Info)
                 return response.json().get("token")
             elif response and response.status_code == 404:
+                QgsMessageLog.logMessage("Invalid URL during authentication.", TAG, level=Qgis.Warning)
                 raise ValueError("Invalid URL. Please check the server configuration (URL is valid?).")
             else:
+                QgsMessageLog.logMessage("Invalid credentials provided.", TAG, level=Qgis.Warning)
                 raise ValueError("Invalid credentials. Please verify your username and password.")
         except requests.RequestException as e:
+            QgsMessageLog.logMessage(f"Request exception during authentication: {e}", TAG, level=Qgis.Critical)
             raise ConnectionError(f"Error authenticating with the API: {e}")
 
     def _ensure_token(self) -> None:
@@ -91,7 +105,7 @@ class ApiRequest:
             kwargs: Additional arguments for the request (json,etc.).
 
         Returns:
-            Response: The API's response object.
+            Optional[requests.Response]: The response object, or None if an error occurs.
         """
         url = f"{self.api_url}{endpoint}"
         try:
@@ -99,9 +113,9 @@ class ApiRequest:
             response.raise_for_status()  # Raise an exception for HTTP errors
             return response
         except requests.HTTPError as http_err:
-            print(f"HTTP error occurred: {http_err}")
+            handle_error(http_err, f"HTTP error occurred: {http_err}")
         except requests.RequestException as req_err:
-            print(f"Request error occurred: {req_err}")
+            handle_error(req_err, f"Request error occurred: {req_err}")
         return None
 
     def upload_zip(self, file_path: str) -> tuple[int, Optional[dict]]:
@@ -122,8 +136,7 @@ class ApiRequest:
                 response = self._send_request(endpoint, "post", files=files)
                 if response:
                     return response.status_code, response.json()
-                else:
-                    return 500, {"error": "Failed to receive a valid response from the server."}
+                return 500, {"error": "Failed to receive a valid response from the server."}
         except FileNotFoundError:
             return 400, {"error": f"File not found: {file_path}"}
         except requests.RequestException as e:
