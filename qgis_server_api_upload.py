@@ -80,7 +80,7 @@ class QgisServerApiUpload:
 
     def api_upload(self, file_path: str, server_config: ServerConfig) -> Optional[str]:
         """
-        Uploads the ZIP file to the server using the ApiRequest class.
+        Uploads and extracts the ZIP file to the server using the ApiRequest class.
 
         Args:
             file_path (str): Path to the ZIP file.
@@ -97,17 +97,8 @@ class QgisServerApiUpload:
             api_request = ApiRequest(server_config)
             status_code, response_json = api_request.upload_zip(file_path)
 
-            # with open(file_path, 'rb') as file:
-            #     print('open')
-            #     file = {'file': file}
-            #     #response_upload = requests.post(api_url + "/upload/zip" , files=files, headers=header)
-            #     status_code, response_json = ApiRequest.upload_zip(file)
-            #     print(status_code, response_json)
-            #     print(f"success: {response_json.get('success')}, "
-            #       f"error: {response_json.get('error')}")
-
             if status_code == 200:
-                QgsMessageLog.logMessage("Project ZIP file succesfully uploaded to QGIS server", TAG, level=Qgis.Info)
+                QgsMessageLog.logMessage("Project ZIP file successfully uploaded and unzipped on QGIS server", TAG, level=Qgis.Info)
                 return None
             elif status_code == 400:
                 error_message = (f"Error {status_code}: Invalid request. "

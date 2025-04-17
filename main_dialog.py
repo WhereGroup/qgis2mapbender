@@ -22,7 +22,6 @@ from .mapbender_upload import MapbenderUpload
 from .paths import Paths
 from .server_config import ServerConfig
 from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
-from .qgis_server_upload import QgisServerUpload
 
 # Dialog from .ui file
 WIDGET, BASE = uic.loadUiType(os.path.join(

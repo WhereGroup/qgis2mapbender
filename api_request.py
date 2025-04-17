@@ -119,6 +119,9 @@ class ApiRequest:
     def upload_zip(self, file_path: str) -> tuple[int, Optional[dict]]:
         """
         Uploads a ZIP file to the server and handles the response.
+        The endpoint api/upload/zip uploads a ZIP file to the server and extracts its contents into the upload
+        directory, which is configured using the 'api_upload_dir' parameter. Users must have the 'access api' and
+        'upload files' permissions
 
         Args:
             file_path (str): Path to the ZIP file.
