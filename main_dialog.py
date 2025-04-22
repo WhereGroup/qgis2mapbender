@@ -18,7 +18,6 @@ from .helpers import qgis_project_is_saved, \
     show_fail_box_ok, show_fail_box_yes_no, show_succes_box_ok, \
     list_qgs_settings_child_groups, show_question_box, \
     update_mb_slug_in_settings
-from .mapbender_api_upload import MapbenderApiUpload
 from .paths import Paths
 from .server_config import ServerConfig
 from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
@@ -269,13 +268,15 @@ class MainDialog(BASE, WIDGET):
 
         # Get server config params and project paths
         paths = Paths.get_paths(self.server_config.projects_path)
-        upload = QgisServerApiUpload(paths)
 
+        upload = QgisServerApiUpload(paths)
         result = upload.process_and_upload_project(self.server_config)
         if result:
             show_fail_box_ok("Failed", result)
         else:
             wms_url = upload.get_wms_url(self.server_config)
+            #tests only
+            #wms_url = "http://mapbender-qgis.wheregroup.lan/cgi-bin/qgis_mapserv.fcgi?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities&map=/data/qgis-projects/projekt_shp.qgz"
             self.mb_publish(wms_url)
         return
 
@@ -286,7 +287,22 @@ class MainDialog(BASE, WIDGET):
         Args:
             wms_url: The WMS URL to be published.
         """
-        QgsMessageLog.logMessage(f"Starting mb publish", TAG, level=Qgis.Info)
+        QgsMessageLog.logMessage(f"Starting Mapbender publish", TAG, level=Qgis.Info)
+
+        # Get Mapbender params:
+        if self.cloneTemplateRadioButton.isChecked():
+            clone_app = True
+        if self.addToAppRadioButton.isChecked():
+            clone_app = False
+        # Template slug:
+        layer_set = self.layerSetLineEdit.text()
+
+        # check if source already exists in Mapbender as a source (with endpoint wms/show)
+        exit_status_wms_show, output = self.api_request.wms_show(wms_url)
+        QgsMessageLog.logMessage(f"exit_status_wms_show: {exit_status_wms_show}, output: {output}", TAG, level=Qgis.Info)
+
+
+
         return
 
     def mb_update(self, wms_url):

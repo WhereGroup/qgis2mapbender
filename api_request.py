@@ -106,6 +106,8 @@ class ApiRequest:
             Optional[requests.Response]: The response object, or None if an error occurs.
         """
         url = f"{self.api_url}{endpoint}"
+        QgsMessageLog.logMessage(f"Sending request: {url}.", TAG, level=Qgis.Info)
+
         try:
             response = self.session.request(method=method.upper(), url=url, headers= self.headers, **kwargs)
             response.raise_for_status()  # Raise an exception for HTTP errors
@@ -154,9 +156,9 @@ class ApiRequest:
             tuple[int, Optional[dict]]: Status code and JSON response from the API.
         """
         endpoint = "/wms/show"
-        data = {"wmsUrl": wms_url}
+        params = {"id": wms_url, "json": True}
         self._ensure_token()
-        response = self._send_request(endpoint, "post", json=data)
+        response = self._send_request(endpoint, "get", params=params)
         if response:
             return response.status_code, response.json()
         return 500, {"error": "Failed to receive a valid response from the server."}
@@ -172,9 +174,10 @@ class ApiRequest:
             tuple[int, Optional[dict]]: Status code and JSON response from the API.
         """
         endpoint = "/wms/add"
-        data = {"wmsUrl": wms_url}
+        data = {"id": wms_url}
+
         self._ensure_token()
-        response = self._send_request(endpoint, "post", json=data)
+        response = self._send_request(endpoint, "get", json=data)
         if response:
             return response.status_code, response.json()
         return 500, {"error": "Failed to receive a valid response from the server."}
@@ -193,7 +196,7 @@ class ApiRequest:
         endpoint = "/wms/reload"
         data = {"sourceId": source_id, "wmsUrl": wms_url}
         self._ensure_token()
-        response = self._send_request(endpoint, "post", json=data)
+        response = self._send_request(endpoint, "get", json=data)
         if response:
             return response.status_code, response.json()
         return 500, {"error": "Failed to receive a valid response from the server."}
@@ -212,7 +215,7 @@ class ApiRequest:
         endpoint = "/wms/assign"
         data = {"sourceId": source_id, "layerId": layer_id}
         self._ensure_token()
-        response = self._send_request(endpoint, "post", json=data)
+        response = self._send_request(endpoint, "get", json=data)
         if response:
             return response.status_code, response.json()
         return 500, {"error": "Failed to receive a valid response from the server."}
@@ -230,7 +233,7 @@ class ApiRequest:
         endpoint = "/application/clone"
         data = {"templateSlug": template_slug}
         self._ensure_token()
-        response = self._send_request(endpoint, "post", json=data)
+        response = self._send_request(endpoint, "get", json=data)
         if response:
             return response.status_code, response.json()
         return 500, {"error": "Failed to receive a valid response from the server."}
