@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>868</width>
-    <height>568</height>
+    <height>672</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -59,6 +59,11 @@
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="portLabel">
+            <property name="font">
+             <font>
+              <strikeout>true</strikeout>
+             </font>
+            </property>
             <property name="text">
              <string>Port</string>
             </property>
@@ -282,6 +287,11 @@
           </item>
           <item row="0" column="0">
            <widget class="QLabel" name="apiLabel">
+            <property name="font">
+             <font>
+              <strikeout>true</strikeout>
+             </font>
+            </property>
             <property name="text">
              <string>API URL</string>
             </property>
