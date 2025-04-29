@@ -294,6 +294,7 @@ class MainDialog(BASE, WIDGET):
         clone_app = self.cloneTemplateRadioButton.isChecked()
         QgsMessageLog.logMessage(f"DEBUGGING CLONE APP T/F {clone_app}", TAG, level=Qgis.Info)
         layer_set = self.layerSetLineEdit.text()
+        QgsMessageLog.logMessage(f"DEBUGGING layersset: {layer_set}", TAG, level=Qgis.Info)
         template_slug = self.mbSlugComboBox.currentText()
 
         try:
@@ -328,7 +329,7 @@ class MainDialog(BASE, WIDGET):
                                          level=Qgis.Info)
                 exit_status_wms_assign, output_wms_assign, error_wms_assign = mb_upload.wms_assign(slug, source_ids[0],
                                                                                                    layer_set)
-            if exit_status_wms_assign != 0:
+            if exit_status_wms_assign != 200:
                 show_fail_box_ok("Failed", f"WMS could not be assigned to Mapbender application.\n{output_wms_assign}")
                 return
 

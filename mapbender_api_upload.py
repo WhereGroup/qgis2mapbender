@@ -135,7 +135,7 @@ class MapbenderApiUpload:
         :return: exit_status (0 = success, 1 = fail), output, error_output
         """
         QgsMessageLog.logMessage(f"Sending request wms/assign '{slug}' '{source_id}' '{layer_set}'", TAG, level=Qgis.Info)
-        exit_status, output, error_output = self.api_request.wms_assign(source_id, layer_set)
+        exit_status, output, error_output = self.api_request.wms_assign(slug, source_id, layer_set)
 
         if output is None:
             output = ""

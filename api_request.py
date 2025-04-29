@@ -105,9 +105,7 @@ class ApiRequest:
             Optional[requests.Response]: The response object, or None if an error occurs.
         """
         url = f"{self.api_url}{endpoint}"
-        QgsMessageLog.logMessage(f"Sending request: {url}.", TAG, level=Qgis.Info)
         QgsMessageLog.logMessage(f"DEBUGGING Sending request to URL: {url} with method: {method}", TAG, level=Qgis.Info)
-        QgsMessageLog.logMessage(f"DEBUGGING Headers: {self.headers}", TAG, level=Qgis.Info)
         QgsMessageLog.logMessage(f"DEBUGGING Request kwargs: {kwargs}", TAG, level=Qgis.Info)
 
         try:
@@ -243,7 +241,7 @@ class ApiRequest:
                 return 500, None, f"Error by parsing the response: {e}"
         return 500, None, {"error": "Failed to receive a valid response from the server."}
 
-    def wms_assign(self, application: str, source: int, layer_set: str) -> tuple[int, str, Optional[str]]:
+    def wms_assign(self, application: str, source: int, layer_set: Optional[str]) -> tuple[int, str, Optional[str]]:
         """
         Assigns a WMS layer using the provided source ID and layer ID.
 
@@ -255,14 +253,16 @@ class ApiRequest:
             tuple[int, Optional[dict]]: Status code and JSON response from the API.
         """
         endpoint = "/wms/assign"
-        params = {"application": application, "source": source, "layerset": layerset}
+        params = {"application": application, "source": source}
+        if layer_set:
+            params["layerset"] = layer_set
         self._ensure_token()
         response = self._send_request(endpoint, "get", params=params)
         QgsMessageLog.logMessage(f"DEBUGGING WMS ASSIGN RESPONSE: {response}", TAG,
                                  level=Qgis.Critical)
         if response:
-            return response.status_code, response.json()
-        return 500, {"error": "Failed to receive a valid response from the server."}
+            return response.status_code, response.json(), None
+        return 500, {"error": "Failed to receive a valid response from the server."}, None
 
     def app_clone(self, template_slug: str) -> tuple[int, Optional[dict], Optional[str]]:
         """
