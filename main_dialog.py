@@ -306,20 +306,26 @@ class MainDialog(BASE, WIDGET):
 
             if clone_app:
                 QgsMessageLog.logMessage(f"DEBUGGING CLONNING APP", TAG, level=Qgis.Info)
-                exit_status_app_clone, output, slug, error = mb_upload.app_clone(template_slug)
-                if exit_status_app_clone != 0:
+                exit_status_app_clone, slug, error = mb_upload.app_clone(template_slug)
+                if exit_status_app_clone != 200:
                     show_fail_box_ok("Failed", f"Application could not be cloned.\nError: {error}, Output: {output}")
                     update_mb_slug_in_settings(template_slug, is_mb_slug=False)
                     self.update_slug_combo_box()
                     return
+                QgsMessageLog.logMessage(f"DEBUGGING Application was cloned", TAG,
+                                         level=Qgis.Info)
 
                 update_mb_slug_in_settings(template_slug, is_mb_slug=True)
                 self.update_slug_combo_box()
+                QgsMessageLog.logMessage(f"DEBUGGING MainDialog: ASSIGN", TAG,
+                                         level=Qgis.Info)
 
                 exit_status_wms_assign, output_wms_assign, error_wms_assign = mb_upload.wms_assign(slug, source_ids[0],
                                                                                                    layer_set)
             else:
                 slug = self.mbSlugComboBox.currentText()
+                QgsMessageLog.logMessage(f"DEBUGGING MainDialog: ASSIGN", TAG,
+                                         level=Qgis.Info)
                 exit_status_wms_assign, output_wms_assign, error_wms_assign = mb_upload.wms_assign(slug, source_ids[0],
                                                                                                    layer_set)
             if exit_status_wms_assign != 0:

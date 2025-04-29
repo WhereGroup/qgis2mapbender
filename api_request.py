@@ -243,7 +243,7 @@ class ApiRequest:
                 return 500, None, f"Error by parsing the response: {e}"
         return 500, None, {"error": "Failed to receive a valid response from the server."}
 
-    def wms_assign(self, application: str, source: int) -> tuple[int, Optional[dict]]:
+    def wms_assign(self, application: str, source: int, layer_set: str) -> tuple[int, str, Optional[str]]:
         """
         Assigns a WMS layer using the provided source ID and layer ID.
 
@@ -255,14 +255,16 @@ class ApiRequest:
             tuple[int, Optional[dict]]: Status code and JSON response from the API.
         """
         endpoint = "/wms/assign"
-        params = {"application": application, "source": source}
+        params = {"application": application, "source": source, "layerset": layerset}
         self._ensure_token()
         response = self._send_request(endpoint, "get", params=params)
+        QgsMessageLog.logMessage(f"DEBUGGING WMS ASSIGN RESPONSE: {response}", TAG,
+                                 level=Qgis.Critical)
         if response:
             return response.status_code, response.json()
         return 500, {"error": "Failed to receive a valid response from the server."}
 
-    def app_clone(self, template_slug: str) -> tuple[int, Optional[dict]]:
+    def app_clone(self, template_slug: str) -> tuple[int, Optional[dict], Optional[str]]:
         """
         Clones an application using the provided template slug.
 
@@ -273,9 +275,23 @@ class ApiRequest:
             tuple[int, Optional[dict]]: Status code and JSON response from the API.
         """
         endpoint = "/application/clone"
-        data = {"templateSlug": template_slug}
+        params = {"slug": template_slug}
         self._ensure_token()
-        response = self._send_request(endpoint, "get", json=data)
-        if response:
-            return response.status_code, response.json()
-        return 500, {"error": "Failed to receive a valid response from the server."}
+        try:
+            response = self._send_request(endpoint, "get", params=params)
+            if response:
+                try:
+                    response_json = response.json()
+                    return response.status_code, response_json, None
+                except ValueError as e:
+                    error_message = f"Fehler beim Parsen der Antwort: {e}"
+                    QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Critical)
+                    return 500, None, error_message
+            else:
+                error_message = "Keine gültige Antwort vom Server erhalten."
+                QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Critical)
+                return 500, None, error_message
+        except requests.RequestException as e:
+            error_message = f"Fehler bei der Anfrage: {e}"
+            QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Critical)
+            return 500, None, error_message

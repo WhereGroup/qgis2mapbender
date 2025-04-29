@@ -101,7 +101,7 @@ class MapbenderApiUpload:
         QgsMessageLog.logMessage(f"New source added with ID: {source_id}", TAG, level=Qgis.Info)
         return 0, [source_id]
 
-    def app_clone(self, template_slug):
+    def app_clone(self, template_slug: str) -> tuple[int, str, Optional[str]]:
         """
         Clones an existing application in the Application backend. This will create a new application with
         a _imp suffix as application name.
@@ -111,19 +111,23 @@ class MapbenderApiUpload:
         :return:error_output
         """
         QgsMessageLog.logMessage(f"Sending request application/clone '{template_slug}'", TAG, level=Qgis.Info)
-        exit_status, output, error_output =  self.api_request.app_clone(template_slug)
-        if output != '':
-            spl = 'slug'
-            slug = (output.split(spl, 1)[1]).split(',')[0].strip()
-            QgsMessageLog.logMessage(f"Exit status {exit_status}, output: {output}, error: {error_output}'", TAG,
-                                     level=Qgis.Info)
-        else:
-            slug = ''
-            QgsMessageLog.logMessage(f"Exit status {exit_status}, output: {output}, error: {error_output}'", TAG,
-                                     level=Qgis.Info)
-        return exit_status, output, slug, error_output
+        exit_status, response_json, error_output =  self.api_request.app_clone(template_slug)
+        QgsMessageLog.logMessage(f"DEBUGGING '{exit_status, response_json, error_output}'", TAG, level=Qgis.Info)
 
-    def wms_assign(self, slug, source_id, layer_set):
+        if response_json and "message" in response_json:
+            # Extrahiere den Slug aus der Nachricht
+            message = response_json["message"]
+            try:
+                slug = (message.split("slug", 1)[1]).split(",")[0].strip()
+            except IndexError:
+                slug = None
+                QgsMessageLog.logMessage("Failed to parse slug from message.", TAG, level=Qgis.Warning)
+        else:
+            slug = None
+            QgsMessageLog.logMessage("No valid message in response_json.", TAG, level=Qgis.Warning)
+        return exit_status, slug, error_output
+
+    def wms_assign(self, slug: str, source_id: int, layer_set: str) -> tuple[int, str, Optional[str]]:
         """
         :param slug:
         :param source_id:
@@ -132,6 +136,12 @@ class MapbenderApiUpload:
         """
         QgsMessageLog.logMessage(f"Sending request wms/assign '{slug}' '{source_id}' '{layer_set}'", TAG, level=Qgis.Info)
         exit_status, output, error_output = self.api_request.wms_assign(source_id, layer_set)
-        QgsMessageLog.logMessage(f"Exit status {exit_status}, output: {output}, error: {error_output}'", TAG,
+
+        if output is None:
+            output = ""
+        if error_output is None:
+            error_output = ""
+
+        QgsMessageLog.logMessage(f"Exit status {exit_status}, output: {output}, error: {error_output}", TAG,
                                  level=Qgis.Info)
         return exit_status, output, error_output
