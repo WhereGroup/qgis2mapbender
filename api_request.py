@@ -1,7 +1,6 @@
-import logging
-
 import requests
-from typing import Any, Dict, Optional
+from typing import Optional
+import re
 
 from qgis._core import QgsMessageLog, Qgis
 
@@ -107,14 +106,20 @@ class ApiRequest:
         """
         url = f"{self.api_url}{endpoint}"
         QgsMessageLog.logMessage(f"Sending request: {url}.", TAG, level=Qgis.Info)
+        QgsMessageLog.logMessage(f"DEBUGGING Sending request to URL: {url} with method: {method}", TAG, level=Qgis.Info)
+        QgsMessageLog.logMessage(f"DEBUGGING Headers: {self.headers}", TAG, level=Qgis.Info)
+        QgsMessageLog.logMessage(f"DEBUGGING Request kwargs: {kwargs}", TAG, level=Qgis.Info)
 
         try:
             response = self.session.request(method=method.upper(), url=url, headers= self.headers, **kwargs)
+            QgsMessageLog.logMessage(f"DEBUGGING Response status code: {response.status_code}", TAG, level=Qgis.Info)
             response.raise_for_status()  # Raise an exception for HTTP errors
             return response
         except requests.HTTPError as http_err:
+            QgsMessageLog.logMessage(f"DEBUGGING HTTP error: {http_err}", TAG, level=Qgis.Critical)
             handle_error(http_err, f"HTTP error occurred: {http_err}")
         except requests.RequestException as req_err:
+            QgsMessageLog.logMessage(f"DEBUGGING Request exception: {req_err}", TAG, level=Qgis.Critical)
             handle_error(req_err, f"Request error occurred: {req_err}")
         return None
 
@@ -188,13 +193,33 @@ class ApiRequest:
 
         self._ensure_token()
         response = self._send_request(endpoint, "get", params=params)
-        QgsMessageLog.logMessage(f"DEBUGGING response ADD: {response}", TAG, level=Qgis.Info)
         if response:
-            source_id = response.json().get("id")
-            return response.status_code, source_id, None
-        else:
-            error_message = response.text if response else "No response received from the server."
-            return 500, None, f"Failed to receive a valid response from the server. Details: {error_message}"
+            try:
+                response_json = response.json()
+                QgsMessageLog.logMessage(f"DEBUGGING Full API response as JSON: {response_json}", TAG, level=Qgis.Info)
+
+                # extract id:
+                message = response_json.get("message", "")
+                match = re.search(r"#(\d+)", message)
+                added_source_id = match.group(1) if match else None
+
+                if added_source_id:
+                    QgsMessageLog.logMessage(
+                        f"DEBUGGING Response: status={response.status_code}, added_source_id={added_source_id}, error=None", TAG,
+                        level=Qgis.Info)
+                    return response.status_code, added_source_id, None
+                else:
+                    error_message = "Added source ID not readable from API-answer."
+                    QgsMessageLog.logMessage(f"CRITICAL WMS could not be added to Mapbender. Reason: {error_message}",
+                                             TAG, level=Qgis.Critical)
+                    return response.status_code, None, error_message
+            except ValueError as e:
+                error_message = f"Response from the server cannot be processed. Details: {e}"
+                QgsMessageLog.logMessage(f"CRITICAL WMS could not be added to Mapbender. Reason: {error_message}", TAG,
+                                         level=Qgis.Critical)
+                return 500, None, error_message
+            else:
+                return 500, None, "Failed to receive a valid response from the server."
 
     def wms_reload(self, source_id: str, wms_url: str) -> tuple[int, Optional[dict], Optional[str]]:
         """

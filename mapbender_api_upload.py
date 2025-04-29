@@ -82,12 +82,17 @@ class MapbenderApiUpload:
         return 0
 
     def _add_new_source(self) -> int:
+        QgsMessageLog.logMessage(f"DEBUGGING Adding new source with URL: {self.wms_url}", TAG, level=Qgis.Info)
         exit_status, source_id, error = self.api_request.wms_add(self.wms_url)
-        if exit_status != 0 or not source_id:
+        QgsMessageLog.logMessage(f"DEBUGGING Response in MapbenderApiUpload: status={exit_status}, source_id={source_id}, error={error}", TAG,
+                                 level=Qgis.Info)
+
+        if exit_status != 200 or not source_id:
             QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: {error}", TAG, level=Qgis.Critical)
             show_fail_box_ok("Failed",
                              f"WMS could not be added to Mapbender. Reason: {error}")
             return 1
+
         QgsMessageLog.logMessage(f"New source added with ID: {source_id}", TAG, level=Qgis.Info)
         return 0
 
