@@ -13,6 +13,7 @@ from qgis.utils import iface
 
 from .api_request import ApiRequest
 from .qgis_server_api_upload import QgisServerApiUpload
+from .mapbender_api_upload import MapbenderApiUpload
 from .dialogs.server_config_dialog import ServerConfigDialog
 from .helpers import qgis_project_is_saved, \
     show_fail_box_ok, show_fail_box_yes_no, show_succes_box_ok, \
@@ -264,44 +265,75 @@ class MainDialog(BASE, WIDGET):
     #         QApplication.restoreOverrideCursor()
 
     def upload_project_qgis_server(self) -> None:
-        QgsMessageLog.logMessage("Preparing for project upload to QGIS server...", TAG, level=Qgis.Info)
+        QgsMessageLog.logMessage("Preparing for project qgis_server_upload to QGIS server...", TAG, level=Qgis.Info)
 
         # Get server config params and project paths
         paths = Paths.get_paths(self.server_config.projects_path)
 
-        upload = QgisServerApiUpload(paths)
-        result = upload.process_and_upload_project(self.server_config)
+        qgis_server_upload = QgisServerApiUpload(paths)
+        result = qgis_server_upload.process_and_upload_project(self.server_config)
         if result:
             show_fail_box_ok("Failed", result)
         else:
-            wms_url = upload.get_wms_url(self.server_config)
+            wms_url = qgis_server_upload.get_wms_url(self.server_config)
             #tests only
             #wms_url = "http://mapbender-qgis.wheregroup.lan/cgi-bin/qgis_mapserv.fcgi?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities&map=/data/qgis-projects/projekt_shp.qgz"
-            self.mb_publish(wms_url)
+            self.mb_publish(self.server_config, wms_url)
         return
 
-    def mb_publish(self, wms_url: str) -> None:
+    def mb_publish(self, server_config: ServerConfig, wms_url: str) -> None:
         """
         Publishes the WMS on Mapbender using the ApiRequest class.
 
         Args:
             wms_url: The WMS URL to be published.
         """
-        QgsMessageLog.logMessage(f"Starting Mapbender publish", TAG, level=Qgis.Info)
+        QgsMessageLog.logMessage(f"Preparing Mapbender publish...", TAG, level=Qgis.Info)
 
-        # Get Mapbender params:
-        if self.cloneTemplateRadioButton.isChecked():
-            clone_app = True
-        if self.addToAppRadioButton.isChecked():
-            clone_app = False
-        # Template slug:
+        # Parameters
+        clone_app = self.cloneTemplateRadioButton.isChecked()
         layer_set = self.layerSetLineEdit.text()
+        template_slug = self.mbSlugComboBox.currentText()
 
-        # check if source already exists in Mapbender as a source (with endpoint wms/show)
-        exit_status_wms_show, output = self.api_request.wms_show(wms_url)
-        QgsMessageLog.logMessage(f"exit_status_wms_show: {exit_status_wms_show}, output: {output}", TAG, level=Qgis.Info)
+        try:
+            mb_upload = MapbenderApiUpload(server_config, wms_url)
+            exit_status, source_ids = mb_upload.mb_upload()
 
+            if exit_status != 0 or not source_ids:
+                show_fail_box_ok("Failed", "WMS layer information could not be retrieved or no sources found.")
+                return
 
+            if clone_app:
+                exit_status_app_clone, output, slug, error = mb_upload.app_clone(template_slug)
+                if exit_status_app_clone != 0:
+                    show_fail_box_ok("Failed", f"Application could not be cloned.\nError: {error}, Output: {output}")
+                    update_mb_slug_in_settings(template_slug, is_mb_slug=False)
+                    self.update_slug_combo_box()
+                    return
+
+                update_mb_slug_in_settings(template_slug, is_mb_slug=True)
+                self.update_slug_combo_box()
+
+                exit_status_wms_assign, output_wms_assign, error_wms_assign = mb_upload.wms_assign(slug, source_ids[0],
+                                                                                                   layer_set)
+            else:
+                slug = self.mbSlugComboBox.currentText()
+                exit_status_wms_assign, output_wms_assign, error_wms_assign = mb_upload.wms_assign(slug, source_ids[0],
+                                                                                                   layer_set)
+            if exit_status_wms_assign != 0:
+                show_fail_box_ok("Failed", f"WMS could not be assigned to Mapbender application.\n{output_wms_assign}")
+                return
+
+            show_succes_box_ok(
+                "Success report",
+                f"WMS successfully created:\n\n{wms_url}\n\nAnd added to Mapbender application:\n\n"
+                f"{server_config.mb_protocol}{server_config.mb_basis_url}/application/{slug}"
+            )
+            self.close()
+
+        except Exception as e:
+            show_fail_box_ok("Failed", f"An error occurred during Mapbender publish: {e}")
+            QgsMessageLog.logMessage(f"Error in mb_publish: {e}", TAG, level=Qgis.Critical)
 
         return
 

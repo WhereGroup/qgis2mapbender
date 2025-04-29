@@ -157,11 +157,21 @@ class ApiRequest:
         """
         endpoint = "/wms/show"
         params = {"id": wms_url, "json": True}
+        #params = {"id": ''} # for tests
         self._ensure_token()
+
         response = self._send_request(endpoint, "get", params=params)
         if response:
-            return response.status_code, response.json()
-        return 500, {"error": "Failed to receive a valid response from the server."}
+            try:
+                data = response.json()
+                QgsMessageLog.logMessage(f"DEBUGGING wms/show response: {data}", TAG, level=Qgis.Info)
+                return response.status_code, data
+            except ValueError as e:
+                QgsMessageLog.logMessage(f"Error while processing the response:  {e}", TAG, level=Qgis.Warning)
+                return 500, None
+        else:
+            QgsMessageLog.logMessage("No valid response from API endpoint wms/show.", TAG, level=Qgis.Critical)
+            return 500, None
 
     def wms_add(self, wms_url: str) -> tuple[int, Optional[dict]]:
         """
@@ -174,13 +184,16 @@ class ApiRequest:
             tuple[int, Optional[dict]]: Status code and JSON response from the API.
         """
         endpoint = "/wms/add"
-        data = {"id": wms_url}
+        data = {"serviceUrl": wms_url}
 
         self._ensure_token()
         response = self._send_request(endpoint, "get", json=data)
         if response:
-            return response.status_code, response.json()
-        return 500, {"error": "Failed to receive a valid response from the server."}
+            source_id = response.json().get("id")
+            return response.status_code, source_id, None
+        else:
+            error_message = response.text if response else "No response received from the server."
+            return 500, None, f"Failed to receive a valid response from the server. Details: {error_message}"
 
     def wms_reload(self, source_id: str, wms_url: str) -> tuple[int, Optional[dict]]:
         """
