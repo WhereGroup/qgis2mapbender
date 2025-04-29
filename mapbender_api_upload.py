@@ -1,9 +1,8 @@
-import json
-
 from qgis.core import QgsMessageLog, Qgis
+from typing import Optional
 
 from .api_request import ApiRequest
-from .helpers import waitCursor, show_fail_box_ok, show_succes_box_ok
+from .helpers import show_fail_box_ok
 from .settings import TAG
 
 
@@ -24,9 +23,13 @@ class MapbenderApiUpload:
                 return 1, []
 
             if source_ids:
-                self._reload_sources(source_ids)
+                exit_status_reload = self._reload_sources(source_ids, self.wms_url)
+                if exit_status_reload != 0:
+                    return 1, []
             else:
-                self._add_new_source()
+                exit_status_add = self._add_new_source()
+                if exit_status_add != 0:
+                    return 1, []
 
             return 0, source_ids
 
@@ -46,7 +49,7 @@ class MapbenderApiUpload:
         exit_status, output = self.api_request.wms_show(self.wms_url)
 
         if exit_status != 200 or not isinstance(output, dict):
-            QgsMessageLog.logMessage(f"Error from wms/show: {output}", TAG, level=Qgis.Warning)
+            QgsMessageLog.logMessage(f"Response error from wms/show: {output}", TAG, level=Qgis.Warning)
             return exit_status, []
 
         if not output.get("success", False):
@@ -55,30 +58,38 @@ class MapbenderApiUpload:
 
         source_ids = [item['id'] for item in output.get('message', []) if isinstance(item, dict) and 'id' in item]
         QgsMessageLog.logMessage(f"DEBUGGING Raw output: {output}", TAG, level=Qgis.Info)
-        QgsMessageLog.logMessage(f"Extrahierte Source-IDs: {source_ids}", TAG, level=Qgis.Info)
+        QgsMessageLog.logMessage(f"WMS' source-IDs in Mapbender: {source_ids}", TAG, level=Qgis.Info)
         return exit_status, source_ids
 
-    def _reload_sources(self, source_ids: list[int]) -> None:
+    def _reload_sources(self, source_ids: list[int], wms_url: str) -> int:
         exit_status_list = []
         for source_id in source_ids:
-            exit_status, _, _ = self.api_request.wms_reload(source_id, self.wms_url)
-            exit_status_list.append(exit_status)
+            QgsMessageLog.logMessage(f"DEBUGGING Sending reload request for source_id: {source_id}, wms_url: {wms_url}",
+                                     TAG, level=Qgis.Info)
 
-        if not all(status == 0 for status in exit_status_list):
+            exit_status, response_json, error  = self.api_request.wms_reload(source_id, wms_url)
+            QgsMessageLog.logMessage(f"DEBUGGING Exit status reload {exit_status}.", TAG, level=Qgis.Critical)
+            exit_status_list.append(exit_status)
+        QgsMessageLog.logMessage(f"DEBUGGING Exit status reload LIST {exit_status_list}.", TAG, level=Qgis.Critical)
+
+        if not all(status == 200 for status in exit_status_list):
             QgsMessageLog.logMessage(f"WMS could not be reloaded in Mapbender.", TAG, level=Qgis.Critical)
             show_fail_box_ok("Failed",
                              f"WMS could not be reloaded in  Mapbender.")
-        else:
-            QgsMessageLog.logMessage("All sources reloaded successfully.", TAG, level=Qgis.Info)
+            return 1
 
-    def _add_new_source(self) -> None:
+        QgsMessageLog.logMessage("All sources reloaded successfully.", TAG, level=Qgis.Info)
+        return 0
+
+    def _add_new_source(self) -> int:
         exit_status, source_id, error = self.api_request.wms_add(self.wms_url)
         if exit_status != 0 or not source_id:
-            QgsMessageLog.logMessage("WMS could not be added to Mapbender. Reason: {error}", TAG, level=Qgis.Critical)
+            QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: {error}", TAG, level=Qgis.Critical)
             show_fail_box_ok("Failed",
                              f"WMS could not be added to Mapbender. Reason: {error}")
-        else:
-            QgsMessageLog.logMessage(f"New source added with ID: {source_id}", TAG, level=Qgis.Info)
+            return 1
+        QgsMessageLog.logMessage(f"New source added with ID: {source_id}", TAG, level=Qgis.Info)
+        return 0
 
     def app_clone(self, template_slug):
         """

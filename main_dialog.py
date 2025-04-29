@@ -292,6 +292,7 @@ class MainDialog(BASE, WIDGET):
 
         # Parameters
         clone_app = self.cloneTemplateRadioButton.isChecked()
+        QgsMessageLog.logMessage(f"DEBUGGING CLONE APP T/F {clone_app}", TAG, level=Qgis.Info)
         layer_set = self.layerSetLineEdit.text()
         template_slug = self.mbSlugComboBox.currentText()
 
@@ -300,10 +301,11 @@ class MainDialog(BASE, WIDGET):
             exit_status, source_ids = mb_upload.mb_upload()
 
             if exit_status != 0 or not source_ids:
-                show_fail_box_ok("Failed", "WMS layer information could not be retrieved or no sources found.")
+                QgsMessageLog.logMessage(f"DEBUGGING FAILED mb_upload", TAG, level=Qgis.Info)
                 return
 
             if clone_app:
+                QgsMessageLog.logMessage(f"DEBUGGING CLONNING APP", TAG, level=Qgis.Info)
                 exit_status_app_clone, output, slug, error = mb_upload.app_clone(template_slug)
                 if exit_status_app_clone != 0:
                     show_fail_box_ok("Failed", f"Application could not be cloned.\nError: {error}, Output: {output}")

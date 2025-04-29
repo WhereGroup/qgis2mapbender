@@ -184,10 +184,11 @@ class ApiRequest:
             tuple[int, Optional[dict]]: Status code and JSON response from the API.
         """
         endpoint = "/wms/add"
-        data = {"serviceUrl": wms_url}
+        params = {"serviceUrl": wms_url}
 
         self._ensure_token()
-        response = self._send_request(endpoint, "get", json=data)
+        response = self._send_request(endpoint, "get", params=params)
+        QgsMessageLog.logMessage(f"DEBUGGING response ADD: {response}", TAG, level=Qgis.Info)
         if response:
             source_id = response.json().get("id")
             return response.status_code, source_id, None
@@ -195,7 +196,7 @@ class ApiRequest:
             error_message = response.text if response else "No response received from the server."
             return 500, None, f"Failed to receive a valid response from the server. Details: {error_message}"
 
-    def wms_reload(self, source_id: str, wms_url: str) -> tuple[int, Optional[dict]]:
+    def wms_reload(self, source_id: str, wms_url: str) -> tuple[int, Optional[dict], Optional[str]]:
         """
         Reloads a WMS layer using the provided source ID and WMS URL.
 
@@ -207,28 +208,31 @@ class ApiRequest:
             tuple[int, Optional[dict]]: Status code and JSON response from the API.
         """
         endpoint = "/wms/reload"
-        data = {"sourceId": source_id, "wmsUrl": wms_url}
+        params = {"id": source_id, "serviceUrl": wms_url}
         self._ensure_token()
-        response = self._send_request(endpoint, "get", json=data)
+        response = self._send_request(endpoint, "get", params=params)
         if response:
-            return response.status_code, response.json()
-        return 500, {"error": "Failed to receive a valid response from the server."}
+            try:
+                return response.status_code, response.json(), None
+            except ValueError as e:
+                return 500, None, f"Error by parsing the response: {e}"
+        return 500, None, {"error": "Failed to receive a valid response from the server."}
 
-    def wms_assign(self, source_id: str, layer_id: str) -> tuple[int, Optional[dict]]:
+    def wms_assign(self, application: str, source: int) -> tuple[int, Optional[dict]]:
         """
         Assigns a WMS layer using the provided source ID and layer ID.
 
         Args:
-            source_id (str): The source ID of the WMS layer.
-            layer_id (str): The layer ID to assign.
+            application (str): The source ID of the WMS layer.
+            source (str): The layer ID to assign.
 
         Returns:
             tuple[int, Optional[dict]]: Status code and JSON response from the API.
         """
         endpoint = "/wms/assign"
-        data = {"sourceId": source_id, "layerId": layer_id}
+        params = {"application": application, "source": source}
         self._ensure_token()
-        response = self._send_request(endpoint, "get", json=data)
+        response = self._send_request(endpoint, "get", params=params)
         if response:
             return response.status_code, response.json()
         return 500, {"error": "Failed to receive a valid response from the server."}
