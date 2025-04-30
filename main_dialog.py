@@ -52,10 +52,6 @@ class MainDialog(BASE, WIDGET):
         self.setupUi(self)
         self.setupConnections()
 
-        # initialize API request
-        self.server_config = ServerConfig.getParamsFromSettings(self.serverConfigComboBox.currentText())
-        self.api_request = ApiRequest(self.server_config)
-
 
     def setupUi(self, widget) -> None:
         super().setupUi(widget)
@@ -268,6 +264,7 @@ class MainDialog(BASE, WIDGET):
         QgsMessageLog.logMessage("Preparing for project qgis_server_upload to QGIS server...", TAG, level=Qgis.Info)
 
         # Get server config params and project paths
+        self.server_config = ServerConfig.getParamsFromSettings(self.serverConfigComboBox.currentText())
         paths = Paths.get_paths(self.server_config.projects_path)
 
         qgis_server_upload = QgisServerApiUpload(paths)
