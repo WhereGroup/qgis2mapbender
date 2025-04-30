@@ -102,12 +102,12 @@ class QgisServerApiUpload:
                 return None
             elif status_code == 400:
                 error_message = (f"Error {status_code}: Invalid request. "
-                                 f"Message: {response_json.get('message')}.")
+                                 f"Message: {response_json.get('error')}.")
                 QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Warning)
                 return error_message
             elif status_code == 401:
                 error_message = (f"Error {status_code}: Unauthorized. "
-                                 f"Message: {response_json.get('message')}.")
+                                 f"Message: {response_json.get('error')}.")
                 QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Warning)
                 return error_message
             elif status_code == 403:
