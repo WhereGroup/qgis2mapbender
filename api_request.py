@@ -145,7 +145,7 @@ class ApiRequest:
                 return 500, {"error": "Failed to receive a valid response from the server."}
         except FileNotFoundError:
             return 400, {"error": f"File not found: {file_path}"}
-        except requests.RequestException as e:
+        except requests.RequestException as e:  # generic error
             return 500, {"error": f"Error during the request: {e}"}
 
     def wms_show(self, wms_url: str) -> tuple[int, Optional[dict]]:
