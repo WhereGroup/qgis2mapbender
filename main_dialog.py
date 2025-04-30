@@ -268,9 +268,9 @@ class MainDialog(BASE, WIDGET):
         paths = Paths.get_paths(self.server_config.projects_path)
 
         qgis_server_upload = QgisServerApiUpload(paths)
-        result = qgis_server_upload.process_and_upload_project(self.server_config)
-        if result:
-            show_fail_box_ok("Failed", result)
+        result_error = qgis_server_upload.process_and_upload_project(self.server_config)
+        if result_error:
+            show_fail_box_ok("Failed", result_error)
         else:
             wms_url = qgis_server_upload.get_wms_url(self.server_config)
             #tests only
