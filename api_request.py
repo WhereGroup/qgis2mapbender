@@ -43,6 +43,8 @@ class ApiRequest:
             handle_error(e, "Authentication error: Please check your credentials.")
         except ConnectionError as e:
             handle_error(e, "Connection error: Please check your network connection.")
+        except Exception as e:
+            handle_error(e, f"Error: {e}")
 
     def _authenticate(self) -> Optional[str]:
         """
@@ -60,16 +62,12 @@ class ApiRequest:
             QgsMessageLog.logMessage(f"Sending authentication request to endpoint: {endpoint}", TAG, level=Qgis.Info)
             response = self._send_request(endpoint, "post", json=credentials)
             if response and response.status_code == 200:
-                QgsMessageLog.logMessage("Authentication request successful.", TAG, level=Qgis.Info)
                 return response.json().get("token")
             elif response and response.status_code == 404:
-                QgsMessageLog.logMessage("Invalid URL during authentication.", TAG, level=Qgis.Warning)
                 raise ValueError("Invalid URL. Please check the server configuration (URL is valid?).")
             else:
-                QgsMessageLog.logMessage("Invalid credentials provided.", TAG, level=Qgis.Warning)
                 raise ValueError("Invalid credentials. Please verify your username and password.")
         except requests.RequestException as e:
-            QgsMessageLog.logMessage(f"Request exception during authentication: {e}", TAG, level=Qgis.Critical)
             raise ConnectionError(f"Error authenticating with the API: {e}")
 
     def _ensure_token(self) -> None:
