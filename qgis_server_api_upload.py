@@ -158,8 +158,6 @@ class QgisServerApiUpload:
             # Step 3: Delete the local ZIP file
             self.delete_local_project_zip_file()
 
-            # Step 4: Get WMS URL
-            self.get_wms_url(server_config)
             return None # successful upload
 
         except Exception as e:
