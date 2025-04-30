@@ -98,36 +98,37 @@ class QgisServerApiUpload:
             # "Bad Request for url: http://mapbender-qgis.wheregroup.lan/mapbender/api/upload/zip"
             # without explain what it is wrong!
             api_request = ApiRequest(server_config)
-            status_code, response_json = api_request.upload_zip(file_path)
+            if api_request.token:
+                status_code, response_json = api_request.upload_zip(file_path)
 
-            if status_code == 200:
-                QgsMessageLog.logMessage("Project ZIP file successfully uploaded and unzipped on QGIS server",
-                                         TAG, level=Qgis.Info)
-                return None
-            elif status_code == 400:
-                error_message = (f"Error {status_code}: Invalid request. "
-                                 f"Message: {response_json.get('error')}.")
-                QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Warning)
-                return error_message
-            elif status_code == 401:
-                error_message = (f"Error {status_code}: Unauthorized. "
-                                 f"Message: {response_json.get('error')}.")
-                QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Warning)
-                return error_message
-            elif status_code == 403:
-                error_message = (f"Error {status_code}: Access Denied. "
-                                 f"Error: {response_json.get('error')}.")
-                QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Warning)
-                return error_message
-            elif status_code == 500:
-                error_message = (f"Error {status_code}: Server error. "
-                                 f"Message: {response_json.get('error')}.")
-                QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Critical)
-                return error_message
-            else:
-                error_message = f"Unexpected error with status code {status_code}."
-                QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Warning)
-                return error_message
+                if status_code == 200:
+                    QgsMessageLog.logMessage("Project ZIP file successfully uploaded and unzipped on QGIS server",
+                                             TAG, level=Qgis.Info)
+                    return None
+                elif status_code == 400:
+                    error_message = (f"Error {status_code}: Invalid request. "
+                                     f"Message: {response_json.get('error')}.")
+                    QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Warning)
+                    return error_message
+                elif status_code == 401:
+                    error_message = (f"Error {status_code}: Unauthorized. "
+                                     f"Message: {response_json.get('error')}.")
+                    QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Warning)
+                    return error_message
+                elif status_code == 403:
+                    error_message = (f"Error {status_code}: Access Denied. "
+                                     f"Error: {response_json.get('error')}.")
+                    QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Warning)
+                    return error_message
+                elif status_code == 500:
+                    error_message = (f"Error {status_code}: Server error. "
+                                     f"Message: {response_json.get('error')}.")
+                    QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Critical)
+                    return error_message
+                else:
+                    error_message = f"Unexpected error with status code {status_code}."
+                    QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Warning)
+                    return error_message
         except Exception as e:
             QgsMessageLog.logMessage(f"Error during file upload: {e}", TAG, level=Qgis.Critical)
             return f"Error during file upload: {e}"
