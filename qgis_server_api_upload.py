@@ -117,7 +117,7 @@ class QgisServerApiUpload:
                 return error_message
             elif status_code == 500:
                 error_message = (f"Error {status_code}: Server error. "
-                                 f"Message: {response_json.get('message')}.")
+                                 f"Message: {response_json.get('error')}.")
                 QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Critical)
                 return error_message
             else:
