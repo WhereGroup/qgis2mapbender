@@ -150,10 +150,10 @@ class QgisServerApiUpload:
                 return "Failed to create ZIP file for the project."
 
             # Step 2: Upload the ZIP file
-            upload_result = self.api_upload(self.source_project_zip_file_path, server_config)
-            if upload_result:
-                QgsMessageLog.logMessage(f"Upload failed: {upload_result}", TAG, level=Qgis.Critical)
-                return f"Upload failed: {upload_result}"
+            upload_error = self.api_upload(self.source_project_zip_file_path, server_config)
+            if upload_error:
+                QgsMessageLog.logMessage(f"Upload failed: {upload_error}", TAG, level=Qgis.Critical)
+                return f"Upload failed: {upload_error}"
 
             # Step 3: Delete the local ZIP file
             self.delete_local_project_zip_file()
