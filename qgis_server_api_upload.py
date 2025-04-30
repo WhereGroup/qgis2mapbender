@@ -94,11 +94,15 @@ class QgisServerApiUpload:
                 QgsMessageLog.logMessage(f"File not found: {file_path}", TAG, level=Qgis.Critical)
                 return f"Error: File not found at {file_path}"
 
+            # TODO: Upload does not work if zip file is too big! Mapbender API returns:
+            # "Bad Request for url: http://mapbender-qgis.wheregroup.lan/mapbender/api/upload/zip"
+            # without explain what it is wrong!
             api_request = ApiRequest(server_config)
             status_code, response_json = api_request.upload_zip(file_path)
 
             if status_code == 200:
-                QgsMessageLog.logMessage("Project ZIP file successfully uploaded and unzipped on QGIS server", TAG, level=Qgis.Info)
+                QgsMessageLog.logMessage("Project ZIP file successfully uploaded and unzipped on QGIS server",
+                                         TAG, level=Qgis.Info)
                 return None
             elif status_code == 400:
                 error_message = (f"Error {status_code}: Invalid request. "
