@@ -33,23 +33,7 @@ class Qgis2Mapbender:
             self.dlg.close()
             self.dlg = None
 
-    def openPyConsole(self):
-        """In Windows, check that the Python console is open. If not, it is open and will close soon.
-        This is a workaround for a problem that only occurs on Windows: The factory2 library sometimes throws an error
-        when it tries to library sometimes throws an error when it tries to write to standard output (console).
-        This will definitely be fixed when the new Mapbender API is released."""
-        if os.name == 'nt':
-            pythonConsole: QDockWidget = self.iface.mainWindow().findChild(QDockWidget, 'PythonConsole')
-            isOpenAtStart = True if pythonConsole and pythonConsole.isVisible() else False
-
-            # Open and close the console again
-            if not isOpenAtStart:
-                self.iface.actionShowPythonDialog().trigger()
-                self.iface.actionShowPythonDialog().trigger()
-
     def run(self):
-        """Plugin run method : launch the GUI."""
-        self.openPyConsole()
 
         self.dlg = MainDialog()
         self.dlg.show()
