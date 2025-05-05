@@ -37,6 +37,26 @@ class MapbenderApiUpload:
             QgsMessageLog.logMessage(f"Error in mb_upload: {e}", TAG, level=Qgis.Critical)
             return 1, []
 
+    def mb_reload(self) -> tuple[int, list[int]]:
+        try:
+            exit_status_wms_show, source_ids = self.wms_show()
+            if exit_status_wms_show == 1:
+                show_fail_box_ok("Failed",
+                                 f"WMS layer information could not be displayed. "
+                                 f"Mapbender upload will be interrupted.")
+                return 1, []
+
+            if source_ids:
+                exit_status_reload, reloaded_source_ids = self._reload_sources(source_ids, self.wms_url)
+                if exit_status_reload != 0:
+                    return 1, []
+                return 0, reloaded_source_ids
+            else:
+                    return 1, []
+        except Exception as e:
+            QgsMessageLog.logMessage(f"Error in mb_upload: {e}", TAG, level=Qgis.Critical)
+            return 1, []
+
     def wms_show(self) -> tuple[int, list[int]]:
         """
         Displays layer information of a persisted WMS source.

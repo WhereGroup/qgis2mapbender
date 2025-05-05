@@ -101,7 +101,7 @@ class MainDialog(BASE, WIDGET):
         self.mbSlugComboBox.lineEdit().textChanged.connect(self.validate_slug_not_empty)
         self.mbSlugComboBox.currentIndexChanged.connect(self.validate_slug_not_empty)
         self.publishButton.clicked.connect(self.publish_project)
-        #self.updateButton.clicked.connect(self.update_project)
+        self.updateButton.clicked.connect(self.update_project)
         self.buttonBoxTab1.rejected.connect(self.reject)
         self.addServerConfigButton.clicked.connect(self.on_add_server_config_clicked)
         self.duplicateServerConfigButton.clicked.connect(self.on_duplicate_server_config_clicked)
@@ -247,18 +247,17 @@ class MainDialog(BASE, WIDGET):
             # Restore default cursor
             QApplication.restoreOverrideCursor()
 
-    # # Update project option wil be no longer available in the API Version of the plugin
-    # def update_project(self) -> None:
-    #     if not qgis_project_is_saved():
-    #         return
-    #
-    #     # Set waiting cursor
-    #     QApplication.setOverrideCursor(Qt.WaitCursor)
-    #     try:
-    #         self.upload_project_qgis_server()
-    #     finally:
-    #         # Restore default cursor
-    #         QApplication.restoreOverrideCursor()
+    def update_project(self) -> None:
+        if not qgis_project_is_saved():
+            return
+
+        # Set waiting cursor
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            self.upload_project_qgis_server()
+        finally:
+            # Restore default cursor
+            QApplication.restoreOverrideCursor()
 
     def upload_project_qgis_server(self) -> None:
         QgsMessageLog.logMessage("Preparing for project qgis_server_upload to QGIS server...", TAG, level=Qgis.Info)
@@ -273,8 +272,11 @@ class MainDialog(BASE, WIDGET):
             show_fail_box_ok("Failed", result_error)
         else:
             wms_url = qgis_server_upload.get_wms_url(self.server_config)
-            self.mb_publish(self.server_config, wms_url)
-        return
+            if self.publishRadioButton.isChecked():
+                self.mb_publish(wms_url)
+                return
+            self.mb_update(wms_url)
+            return
 
     def mb_publish(self, server_config: ServerConfig, wms_url: str) -> None:
         """
@@ -287,15 +289,12 @@ class MainDialog(BASE, WIDGET):
 
         # Parameters
         clone_app = self.cloneTemplateRadioButton.isChecked()
-        QgsMessageLog.logMessage(f"DEBUGGING CLONE APP T/F {clone_app}", TAG, level=Qgis.Info)
         layer_set = self.layerSetLineEdit.text()
-        QgsMessageLog.logMessage(f"DEBUGGING layersset: {layer_set}", TAG, level=Qgis.Info)
         template_slug = self.mbSlugComboBox.currentText()
 
         try:
             mb_upload = MapbenderApiUpload(server_config, wms_url)
             exit_status, source_ids = mb_upload.mb_upload()
-
             if exit_status != 0 or not source_ids:
                 QgsMessageLog.logMessage(f"DEBUGGING FAILED mb_upload", TAG, level=Qgis.Info)
                 return
@@ -343,5 +342,15 @@ class MainDialog(BASE, WIDGET):
         return
 
     def mb_update(self, wms_url):
-        # TODO please review new logic according to the new API and develop accordingly
+        QgsMessageLog.logMessage(f"Preparing Mapbender update...", TAG, level=Qgis.Info)
+        try:
+            mb_reload = MapbenderApiUpload(self.server_config, wms_url)
+            exit_status, source_ids = mb_reload.mb_reload()
+            if exit_status != 0 or not source_ids:
+                show_fail_box_ok("Failed", f"No source to update. WMS {wms_url} is not an existing source in Mapbender.")
+                QgsMessageLog.logMessage(f"FAILED mb_update: No source to update. WMS {wms_url} is not an existing source in Mapbender.", TAG, level=Qgis.Info)
+                return
+        except Exception as e:
+            show_fail_box_ok("Failed", f"An error occurred during Mapbender update: {e}")
+            QgsMessageLog.logMessage(f"Error in mb_update: {e}", TAG, level=Qgis.Critical)
         return
