@@ -43,18 +43,18 @@ class QgisServerApiUpload:
         """
         try:
             temp_dir = f'{self.source_project_dir_path}_copy_tmp'
-
             if os.path.isdir(temp_dir):
                 shutil.rmtree(temp_dir)
-            shutil.copytree(self.source_project_dir_path, temp_dir)
+            os.makedirs(temp_dir)
+
+            shutil.copytree(self.source_project_dir_path, temp_dir + "/" + self.source_project_file_name.split('.')[0])
 
             for folder_name, subfolders, filenames in os.walk(temp_dir):
                 for filename in filenames:
                     file_path = os.path.join(folder_name, filename)
                     if filename.split(".")[-1] in ('gpkg-wal', 'gpkg-shm'):
                         os.remove(file_path)
-
-            shutil.make_archive(self.source_project_dir_path, 'zip', temp_dir)
+            self._create_archive_with_folder(temp_dir)
             shutil.rmtree(temp_dir)
 
             if os.path.isfile(self.source_project_zip_file_path):
@@ -65,6 +65,24 @@ class QgisServerApiUpload:
         except Exception as e:
             QgsMessageLog.logMessage(f"Error while zipping project directory: {e}", TAG, level=Qgis.Critical)
             return False
+
+    def _create_archive_with_folder(self, source):
+        """
+        Creates an archive (zip) containing the specified folder.
+
+        Args:
+            source (str): the folder you want to archive.
+        """
+        try:
+            base = os.path.basename(self.source_project_zip_file_path)
+            zip_name = base.split('.')[0]
+            zip_type = base.split('.')[1]
+            archive_to = os.path.dirname(self.source_project_zip_file_path)
+            # print(archive_to, zip_type, source)
+            shutil.make_archive(os.path.join(str(archive_to), zip_name), zip_type, source)
+
+        except Exception as e:
+            print(f"An error occurred during archiving: {e}")
 
     def delete_local_project_zip_file(self) -> None:
         """
