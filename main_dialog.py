@@ -273,8 +273,6 @@ class MainDialog(BASE, WIDGET):
             show_fail_box_ok("Failed", result_error)
         else:
             wms_url = qgis_server_upload.get_wms_url(self.server_config)
-            #tests only
-            #wms_url = "http://mapbender-qgis.wheregroup.lan/cgi-bin/qgis_mapserv.fcgi?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities&map=/data/qgis-projects/projekt_shp.qgz"
             self.mb_publish(self.server_config, wms_url)
         return
 
@@ -306,7 +304,8 @@ class MainDialog(BASE, WIDGET):
                 QgsMessageLog.logMessage(f"DEBUGGING CLONNING APP", TAG, level=Qgis.Info)
                 exit_status_app_clone, slug, error = mb_upload.app_clone(template_slug)
                 if exit_status_app_clone != 200:
-                    show_fail_box_ok("Failed", f"Application could not be cloned.\nError: {error}, Output: {output}")
+                    #show_fail_box_ok("Failed", f"Application could not be cloned.\nError: {error}, Output: {output}")
+                    show_fail_box_ok("Failed", f"Application could not be cloned.\nError: {error}.")
                     update_mb_slug_in_settings(template_slug, is_mb_slug=False)
                     self.update_slug_combo_box()
                     return

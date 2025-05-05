@@ -78,11 +78,9 @@ class QgisServerApiUpload:
             zip_name = base.split('.')[0]
             zip_type = base.split('.')[1]
             archive_to = os.path.dirname(self.source_project_zip_file_path)
-            # print(archive_to, zip_type, source)
             shutil.make_archive(os.path.join(str(archive_to), zip_name), zip_type, source)
-
         except Exception as e:
-            print(f"An error occurred during archiving: {e}")
+            QgsMessageLog.logMessage(f"An error occurred during archiving: {e}", TAG, level=Qgis.Critical)
 
     def delete_local_project_zip_file(self) -> None:
         """
