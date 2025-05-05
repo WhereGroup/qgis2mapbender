@@ -210,7 +210,7 @@
              <widget class="QPushButton" name="updateButton">
               <property name="font">
                <font>
-                <strikeout>true</strikeout>
+                <strikeout>false</strikeout>
                </font>
               </property>
               <property name="text">
