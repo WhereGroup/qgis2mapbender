@@ -273,7 +273,7 @@ class MainDialog(BASE, WIDGET):
         else:
             wms_url = qgis_server_upload.get_wms_url(self.server_config)
             if self.publishRadioButton.isChecked():
-                self.mb_publish(wms_url)
+                self.mb_publish(self.server_config, wms_url)
                 return
             self.mb_update(wms_url)
             return
