@@ -2,8 +2,8 @@
 import os
 from typing import Optional
 
-from PyQt5.QtWidgets import QAction
-from PyQt5.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QDockWidget
 
 from .main_dialog import MainDialog

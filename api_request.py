@@ -26,7 +26,7 @@ class ApiRequest:
         self.api_url = f"{self.server_config.mb_protocol}{self.server_config.url}/mapbender/api"
         self.headers = {}
         self.token = None
-        QgsMessageLog.logMessage("Initializing ApiRequest with server configuration.", TAG, level=Qgis.Info)
+        QgsMessageLog.logMessage("Initializing ApiRequest with server configuration.", TAG, level=Qgis.MessageLevel.Info)
         # self.response_json = None
         # self.status_code_login = None
         self._initialize_authentication()
@@ -59,7 +59,7 @@ class ApiRequest:
             "password": self.server_config.password
         }
         try:
-            QgsMessageLog.logMessage(f"Sending authentication request to endpoint: {endpoint}", TAG, level=Qgis.Info)
+            QgsMessageLog.logMessage(f"Sending authentication request to endpoint: {endpoint}", TAG, level=Qgis.MessageLevel.Info)
             response = self._send_request(endpoint, "post", json=credentials)
             if response and response.status_code == 200:
                 return response.json().get("token")
@@ -103,19 +103,19 @@ class ApiRequest:
             Optional[requests.Response]: The response object, or None if an error occurs.
         """
         url = f"{self.api_url}{endpoint}"
-        QgsMessageLog.logMessage(f"DEBUGGING Sending request to URL: {url} with method: {method}", TAG, level=Qgis.Info)
-        QgsMessageLog.logMessage(f"DEBUGGING Request kwargs: {kwargs}", TAG, level=Qgis.Info)
+        QgsMessageLog.logMessage(f"DEBUGGING Sending request to URL: {url} with method: {method}", TAG, level=Qgis.MessageLevel.Info)
+        QgsMessageLog.logMessage(f"DEBUGGING Request kwargs: {kwargs}", TAG, level=Qgis.MessageLevel.Info)
 
         try:
             response = self.session.request(method=method.upper(), url=url, headers= self.headers, **kwargs)
-            QgsMessageLog.logMessage(f"DEBUGGING Response status code: {response.status_code}", TAG, level=Qgis.Info)
+            QgsMessageLog.logMessage(f"DEBUGGING Response status code: {response.status_code}", TAG, level=Qgis.MessageLevel.Info)
             response.raise_for_status()  # Raise an exception for HTTP errors
             return response
         except requests.HTTPError as http_err:
-            QgsMessageLog.logMessage(f"DEBUGGING HTTP error: {http_err}", TAG, level=Qgis.Critical)
+            QgsMessageLog.logMessage(f"DEBUGGING HTTP error: {http_err}", TAG, level=Qgis.MessageLevel.Critical)
             handle_error(http_err, f"HTTP error occurred: {http_err}")
         except requests.RequestException as req_err:
-            QgsMessageLog.logMessage(f"DEBUGGING Request exception: {req_err}", TAG, level=Qgis.Critical)
+            QgsMessageLog.logMessage(f"DEBUGGING Request exception: {req_err}", TAG, level=Qgis.MessageLevel.Critical)
             handle_error(req_err, f"Request error occurred: {req_err}")
         return None
 
@@ -165,13 +165,13 @@ class ApiRequest:
         if response:
             try:
                 data = response.json()
-                QgsMessageLog.logMessage(f"DEBUGGING wms/show response: {data}", TAG, level=Qgis.Info)
+                QgsMessageLog.logMessage(f"DEBUGGING wms/show response: {data}", TAG, level=Qgis.MessageLevel.Info)
                 return response.status_code, data
             except ValueError as e:
-                QgsMessageLog.logMessage(f"Error while processing the response:  {e}", TAG, level=Qgis.Warning)
+                QgsMessageLog.logMessage(f"Error while processing the response:  {e}", TAG, level=Qgis.MessageLevel.Warning)
                 return 500, None
         else:
-            QgsMessageLog.logMessage("No valid response from API endpoint wms/show.", TAG, level=Qgis.Critical)
+            QgsMessageLog.logMessage("No valid response from API endpoint wms/show.", TAG, level=Qgis.MessageLevel.Critical)
             return 500, None
 
     def wms_add(self, wms_url: str) -> tuple[int, Optional[dict]]:
@@ -192,7 +192,7 @@ class ApiRequest:
         if response:
             try:
                 response_json = response.json()
-                QgsMessageLog.logMessage(f"DEBUGGING Full API response as JSON: {response_json}", TAG, level=Qgis.Info)
+                QgsMessageLog.logMessage(f"DEBUGGING Full API response as JSON: {response_json}", TAG, level=Qgis.MessageLevel.Info)
 
                 # extract id:
                 message = response_json.get("message", "")
@@ -202,17 +202,17 @@ class ApiRequest:
                 if added_source_id:
                     QgsMessageLog.logMessage(
                         f"DEBUGGING Response: status={response.status_code}, added_source_id={added_source_id}, error=None", TAG,
-                        level=Qgis.Info)
+                        level=Qgis.MessageLevel.Info)
                     return response.status_code, added_source_id, None
                 else:
                     error_message = "Added source ID not readable from API-answer."
                     QgsMessageLog.logMessage(f"CRITICAL WMS could not be added to Mapbender. Reason: {error_message}",
-                                             TAG, level=Qgis.Critical)
+                                             TAG, level=Qgis.MessageLevel.Critical)
                     return response.status_code, None, error_message
             except ValueError as e:
                 error_message = f"Response from the server cannot be processed. Details: {e}"
                 QgsMessageLog.logMessage(f"CRITICAL WMS could not be added to Mapbender. Reason: {error_message}", TAG,
-                                         level=Qgis.Critical)
+                                         level=Qgis.MessageLevel.Critical)
                 return 500, None, error_message
             else:
                 return 500, None, "Failed to receive a valid response from the server."
@@ -257,7 +257,7 @@ class ApiRequest:
         self._ensure_token()
         response = self._send_request(endpoint, "get", params=params)
         QgsMessageLog.logMessage(f"DEBUGGING WMS ASSIGN RESPONSE: {response}", TAG,
-                                 level=Qgis.Critical)
+                                 level=Qgis.MessageLevel.Critical)
         if response:
             return response.status_code, response.json(), None
         return 500, {"error": "Failed to receive a valid response from the server."}, None
@@ -283,13 +283,13 @@ class ApiRequest:
                     return response.status_code, response_json, None
                 except ValueError as e:
                     error_message = f"Fehler beim Parsen der Antwort: {e}"
-                    QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Critical)
+                    QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
                     return 500, None, error_message
             else:
                 error_message = "Keine gültige Antwort vom Server erhalten."
-                QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Critical)
+                QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
                 return 500, None, error_message
         except requests.RequestException as e:
             error_message = f"Fehler bei der Anfrage: {e}"
-            QgsMessageLog.logMessage(error_message, TAG, level=Qgis.Critical)
+            QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
             return 500, None, error_message

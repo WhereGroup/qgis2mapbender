@@ -3,9 +3,9 @@ from typing import Optional
 
 import requests
 from PyQt5 import uic
-from PyQt5.QtCore import QRegExp, QSettings
-from PyQt5.QtGui import QIntValidator, QRegExpValidator, QIcon
-from PyQt5.QtWidgets import QDialogButtonBox, QLineEdit, QRadioButton, QLabel, QComboBox, QPushButton
+from qgis.PyQt.QtCore import QRegExp, QSettings
+from qgis.PyQt.QtGui import QIntValidator, QRegExpValidator, QIcon
+from qgis.PyQt.QtWidgets import QDialogButtonBox, QLineEdit, QRadioButton, QLabel, QComboBox, QPushButton
 from fabric2 import Connection
 from qgis._core import QgsMessageLog, Qgis
 from qgis.gui import QgsFileWidget
@@ -71,12 +71,12 @@ class ServerConfigDialog(BASE, WIDGET):
         self.authcfg = ''
         self.selected_server_config_name = server_config_name
         self.mode = mode
-        self.dialogButtonBox.button(QDialogButtonBox.Save).setEnabled(False)
+        self.dialogButtonBox.button(QDialogButtonBox.StandardButton.Save).setEnabled(False)
         self.testButton.setEnabled(False)
         if server_config_name:
             self.getSavedServerConfig(server_config_name, mode)
         if self.mode == 'edit':
-            self.dialogButtonBox.button(QDialogButtonBox.Save).setEnabled(True)
+            self.dialogButtonBox.button(QDialogButtonBox.StandardButton.Save).setEnabled(True)
             self.testButton.setEnabled(True)
 
         self.serverConfigNameLineEdit.setToolTip('Custom server configuration name without blank spaces')
@@ -275,7 +275,7 @@ class ServerConfigDialog(BASE, WIDGET):
         self.validateFields()
 
     def validateFields(self) -> None:
-        self.dialogButtonBox.button(QDialogButtonBox.Save).setEnabled(
+        self.dialogButtonBox.button(QDialogButtonBox.StandardButton.Save).setEnabled(
             all(field.text() for field in self.mandatoryFields))
 
         self.testButton.setEnabled(

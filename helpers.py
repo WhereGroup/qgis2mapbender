@@ -5,11 +5,11 @@ import re
 from typing import Optional
 from urllib.parse import urlparse
 from fabric2 import Connection
-from PyQt5.QtCore import Qt
+from qgis.PyQt.QtCore import Qt
 from decorator import contextmanager
 
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QMessageBox
+from qgis.PyQt.QtGui import QPixmap
+from qgis.PyQt.QtWidgets import QMessageBox
 from qgis.core import QgsApplication, QgsProject, QgsSettings
 
 from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
@@ -35,10 +35,10 @@ def check_if_qgis_project_is_dirty_and_save() -> None:
         msgBox.setWindowTitle("")
         msgBox.setText("The project has been modified.")
         msgBox.setInformativeText("Do you want to save your changes?")
-        msgBox.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
-        msgBox.setDefaultButton(QMessageBox.Save)
-        ret = msgBox.exec_()
-        if ret == QMessageBox.Save:
+        msgBox.setStandardButtons(QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel)
+        msgBox.setDefaultButton(QMessageBox.StandardButton.Save)
+        ret = msgBox.exec()
+        if ret == QMessageBox.StandardButton.Save:
             QgsProject.instance().write()
         return ret
 
@@ -64,14 +64,14 @@ def create_fail_box(title, text):
 
 def show_fail_box_ok(title, text):
     failBox = create_fail_box(title, text)
-    failBox.setStandardButtons(QMessageBox.Ok)
-    return failBox.exec_()
+    failBox.setStandardButtons(QMessageBox.StandardButton.Ok)
+    return failBox.exec()
 
 
 def show_fail_box_yes_no(title, text):
     failBox = create_fail_box(title, text)
-    failBox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-    return failBox.exec_()
+    failBox.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+    return failBox.exec()
 
 
 def show_succes_box_ok(title: object, text: object) -> int:
@@ -79,16 +79,16 @@ def show_succes_box_ok(title: object, text: object) -> int:
     successBox.setIconPixmap(QPixmap(':/images/themes/default/mIconSuccess.svg'))
     successBox.setWindowTitle(title)
     successBox.setText(text)
-    successBox.setStandardButtons(QMessageBox.Ok)
-    return successBox.exec_()
+    successBox.setStandardButtons(QMessageBox.StandardButton.Ok)
+    return successBox.exec()
 
 
 def show_question_box(text):
     questionBox = QMessageBox()
-    questionBox.setIcon(QMessageBox.Question)
+    questionBox.setIcon(QMessageBox.Icon.Question)
     questionBox.setText(text)
-    questionBox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-    return questionBox.exec_()
+    questionBox.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+    return questionBox.exec()
 
 
 def list_qgs_settings_child_groups(key):
@@ -101,7 +101,7 @@ def list_qgs_settings_child_groups(key):
 @contextmanager
 def waitCursor():
     try:
-        QgsApplication.setOverrideCursor(Qt.WaitCursor)
+        QgsApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         yield
     except Exception as ex:
         raise ex
@@ -182,8 +182,8 @@ def handle_error(error: Exception, user_message: Optional[str] = None) -> None:
     logging.error(f"{TAG} - {str(error)}")
     if user_message:
         msg_box = QMessageBox()
-        msg_box.setIcon(QMessageBox.Critical)
+        msg_box.setIcon(QMessageBox.Icon.Critical)
         msg_box.setWindowTitle("Error")
         msg_box.setText(user_message)
-        msg_box.setStandardButtons(QMessageBox.Ok)
-        msg_box.exec_()
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+        msg_box.exec()

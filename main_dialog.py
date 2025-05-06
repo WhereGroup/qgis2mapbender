@@ -3,9 +3,9 @@ from typing import Optional
 
 
 from PyQt5 import uic
-from PyQt5.QtCore import QSettings, QRegExp, Qt
-from PyQt5.QtGui import QRegExpValidator, QPixmap, QIcon
-from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView, QWidget, QTabWidget, QRadioButton, QPushButton, \
+from qgis.PyQt.QtCore import QSettings, QRegExp, Qt
+from qgis.PyQt.QtGui import QRegExpValidator, QPixmap, QIcon
+from qgis.PyQt.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView, QWidget, QTabWidget, QRadioButton, QPushButton, \
     QTableWidget, QComboBox, QDialogButtonBox, QToolButton, QLabel, QApplication
 
 from qgis.core import Qgis, QgsSettings, QgsMessageLog
@@ -84,7 +84,7 @@ class MainDialog(BASE, WIDGET):
                                 "URL"]  # , "QGIS-Projects path", "QGIS-Server path" , "Mapbender app path", "Mapbender basis URL"
         self.serverTableWidget.setColumnCount(len(server_table_headers))
         self.serverTableWidget.setHorizontalHeaderLabels(server_table_headers)
-        self.serverTableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.serverTableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.update_server_table()
 
         # Buttons
@@ -220,7 +220,7 @@ class MainDialog(BASE, WIDGET):
             return
         selected_server_config = self.serverTableWidget.item(selected_row, 0).text()
         if show_question_box(
-                f"Are you sure you want to remove the server configuration '{selected_server_config}'?") != QMessageBox.Yes:
+                f"Are you sure you want to remove the server configuration '{selected_server_config}'?") != QMessageBox.StandardButton.Yes:
             return
         s = QSettings()
         s.remove(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{selected_server_config}")
@@ -240,7 +240,7 @@ class MainDialog(BASE, WIDGET):
             return
 
         # Set waiting cursor
-        QApplication.setOverrideCursor(Qt.WaitCursor)
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         try:
             self.upload_project_qgis_server()
         finally:
@@ -252,7 +252,7 @@ class MainDialog(BASE, WIDGET):
             return
 
         # Set waiting cursor
-        QApplication.setOverrideCursor(Qt.WaitCursor)
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         try:
             self.upload_project_qgis_server()
         finally:
@@ -260,7 +260,7 @@ class MainDialog(BASE, WIDGET):
             QApplication.restoreOverrideCursor()
 
     def upload_project_qgis_server(self) -> None:
-        QgsMessageLog.logMessage("Preparing for project qgis_server_upload to QGIS server...", TAG, level=Qgis.Info)
+        QgsMessageLog.logMessage("Preparing for project qgis_server_upload to QGIS server...", TAG, level=Qgis.MessageLevel.Info)
 
         # Get server config params and project paths
         self.server_config = ServerConfig.getParamsFromSettings(self.serverConfigComboBox.currentText())
@@ -285,7 +285,7 @@ class MainDialog(BASE, WIDGET):
         Args:
             wms_url: The WMS URL to be published.
         """
-        QgsMessageLog.logMessage(f"Preparing Mapbender publish...", TAG, level=Qgis.Info)
+        QgsMessageLog.logMessage(f"Preparing Mapbender publish...", TAG, level=Qgis.MessageLevel.Info)
 
         # Parameters
         clone_app = self.cloneTemplateRadioButton.isChecked()
@@ -296,11 +296,11 @@ class MainDialog(BASE, WIDGET):
             mb_upload = MapbenderApiUpload(server_config, wms_url)
             exit_status, source_ids = mb_upload.mb_upload()
             if exit_status != 0 or not source_ids:
-                QgsMessageLog.logMessage(f"DEBUGGING FAILED mb_upload", TAG, level=Qgis.Info)
+                QgsMessageLog.logMessage(f"DEBUGGING FAILED mb_upload", TAG, level=Qgis.MessageLevel.Info)
                 return
 
             if clone_app:
-                QgsMessageLog.logMessage(f"DEBUGGING CLONNING APP", TAG, level=Qgis.Info)
+                QgsMessageLog.logMessage(f"DEBUGGING CLONNING APP", TAG, level=Qgis.MessageLevel.Info)
                 exit_status_app_clone, slug, error = mb_upload.app_clone(template_slug)
                 if exit_status_app_clone != 200:
                     #show_fail_box_ok("Failed", f"Application could not be cloned.\nError: {error}, Output: {output}")
@@ -309,19 +309,19 @@ class MainDialog(BASE, WIDGET):
                     self.update_slug_combo_box()
                     return
                 QgsMessageLog.logMessage(f"DEBUGGING Application was cloned", TAG,
-                                         level=Qgis.Info)
+                                         level=Qgis.MessageLevel.Info)
 
                 update_mb_slug_in_settings(template_slug, is_mb_slug=True)
                 self.update_slug_combo_box()
                 QgsMessageLog.logMessage(f"DEBUGGING MainDialog: ASSIGN", TAG,
-                                         level=Qgis.Info)
+                                         level=Qgis.MessageLevel.Info)
 
                 exit_status_wms_assign, output_wms_assign, error_wms_assign = mb_upload.wms_assign(slug, source_ids[0],
                                                                                                    layer_set)
             else:
                 slug = self.mbSlugComboBox.currentText()
                 QgsMessageLog.logMessage(f"DEBUGGING MainDialog: ASSIGN", TAG,
-                                         level=Qgis.Info)
+                                         level=Qgis.MessageLevel.Info)
                 exit_status_wms_assign, output_wms_assign, error_wms_assign = mb_upload.wms_assign(slug, source_ids[0],
                                                                                                    layer_set)
             if exit_status_wms_assign != 200:
@@ -337,20 +337,20 @@ class MainDialog(BASE, WIDGET):
 
         except Exception as e:
             show_fail_box_ok("Failed", f"An error occurred during Mapbender publish: {e}")
-            QgsMessageLog.logMessage(f"Error in mb_publish: {e}", TAG, level=Qgis.Critical)
+            QgsMessageLog.logMessage(f"Error in mb_publish: {e}", TAG, level=Qgis.MessageLevel.Critical)
 
         return
 
     def mb_update(self, wms_url):
-        QgsMessageLog.logMessage(f"Preparing Mapbender update...", TAG, level=Qgis.Info)
+        QgsMessageLog.logMessage(f"Preparing Mapbender update...", TAG, level=Qgis.MessageLevel.Info)
         try:
             mb_reload = MapbenderApiUpload(self.server_config, wms_url)
             exit_status, source_ids = mb_reload.mb_reload()
             if exit_status != 0 or not source_ids:
                 show_fail_box_ok("Failed", f"No source to update. WMS {wms_url} is not an existing source in Mapbender.")
-                QgsMessageLog.logMessage(f"FAILED mb_update: No source to update. WMS {wms_url} is not an existing source in Mapbender.", TAG, level=Qgis.Info)
+                QgsMessageLog.logMessage(f"FAILED mb_update: No source to update. WMS {wms_url} is not an existing source in Mapbender.", TAG, level=Qgis.MessageLevel.Info)
                 return
         except Exception as e:
             show_fail_box_ok("Failed", f"An error occurred during Mapbender update: {e}")
-            QgsMessageLog.logMessage(f"Error in mb_update: {e}", TAG, level=Qgis.Critical)
+            QgsMessageLog.logMessage(f"Error in mb_update: {e}", TAG, level=Qgis.MessageLevel.Critical)
         return

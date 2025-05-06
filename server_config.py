@@ -107,5 +107,5 @@ class ServerConfig:
         else:
             username = ''
             password = ''
-            QgsMessageLog.logMessage("No config id...", TAG, level=Qgis.Warning)
+            QgsMessageLog.logMessage("No config id...", TAG, level=Qgis.MessageLevel.Warning)
             return username, password
