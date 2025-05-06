@@ -3,8 +3,8 @@ from typing import Optional
 
 import requests
 from PyQt5 import uic
-from qgis.PyQt.QtCore import QRegExp, QSettings
-from qgis.PyQt.QtGui import QIntValidator, QRegExpValidator, QIcon
+from qgis.PyQt.QtCore import QRegularExpression, QSettings
+from qgis.PyQt.QtGui import QIntValidator, QRegularExpressionValidator, QIcon
 from qgis.PyQt.QtWidgets import QDialogButtonBox, QLineEdit, QRadioButton, QLabel, QComboBox, QPushButton
 from fabric2 import Connection
 from qgis._core import QgsMessageLog, Qgis
@@ -91,8 +91,8 @@ class ServerConfigDialog(BASE, WIDGET):
         self.binConsoleCommandLineEdit.setPlaceholderText('bin/console')
 
         # QLineEdit validators
-        regex = QRegExp("[^\\s;]*")  # regex for blank spaces and semicolon
-        regex_validator = QRegExpValidator(regex)
+        regex = QRegularExpression("[^\\s;]*")  # regex for blank spaces and semicolon
+        regex_validator = QRegularExpressionValidator(regex)
         int_validator = QIntValidator()
         self.serverConfigNameLineEdit.setValidator(regex_validator)
         self.serverPortLineEdit.setValidator(int_validator)

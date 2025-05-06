@@ -3,8 +3,8 @@ from typing import Optional
 
 
 from PyQt5 import uic
-from qgis.PyQt.QtCore import QSettings, QRegExp, Qt
-from qgis.PyQt.QtGui import QRegExpValidator, QPixmap, QIcon
+from qgis.PyQt.QtCore import QSettings, QRegularExpression, Qt
+from qgis.PyQt.QtGui import QRegularExpressionValidator, QPixmap, QIcon
 from qgis.PyQt.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView, QWidget, QTabWidget, QRadioButton, QPushButton, \
     QTableWidget, QComboBox, QDialogButtonBox, QToolButton, QLabel, QApplication
 
@@ -70,8 +70,8 @@ class MainDialog(BASE, WIDGET):
         self.publishButton.setEnabled(False)  # Enabled only if mbSlugComboBox has a value
         self.updateButton.setEnabled(False)
         # QLineValidator for slug:
-        regex_slug_layer_set = QRegExp("[^\\s;\\\\/]*")
-        regex_slug_layer_set_validator = QRegExpValidator(regex_slug_layer_set)
+        regex_slug_layer_set = QRegularExpression("[^\\s;\\\\/]*")
+        regex_slug_layer_set_validator = QRegularExpressionValidator(regex_slug_layer_set)
         self.mbSlugComboBox.setValidator(regex_slug_layer_set_validator)
         self.layerSetLineEdit.setValidator(regex_slug_layer_set_validator)
 
