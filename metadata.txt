@@ -17,3 +17,4 @@ qgisMaximumVersion=3.99
 icon=qgis2mapbender.png
 experimental=False
 deprecated=False
+supportsQt6=True
