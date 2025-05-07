@@ -35,7 +35,6 @@ class ServerConfigDialog(BASE, WIDGET):
     protocolMapbenderCmbBox: QComboBox
     # serverConfigNameLabel2: QLabel
     mbBasisUrlLineEdit: QLineEdit
-    winPKFileWidget: QgsFileWidget
     # buttons
     testButton: QPushButton
     dialogButtonBox: QDialogButtonBox
@@ -50,8 +49,6 @@ class ServerConfigDialog(BASE, WIDGET):
             self.qgisServerPathLineEdit,
             self.mbBasisUrlLineEdit,
         ]
-        if get_os() == "Linux":
-            self.winPKFileWidget.setEnabled(False)
         self.setupConnections()
         self.authcfg = ''
         self.selected_server_config_name = server_config_name
@@ -69,7 +66,6 @@ class ServerConfigDialog(BASE, WIDGET):
         self.qgisProjectPathLineEdit.setPlaceholderText('/data/qgis-projects/')
         self.qgisServerPathLineEdit.setToolTip('Example: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi')
         self.mbBasisUrlLineEdit.setToolTip('Example: [SERVER_NAME]/mapbender/index_dev.php/')
-        self.winPKFileWidget.setToolTip('Example: C:/Users/user/Documents/ED25519-Key_private_key.ppk')
 
         # QLineEdit validators
         regex = QRegularExpression("[^\\s;]*")  # regex for blank spaces and semicolon
@@ -221,7 +217,6 @@ class ServerConfigDialog(BASE, WIDGET):
         self.qgisServerPathLineEdit.setText(server_config.qgis_server_path)
         self.protocolMapbenderCmbBox.setCurrentText(server_config.mb_protocol)
         self.mbBasisUrlLineEdit.setText(server_config.mb_basis_url)
-        self.winPKFileWidget.lineEdit().setText(server_config.windows_pk_path)
 
     def getServerConfigFromFormular(self) -> ServerConfig:
         return ServerConfig(
@@ -235,7 +230,6 @@ class ServerConfigDialog(BASE, WIDGET):
             mb_protocol=self.protocolMapbenderCmbBox.currentText(),
             mb_basis_url=self.mbBasisUrlLineEdit.text(),
             authcfg=self.authcfg,
-            windows_pk_path=self.winPKFileWidget.lineEdit().text(),
         )
 
     def onChangeServerName(self, newValue) -> None:
