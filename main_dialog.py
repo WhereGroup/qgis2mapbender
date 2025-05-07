@@ -235,8 +235,6 @@ class MainDialog(BASE, WIDGET):
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         try:
             action = "publish" if self.publishRadioButton.isChecked() else "update"
-            QgsMessageLog.logMessage(f"Initializing project {action}...", TAG, level=Qgis.MessageLevel.Info)
-
             if action == "publish" and self.mbSlugComboBox.currentText() == '':
                 show_fail_box_ok("Please complete Mapbender parameters",
                                  "Please enter a valid Mapbender URL title")
@@ -256,7 +254,7 @@ class MainDialog(BASE, WIDGET):
 
 
     def upload_project_qgis_server(self) -> None:
-        QgsMessageLog.logMessage("Preparing for project qgis_server_upload to QGIS server...", TAG, level=Qgis.MessageLevel.Info)
+        QgsMessageLog.logMessage("Preparing upload to QGIS server...", TAG, level=Qgis.MessageLevel.Info)
 
         # Get server config params and project paths
         self.server_config = ServerConfig.getParamsFromSettings(self.serverConfigComboBox.currentText())
@@ -330,11 +328,9 @@ class MainDialog(BASE, WIDGET):
                 f"{server_config.mb_protocol}{server_config.mb_basis_url}/application/{slug}"
             )
             #self.close()
-
         except Exception as e:
             show_fail_box_ok("Failed", f"An error occurred during Mapbender publish: {e}")
             QgsMessageLog.logMessage(f"Error in mb_publish: {e}", TAG, level=Qgis.MessageLevel.Critical)
-
         return
 
     def mb_update(self, server_config: ServerConfig, wms_url: str) -> None:
@@ -354,7 +350,6 @@ class MainDialog(BASE, WIDGET):
                     f"{source_ids}"
                 )
                 #self.close()
-
         except Exception as e:
             show_fail_box_ok("Failed", f"An error occurred during Mapbender update: {e}")
             QgsMessageLog.logMessage(f"Error in mb_update: {e}", TAG, level=Qgis.MessageLevel.Critical)

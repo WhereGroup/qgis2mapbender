@@ -90,7 +90,6 @@ class QgisServerApiUpload:
             try:
                 if os.path.isfile(self.source_project_zip_file_path):
                     os.remove(self.source_project_zip_file_path)
-                    QgsMessageLog.logMessage("Local ZIP file deleted successfully.", TAG, level=Qgis.MessageLevel.Info)
             except Exception as e:
                 QgsMessageLog.logMessage(f"Error while deleting ZIP file: {e}", TAG, level=Qgis.MessageLevel.Critical)
 

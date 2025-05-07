@@ -23,11 +23,9 @@ class ApiRequest:
         self.server_config = server_config
         self.session = requests.Session()
         self.api_url = f"{self.server_config.mb_protocol}{self.server_config.url}{MAPBENDER_API}"
+        QgsMessageLog.logMessage(f"Configuring API requests to URL: {self.api_url}", TAG, level=Qgis.MessageLevel.Info)
         self.headers = {}
         self.token = None
-        QgsMessageLog.logMessage("Initializing ApiRequest with server configuration.", TAG, level=Qgis.MessageLevel.Info)
-        # self.response_json = None
-        # self.status_code_login = None
         self._initialize_authentication()
 
     def _initialize_authentication(self) -> None:
@@ -58,7 +56,6 @@ class ApiRequest:
             "password": self.server_config.password
         }
         try:
-            QgsMessageLog.logMessage(f"Sending authentication request to endpoint: {endpoint}", TAG, level=Qgis.MessageLevel.Info)
             response = self._send_request(endpoint, "post", json=credentials)
             if response and response.status_code == 200:
                 return response.json().get("token")
@@ -102,19 +99,16 @@ class ApiRequest:
             Optional[requests.Response]: The response object, or None if an error occurs.
         """
         url = f"{self.api_url}{endpoint}"
-        QgsMessageLog.logMessage(f"DEBUGGING Sending request to URL: {url} with method: {method}", TAG, level=Qgis.MessageLevel.Info)
-        QgsMessageLog.logMessage(f"DEBUGGING Request kwargs: {kwargs}", TAG, level=Qgis.MessageLevel.Info)
+        if endpoint != "/login_check":
+            QgsMessageLog.logMessage(f"Request kwargs: {kwargs}", TAG, level=Qgis.MessageLevel.Info)
 
         try:
             response = self.session.request(method=method.upper(), url=url, headers= self.headers, **kwargs)
-            QgsMessageLog.logMessage(f"DEBUGGING Response status code: {response.status_code}", TAG, level=Qgis.MessageLevel.Info)
             response.raise_for_status()  # Raise an exception for HTTP errors
             return response
         except requests.HTTPError as http_err:
-            QgsMessageLog.logMessage(f"DEBUGGING HTTP error: {http_err}", TAG, level=Qgis.MessageLevel.Critical)
             handle_error(http_err, f"HTTP error occurred: {http_err}")
         except requests.RequestException as req_err:
-            QgsMessageLog.logMessage(f"DEBUGGING Request exception: {req_err}", TAG, level=Qgis.MessageLevel.Critical)
             handle_error(req_err, f"Request error occurred: {req_err}")
         return None
 
@@ -139,11 +133,16 @@ class ApiRequest:
                 response = self._send_request(endpoint, "post", files=files)
                 if response:
                     return response.status_code, response.json()
+                QgsMessageLog.logMessage(f"File not found: {file_path}", TAG, level=Qgis.MessageLevel.Warning)
                 return 500, {"error": "Failed to receive a valid response from the server."}
         except FileNotFoundError:
             return 400, {"error": f"File not found: {file_path}"}
-        except requests.RequestException as e:  # generic error
+        except requests.RequestException as e:
+            QgsMessageLog.logMessage(f"Request error: {e}", TAG, level=Qgis.MessageLevel.Critical)
             return 500, {"error": f"Error during the request: {e}"}
+        except Exception as e:
+            QgsMessageLog.logMessage(f"Unexpected error: {e}", TAG, level=Qgis.MessageLevel.Critical)
+            return 500, {"error": f"Unexpected error: {e}"}
 
     def wms_show(self, wms_url: str) -> tuple[int, Optional[dict]]:
         """
