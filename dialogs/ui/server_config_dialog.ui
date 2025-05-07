@@ -130,11 +130,11 @@
            <widget class="QLabel" name="qgisProjectPathLabel">
             <property name="font">
              <font>
-              <strikeout>true</strikeout>
+              <strikeout>false</strikeout>
              </font>
             </property>
             <property name="text">
-             <string>QGIS-Projects path*</string>
+             <string>QGIS-Projects path on server*</string>
             </property>
            </widget>
           </item>
