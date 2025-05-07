@@ -11,12 +11,11 @@ from qgis.PyQt.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView, QWid
 from qgis.core import Qgis, QgsSettings, QgsMessageLog
 from qgis.utils import iface
 
-from .api_request import ApiRequest
 from .qgis_server_api_upload import QgisServerApiUpload
 from .mapbender_api_upload import MapbenderApiUpload
 from .dialogs.server_config_dialog import ServerConfigDialog
 from .helpers import qgis_project_is_saved, \
-    show_fail_box_ok, show_fail_box_yes_no, show_succes_box_ok, \
+    show_fail_box_ok, show_succes_box_ok, \
     list_qgs_settings_child_groups, show_question_box, \
     update_mb_slug_in_settings
 from .paths import Paths
@@ -100,8 +99,8 @@ class MainDialog(BASE, WIDGET):
         self.updateRadioButton.clicked.connect(self.disable_publish_parameters)
         self.mbSlugComboBox.lineEdit().textChanged.connect(self.validate_slug_not_empty)
         self.mbSlugComboBox.currentIndexChanged.connect(self.validate_slug_not_empty)
-        self.publishButton.clicked.connect(self.publish_project)
-        self.updateButton.clicked.connect(self.update_project)
+        self.publishButton.clicked.connect(self.handle_project)
+        self.updateButton.clicked.connect(self.handle_project)
         self.buttonBoxTab1.rejected.connect(self.reject)
         self.addServerConfigButton.clicked.connect(self.on_add_server_config_clicked)
         self.duplicateServerConfigButton.clicked.connect(self.on_duplicate_server_config_clicked)
@@ -228,36 +227,33 @@ class MainDialog(BASE, WIDGET):
         self.update_server_table()
         self.update_server_combo_box()
 
-
-    def publish_project(self) -> None:
-        if not qgis_project_is_saved():
-            return
-
-        # Check Mapbender params:
-        if self.mbSlugComboBox.currentText() == '':
-            show_fail_box_ok("Please complete Mapbender parameters",
-                             "Please enter a valid Mapbender URL title")
-            return
-
-        # Set waiting cursor
-        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
-        try:
-            self.upload_project_qgis_server()
-        finally:
-            # Restore default cursor
-            QApplication.restoreOverrideCursor()
-
-    def update_project(self) -> None:
+    def handle_project(self) -> None:
         if not qgis_project_is_saved():
             return
 
         # Set waiting cursor
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         try:
-            self.upload_project_qgis_server()
+            action = "publish" if self.publishRadioButton.isChecked() else "update"
+            QgsMessageLog.logMessage(f"Initializing project {action}...", TAG, level=Qgis.MessageLevel.Info)
+
+            if action == "publish" and self.mbSlugComboBox.currentText() == '':
+                show_fail_box_ok("Please complete Mapbender parameters",
+                                 "Please enter a valid Mapbender URL title")
+                return
+
+            wms_url = self.upload_project_qgis_server()
+            if not wms_url:
+                return
+
+            if action == "publish":
+                self.mb_publish(self.server_config, wms_url)
+            else:
+                self.mb_update(self.server_config, wms_url)
         finally:
             # Restore default cursor
             QApplication.restoreOverrideCursor()
+
 
     def upload_project_qgis_server(self) -> None:
         QgsMessageLog.logMessage("Preparing for project qgis_server_upload to QGIS server...", TAG, level=Qgis.MessageLevel.Info)
@@ -270,13 +266,10 @@ class MainDialog(BASE, WIDGET):
         result_error = qgis_server_upload.process_and_upload_project(self.server_config)
         if result_error:
             show_fail_box_ok("Failed", result_error)
+            return None
         else:
             wms_url = qgis_server_upload.get_wms_url(self.server_config)
-            if self.publishRadioButton.isChecked():
-                self.mb_publish(self.server_config, wms_url)
-                return
-            self.mb_update(wms_url)
-            return
+            return wms_url
 
     def mb_publish(self, server_config: ServerConfig, wms_url: str) -> None:
         """
@@ -341,7 +334,7 @@ class MainDialog(BASE, WIDGET):
 
         return
 
-    def mb_update(self, wms_url):
+    def mb_update(self, server_config: ServerConfig, wms_url: str) -> None:
         QgsMessageLog.logMessage(f"Preparing Mapbender update...", TAG, level=Qgis.MessageLevel.Info)
         try:
             mb_reload = MapbenderApiUpload(self.server_config, wms_url)
