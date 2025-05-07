@@ -291,32 +291,25 @@ class MainDialog(BASE, WIDGET):
             mb_upload = MapbenderApiUpload(server_config, api_request, wms_url)
             exit_status, source_ids = mb_upload.mb_upload()
             if exit_status != 0 or not source_ids:
-                QgsMessageLog.logMessage(f"DEBUGGING FAILED mb_upload", TAG, level=Qgis.MessageLevel.Info)
+                QgsMessageLog.logMessage(f"FAILED mb_upload", TAG, level=Qgis.MessageLevel.Info)
                 return
 
             if clone_app:
-                QgsMessageLog.logMessage(f"DEBUGGING CLONNING APP", TAG, level=Qgis.MessageLevel.Info)
                 exit_status_app_clone, slug, error = mb_upload.app_clone(template_slug)
                 if exit_status_app_clone != 200:
-                    #show_fail_box_ok("Failed", f"Application could not be cloned.\nError: {error}, Output: {output}")
                     show_fail_box_ok("Failed", f"Application could not be cloned.\nError: {error}.")
                     update_mb_slug_in_settings(template_slug, is_mb_slug=False)
                     self.update_slug_combo_box()
                     return
-                QgsMessageLog.logMessage(f"DEBUGGING Application was cloned", TAG,
+                QgsMessageLog.logMessage(f"Application was cloned to {slug}", TAG,
                                          level=Qgis.MessageLevel.Info)
 
                 update_mb_slug_in_settings(template_slug, is_mb_slug=True)
                 self.update_slug_combo_box()
-                QgsMessageLog.logMessage(f"DEBUGGING MainDialog: ASSIGN", TAG,
-                                         level=Qgis.MessageLevel.Info)
-
                 exit_status_wms_assign, output_wms_assign, error_wms_assign = mb_upload.wms_assign(slug, source_ids[0],
                                                                                                    layer_set)
             else:
                 slug = self.mbSlugComboBox.currentText()
-                QgsMessageLog.logMessage(f"DEBUGGING MainDialog: ASSIGN", TAG,
-                                         level=Qgis.MessageLevel.Info)
                 exit_status_wms_assign, output_wms_assign, error_wms_assign = mb_upload.wms_assign(slug, source_ids[0],
                                                                                                    layer_set)
             if exit_status_wms_assign != 200:
@@ -324,7 +317,7 @@ class MainDialog(BASE, WIDGET):
                 return
 
             QgsMessageLog.logMessage(
-                f"SUCCESS WMS successfully created: {wms_url} and added to Mapbender application : {slug}", TAG,
+                f"WMS successfully created: {wms_url} and added to Mapbender application : {slug}", TAG,
                 level=Qgis.MessageLevel.Info)
             show_succes_box_ok(
                 "Success report",
@@ -349,7 +342,7 @@ class MainDialog(BASE, WIDGET):
                 source_ids_msg = ", ".join(map(str, source_ids))
                 show_succes_box_ok(
                     "Success report",
-                    f"WMS: \n{wms_url}\nsuccessfully updated in Mapbender application(s): {source_ids_msg}"
+                    f"WMS successfully updated in QGIS-Server : \n\n{wms_url}\n\n And successfully updated in Mapbender application(s): {source_ids_msg}"
                 )
                 #self.close()
         except Exception as e:

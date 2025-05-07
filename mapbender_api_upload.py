@@ -77,7 +77,10 @@ class MapbenderApiUpload:
             return exit_status, []
 
         source_ids = [item['id'] for item in output.get('message', []) if isinstance(item, dict) and 'id' in item]
-        QgsMessageLog.logMessage(f"WMS is already a source(s) in Mapbender with ID(s): {source_ids}", TAG, level=Qgis.MessageLevel.Info)
+        if source_ids:
+            QgsMessageLog.logMessage(f"WMS is already a source(s) in Mapbender with ID(s): {source_ids}", TAG, level=Qgis.MessageLevel.Info)
+        else:
+            QgsMessageLog.logMessage(f"WMS does not exist as a source in Mapbender yet.", TAG, level=Qgis.MessageLevel.Info)
         return exit_status, source_ids
 
     def _reload_sources(self, source_ids: list[int], wms_url: str) -> int:
@@ -123,7 +126,6 @@ class MapbenderApiUpload:
         :return:slug of the new clone app
         :return:error_output
         """
-        QgsMessageLog.logMessage(f"Sending request application/clone '{template_slug}'", TAG, level=Qgis.MessageLevel.Info)
         exit_status, response_json, error_output =  self.api_request.app_clone(template_slug)
         QgsMessageLog.logMessage(f"DEBUGGING '{exit_status, response_json, error_output}'", TAG, level=Qgis.MessageLevel.Info)
 
@@ -146,14 +148,10 @@ class MapbenderApiUpload:
         :param layer_set:
         :return: exit_status (0 = success, 1 = fail), output, error_output
         """
-        QgsMessageLog.logMessage(f"Sending request wms/assign '{slug}' '{source_id}' '{layer_set}'", TAG, level=Qgis.MessageLevel.Info)
         exit_status, output, error_output = self.api_request.wms_assign(slug, source_id, layer_set)
 
         if output is None:
             output = ""
         if error_output is None:
             error_output = ""
-
-        QgsMessageLog.logMessage(f"Exit status {exit_status}, output: {output}, error: {error_output}", TAG,
-                                 level=Qgis.MessageLevel.Info)
         return exit_status, output, error_output

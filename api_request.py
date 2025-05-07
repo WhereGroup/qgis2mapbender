@@ -99,8 +99,8 @@ class ApiRequest:
             Optional[requests.Response]: The response object, or None if an error occurs.
         """
         url = f"{self.api_url}{endpoint}"
-        if endpoint != "/login_check":
-            QgsMessageLog.logMessage(f"Request to endpoint {endpoint} with kwargs: {kwargs}", TAG, level=Qgis.MessageLevel.Info)
+        if endpoint != "/login_check" and endpoint !="/upload/zip":
+            QgsMessageLog.logMessage(f"Sending request to endpoint {endpoint} with kwargs: {kwargs}", TAG, level=Qgis.MessageLevel.Info)
 
         try:
             response = self.session.request(method=method.upper(), url=url, headers= self.headers, **kwargs)
@@ -253,8 +253,6 @@ class ApiRequest:
             params["layerset"] = layer_set
         self._ensure_token()
         response = self._send_request(endpoint, "get", params=params)
-        QgsMessageLog.logMessage(f"DEBUGGING WMS ASSIGN RESPONSE: {response}", TAG,
-                                 level=Qgis.MessageLevel.Critical)
         if response:
             return response.status_code, response.json(), None
         return 500, {"error": "Failed to receive a valid response from the server."}, None
@@ -279,14 +277,14 @@ class ApiRequest:
                     response_json = response.json()
                     return response.status_code, response_json, None
                 except ValueError as e:
-                    error_message = f"Fehler beim Parsen der Antwort: {e}"
+                    error_message = f"Error parsing the response: {e}"
                     QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
                     return 500, None, error_message
             else:
-                error_message = "Keine gültige Antwort vom Server erhalten."
+                error_message = "No valid answer"
                 QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
                 return 500, None, error_message
         except requests.RequestException as e:
-            error_message = f"Fehler bei der Anfrage: {e}"
+            error_message = f"Request error: {e}"
             QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
             return 500, None, error_message
