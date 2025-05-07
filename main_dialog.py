@@ -2,7 +2,7 @@ import os
 from typing import Optional
 
 
-from PyQt5 import uic
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import QSettings, QRegularExpression, Qt
 from qgis.PyQt.QtGui import QRegularExpressionValidator, QPixmap, QIcon
 from qgis.PyQt.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView, QWidget, QTabWidget, QRadioButton, QPushButton, \
