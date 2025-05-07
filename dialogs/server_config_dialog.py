@@ -35,7 +35,6 @@ class ServerConfigDialog(BASE, WIDGET):
     protocolMapbenderCmbBox: QComboBox
     # serverConfigNameLabel2: QLabel
     mbBasisUrlLineEdit: QLineEdit
-    mbPathLineEdit: QLineEdit
     winPKFileWidget: QgsFileWidget
     # buttons
     testButton: QPushButton
@@ -49,7 +48,6 @@ class ServerConfigDialog(BASE, WIDGET):
             self.serverAddressLineEdit,
             self.qgisProjectPathLineEdit,
             self.qgisServerPathLineEdit,
-            self.mbPathLineEdit,
             self.mbBasisUrlLineEdit,
         ]
         if get_os() == "Linux":
@@ -70,8 +68,6 @@ class ServerConfigDialog(BASE, WIDGET):
         self.qgisProjectPathLineEdit.setToolTip('Example: /data/qgis-projects/')
         self.qgisProjectPathLineEdit.setPlaceholderText('/data/qgis-projects/')
         self.qgisServerPathLineEdit.setToolTip('Example: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi')
-        self.mbPathLineEdit.setToolTip('Example: /data/mapbender/application/')
-        self.mbPathLineEdit.setPlaceholderText('/mapbender/index_dev.php/')
         self.mbBasisUrlLineEdit.setToolTip('Example: [SERVER_NAME]/mapbender/index_dev.php/')
         self.winPKFileWidget.setToolTip('Example: C:/Users/user/Documents/ED25519-Key_private_key.ppk')
 
@@ -85,7 +81,6 @@ class ServerConfigDialog(BASE, WIDGET):
         self.passwordLineEdit.setValidator(regex_validator)
         self.qgisProjectPathLineEdit.setValidator(regex_validator)
         self.qgisServerPathLineEdit.setValidator(regex_validator)
-        self.mbPathLineEdit.setValidator(regex_validator)
         self.mbBasisUrlLineEdit.setValidator(regex_validator)
         self.checkedIcon = QIcon(":images/themes/default/mIconSuccess.svg")
 
@@ -97,7 +92,6 @@ class ServerConfigDialog(BASE, WIDGET):
         self.credentialsPlainTextRadioButton.toggled.connect(self.onToggleCredential)
         self.qgisProjectPathLineEdit.textChanged.connect(self.validateFields)
         self.qgisServerPathLineEdit.textChanged.connect(self.validateFields)
-        self.mbPathLineEdit.textChanged.connect(self.validateFields)
         self.mbBasisUrlLineEdit.textChanged.connect(self.validateFields)
         self.testButton.clicked.connect(self.execTests)
 
@@ -225,7 +219,6 @@ class ServerConfigDialog(BASE, WIDGET):
         self.qgisProjectPathLineEdit.setText(server_config.projects_path)
         self.protocolQgisServerCmbBox.setCurrentText(server_config.qgis_server_protocol)
         self.qgisServerPathLineEdit.setText(server_config.qgis_server_path)
-        self.mbPathLineEdit.setText(server_config.mb_app_path)
         self.protocolMapbenderCmbBox.setCurrentText(server_config.mb_protocol)
         self.mbBasisUrlLineEdit.setText(server_config.mb_basis_url)
         self.winPKFileWidget.lineEdit().setText(server_config.windows_pk_path)
@@ -239,7 +232,6 @@ class ServerConfigDialog(BASE, WIDGET):
             projects_path=self.qgisProjectPathLineEdit.text(),
             qgis_server_protocol=self.protocolQgisServerCmbBox.currentText(),
             qgis_server_path=self.qgisServerPathLineEdit.text(),
-            mb_app_path=self.mbPathLineEdit.text(),
             mb_protocol=self.protocolMapbenderCmbBox.currentText(),
             mb_basis_url=self.mbBasisUrlLineEdit.text(),
             authcfg=self.authcfg,
