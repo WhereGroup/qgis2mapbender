@@ -4,7 +4,7 @@ import re
 
 from qgis._core import QgsMessageLog, Qgis
 
-from .settings import TAG
+from .settings import TAG, MAPBENDER_API
 from .helpers import handle_error
 
 
@@ -22,8 +22,7 @@ class ApiRequest:
         """
         self.server_config = server_config
         self.session = requests.Session()
-        # should this be as per server config: mapbender application path (first release) or it remains always server url/mapbender/api?
-        self.api_url = f"{self.server_config.mb_protocol}{self.server_config.url}/mapbender/api"
+        self.api_url = f"{self.server_config.mb_protocol}{self.server_config.url}{MAPBENDER_API}"
         self.headers = {}
         self.token = None
         QgsMessageLog.logMessage("Initializing ApiRequest with server configuration.", TAG, level=Qgis.MessageLevel.Info)

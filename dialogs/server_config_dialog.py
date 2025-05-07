@@ -6,14 +6,10 @@ from qgis.PyQt import uic
 from qgis.PyQt.QtCore import QRegularExpression, QSettings
 from qgis.PyQt.QtGui import QIntValidator, QRegularExpressionValidator, QIcon
 from qgis.PyQt.QtWidgets import QDialogButtonBox, QLineEdit, QRadioButton, QLabel, QComboBox, QPushButton
-from fabric2 import Connection
-from qgis._core import QgsMessageLog, Qgis
 from qgis.gui import QgsFileWidget
 
-from ..qgis_server_api_upload import QgisServerApiUpload
 from ..helpers import show_succes_box_ok, list_qgs_settings_child_groups, show_fail_box_ok, get_os, \
-    uri_validator, starts_with_single_slash_or_colon, waitCursor, check_if_project_folder_exists_on_server, \
-    ends_with_single_slash
+    uri_validator,  waitCursor
 from ..server_config import ServerConfig
 from ..settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
 
@@ -27,27 +23,20 @@ WIDGET, BASE = uic.loadUiType(os.path.join(
 class ServerConfigDialog(BASE, WIDGET):
     serverConfigNameLineEdit: QLineEdit
     serverAddressLineEdit: QLineEdit
-
     credentialsPlainTextRadioButton: QRadioButton
     credentialsAuthDbRadioButton: QRadioButton
     userNameLineEdit: QLineEdit
     passwordLineEdit: QLineEdit
     authLabel: QLabel
-
-    apiLineEdit: QLineEdit
-
     protocolQgisServerCmbBox: QComboBox
     # serverConfigNameLabel1: QLabel
     qgisServerPathLineEdit: QLineEdit     # TODO: better to rename qgisServerUrlLineEdit
     qgisProjectPathLineEdit: QLineEdit
-
     protocolMapbenderCmbBox: QComboBox
     # serverConfigNameLabel2: QLabel
     mbBasisUrlLineEdit: QLineEdit
     mbPathLineEdit: QLineEdit
-
     winPKFileWidget: QgsFileWidget
-
     # buttons
     testButton: QPushButton
     dialogButtonBox: QDialogButtonBox
@@ -101,8 +90,6 @@ class ServerConfigDialog(BASE, WIDGET):
         self.qgisServerPathLineEdit.setValidator(regex_validator)
         self.mbPathLineEdit.setValidator(regex_validator)
         self.mbBasisUrlLineEdit.setValidator(regex_validator)
-        self.apiLineEdit.setEnabled(False)
-
         self.checkedIcon = QIcon(":images/themes/default/mIconSuccess.svg")
 
     def setupConnections(self):
@@ -246,7 +233,6 @@ class ServerConfigDialog(BASE, WIDGET):
         self.mbBasisUrlLineEdit.setText(server_config.mb_basis_url)
         self.winPKFileWidget.lineEdit().setText(server_config.windows_pk_path)
         self.binConsoleCommandLineEdit.setText(server_config.bin_console_command)
-        self.apiLineEdit.setText("http://" + server_config.url + "/mapbender/api")
 
     def getServerConfigFromFormular(self) -> ServerConfig:
         return ServerConfig(
