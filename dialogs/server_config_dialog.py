@@ -27,7 +27,6 @@ WIDGET, BASE = uic.loadUiType(os.path.join(
 class ServerConfigDialog(BASE, WIDGET):
     serverConfigNameLineEdit: QLineEdit
     serverAddressLineEdit: QLineEdit
-    serverPortLineEdit: QLineEdit
 
     credentialsPlainTextRadioButton: QRadioButton
     credentialsAuthDbRadioButton: QRadioButton
@@ -95,7 +94,6 @@ class ServerConfigDialog(BASE, WIDGET):
         regex_validator = QRegularExpressionValidator(regex)
         int_validator = QIntValidator()
         self.serverConfigNameLineEdit.setValidator(regex_validator)
-        self.serverPortLineEdit.setValidator(int_validator)
         self.serverAddressLineEdit.setValidator(regex_validator)
         self.userNameLineEdit.setValidator(regex_validator)
         self.passwordLineEdit.setValidator(regex_validator)
@@ -231,7 +229,6 @@ class ServerConfigDialog(BASE, WIDGET):
         self.authcfg = server_config.authcfg
         if mode == 'edit':
             self.serverConfigNameLineEdit.setText(server_config_name)
-        self.serverPortLineEdit.setText(server_config.port)
         self.serverAddressLineEdit.setText(server_config.url)
         self.userNameLineEdit.setText(server_config.username)
         self.passwordLineEdit.setText(server_config.password)
@@ -255,7 +252,6 @@ class ServerConfigDialog(BASE, WIDGET):
         return ServerConfig(
             name=self.serverConfigNameLineEdit.text(),
             url=self.serverAddressLineEdit.text(),
-            port=self.serverPortLineEdit.text(),
             username=self.userNameLineEdit.text(),
             password=self.passwordLineEdit.text(),
             projects_path=self.qgisProjectPathLineEdit.text(),

@@ -329,7 +329,7 @@ class MainDialog(BASE, WIDGET):
                 f"WMS successfully created:\n\n{wms_url}\n\nAnd added to Mapbender application:\n\n"
                 f"{server_config.mb_protocol}{server_config.mb_basis_url}/application/{slug}"
             )
-            self.close()
+            #self.close()
 
         except Exception as e:
             show_fail_box_ok("Failed", f"An error occurred during Mapbender publish: {e}")
@@ -353,7 +353,7 @@ class MainDialog(BASE, WIDGET):
                     f"WMS: \n\n{wms_url}\n\nsuccessfully updated in Mapbender application(s):\n"
                     f"{source_ids}"
                 )
-                self.close()
+                #self.close()
 
         except Exception as e:
             show_fail_box_ok("Failed", f"An error occurred during Mapbender update: {e}")
