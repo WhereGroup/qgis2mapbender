@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>868</width>
-    <height>672</height>
+    <height>497</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -229,19 +229,6 @@
         </item>
        </layout>
       </item>
-      <item row="3" column="1">
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>786</width>
-          <height>5</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
       <item row="4" column="0" colspan="2">
        <layout class="QHBoxLayout" name="hLayout3">
         <item>
@@ -281,6 +268,19 @@
          </widget>
         </item>
        </layout>
+      </item>
+      <item row="3" column="1">
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>786</width>
+          <height>5</height>
+         </size>
+        </property>
+       </spacer>
       </item>
      </layout>
     </widget>
