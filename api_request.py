@@ -100,7 +100,7 @@ class ApiRequest:
         """
         url = f"{self.api_url}{endpoint}"
         if endpoint != "/login_check":
-            QgsMessageLog.logMessage(f"Request kwargs: {kwargs}", TAG, level=Qgis.MessageLevel.Info)
+            QgsMessageLog.logMessage(f"Request to endpoint {endpoint} with kwargs: {kwargs}", TAG, level=Qgis.MessageLevel.Info)
 
         try:
             response = self.session.request(method=method.upper(), url=url, headers= self.headers, **kwargs)
