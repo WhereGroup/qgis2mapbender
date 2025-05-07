@@ -12,7 +12,6 @@ class MapbenderApiUpload:
         self.wms_url = wms_url
         self.api_request = api_request
         #self.api_request = ApiRequest(self.server_config)
-        QgsMessageLog.logMessage(f"Initializing MapbenderApiUpload...", TAG, level=Qgis.MessageLevel.Info)
 
     def mb_upload(self) -> tuple[int, list[int]]:
         try:
@@ -70,16 +69,15 @@ class MapbenderApiUpload:
         exit_status, output = self.api_request.wms_show(self.wms_url)
 
         if exit_status != 200 or not isinstance(output, dict):
-            QgsMessageLog.logMessage(f"Response error from wms/show: {output}", TAG, level=Qgis.MessageLevel.Warning)
+            QgsMessageLog.logMessage(f"Response error from endpoint wms/show: {output}", TAG, level=Qgis.MessageLevel.Warning)
             return exit_status, []
 
         if not output.get("success", False):
-            QgsMessageLog.logMessage("Request to wms/show not successful.", TAG, level=Qgis.MessageLevel.Warning)
+            QgsMessageLog.logMessage("Request to endpoint wms/show not successful.", TAG, level=Qgis.MessageLevel.Warning)
             return exit_status, []
 
         source_ids = [item['id'] for item in output.get('message', []) if isinstance(item, dict) and 'id' in item]
-        QgsMessageLog.logMessage(f"DEBUGGING Raw output: {output}", TAG, level=Qgis.MessageLevel.Info)
-        QgsMessageLog.logMessage(f"WMS' source-IDs in Mapbender: {source_ids}", TAG, level=Qgis.MessageLevel.Info)
+        QgsMessageLog.logMessage(f"WMS is already a source(s) in Mapbender with ID(s): {source_ids}", TAG, level=Qgis.MessageLevel.Info)
         return exit_status, source_ids
 
     def _reload_sources(self, source_ids: list[int], wms_url: str) -> int:
@@ -87,24 +85,18 @@ class MapbenderApiUpload:
         reloaded_source_ids = []
 
         for source_id in source_ids:
-            QgsMessageLog.logMessage(f"DEBUGGING Sending reload request for source_id: {source_id}, wms_url: {wms_url}",
-                                     TAG, level=Qgis.MessageLevel.Info)
-
             exit_status, response_json, error  = self.api_request.wms_reload(source_id, wms_url)
-            QgsMessageLog.logMessage(f"DEBUGGING Exit status reload {exit_status}.", TAG, level=Qgis.MessageLevel.Critical)
             exit_status_list.append(exit_status)
         if exit_status == 200:
             reloaded_source_ids.append(source_id)
 
-        QgsMessageLog.logMessage(f"DEBUGGING Exit status reload LIST {exit_status_list}.", TAG, level=Qgis.MessageLevel.Critical)
-
         if not all(status == 200 for status in exit_status_list):
-            QgsMessageLog.logMessage(f"WMS could not be reloaded in Mapbender.", TAG, level=Qgis.MessageLevel.Critical)
+            QgsMessageLog.logMessage(f"Reloaded sources: {reloaded_source_ids}. WMS could not be reloaded in (all sources) in Mapbender.", TAG, level=Qgis.MessageLevel.Critical)
             show_fail_box_ok("Failed",
-                             f"WMS could not be reloaded in Mapbender.")
+                             f"Reloaded sources: {reloaded_source_ids}. WMS could not be reloaded in (all sources) in Mapbender.")
             return 1, reloaded_source_ids
 
-        QgsMessageLog.logMessage("All sources reloaded successfully.", TAG, level=Qgis.MessageLevel.Info)
+        QgsMessageLog.logMessage(f"All sources (with IDs : {reloaded_source_ids}) reloaded successfully.", TAG, level=Qgis.MessageLevel.Info)
         return 0, reloaded_source_ids
 
     def _add_new_source(self) -> int:
@@ -136,7 +128,6 @@ class MapbenderApiUpload:
         QgsMessageLog.logMessage(f"DEBUGGING '{exit_status, response_json, error_output}'", TAG, level=Qgis.MessageLevel.Info)
 
         if response_json and "message" in response_json:
-            # Extrahiere den Slug aus der Nachricht
             message = response_json["message"]
             try:
                 slug = (message.split("slug", 1)[1]).split(",")[0].strip()

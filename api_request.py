@@ -163,7 +163,6 @@ class ApiRequest:
         if response:
             try:
                 data = response.json()
-                QgsMessageLog.logMessage(f"DEBUGGING wms/show response: {data}", TAG, level=Qgis.MessageLevel.Info)
                 return response.status_code, data
             except ValueError as e:
                 QgsMessageLog.logMessage(f"Error while processing the response:  {e}", TAG, level=Qgis.MessageLevel.Warning)

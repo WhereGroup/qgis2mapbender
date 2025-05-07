@@ -282,8 +282,6 @@ class MainDialog(BASE, WIDGET):
         Args:
             wms_url: The WMS URL to be published.
         """
-        QgsMessageLog.logMessage(f"Preparing Mapbender publish...", TAG, level=Qgis.MessageLevel.Info)
-
         # Parameters
         clone_app = self.cloneTemplateRadioButton.isChecked()
         layer_set = self.layerSetLineEdit.text()
@@ -340,7 +338,6 @@ class MainDialog(BASE, WIDGET):
         return
 
     def mb_update(self, server_config: ServerConfig, api_request: ApiRequest, wms_url: str)-> None:
-        QgsMessageLog.logMessage(f"Preparing Mapbender update...", TAG, level=Qgis.MessageLevel.Info)
         try:
             mb_reload = MapbenderApiUpload(server_config, api_request, wms_url)
             exit_status, source_ids = mb_reload.mb_reload()
@@ -349,11 +346,10 @@ class MainDialog(BASE, WIDGET):
                 QgsMessageLog.logMessage(f"FAILED mb_update: No source to update. WMS {wms_url} is not an existing source in Mapbender.", TAG, level=Qgis.MessageLevel.Info)
                 return
             else:
-                QgsMessageLog.logMessage(f"SUCCES WMS:{wms_url} nsuccessfully updated in Mapbender application(s): {source_ids}", TAG, level=Qgis.MessageLevel.Info)
+                source_ids_msg = ", ".join(map(str, source_ids))
                 show_succes_box_ok(
                     "Success report",
-                    f"WMS: \n\n{wms_url}\n\nsuccessfully updated in Mapbender application(s):\n"
-                    f"{source_ids}"
+                    f"WMS: \n{wms_url}\nsuccessfully updated in Mapbender application(s): {source_ids_msg}"
                 )
                 #self.close()
         except Exception as e:
