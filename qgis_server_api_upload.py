@@ -10,12 +10,13 @@ from .server_config import ServerConfig
 from .settings import TAG
 
 class QgisServerApiUpload:
-    def __init__(self, paths):
+    def __init__(self, api_request, paths):
         self.source_project_dir_path = paths.source_project_dir_path
         self.source_project_dir_name = paths.source_project_dir_name
         self.source_project_file_name = paths.source_project_file_name
         self.source_project_zip_file_path = paths.source_project_zip_file_path
         self.server_project_parent_dir_path = paths.server_project_parent_dir_path
+        self.api_request = api_request
 
     def get_wms_url(self, server_config: ServerConfig) -> str:
         """
@@ -93,7 +94,7 @@ class QgisServerApiUpload:
             except Exception as e:
                 QgsMessageLog.logMessage(f"Error while deleting ZIP file: {e}", TAG, level=Qgis.MessageLevel.Critical)
 
-    def api_upload(self, file_path: str, server_config: ServerConfig) -> Optional[str]:
+    def api_upload(self, file_path: str, api_request, server_config: ServerConfig) -> Optional[str]:
         """
         Uploads and extracts the ZIP file to the server using the ApiRequest class.
 
@@ -112,10 +113,9 @@ class QgisServerApiUpload:
             # TODO: Upload does not work if zip file is too big! Mapbender API returns:
             # "Bad Request for url: http://mapbender-qgis.wheregroup.lan/mapbender/api/upload/zip"
             # without explain what it is wrong!
-            api_request = ApiRequest(server_config)
+            # api_request = ApiRequest(server_config)
             if api_request.token:
                 status_code, response_json = api_request.upload_zip(file_path)
-
                 if status_code == 200:
                     QgsMessageLog.logMessage("Project ZIP file successfully uploaded and unzipped on QGIS server",
                                              TAG, level=Qgis.MessageLevel.Info)
@@ -148,7 +148,7 @@ class QgisServerApiUpload:
             QgsMessageLog.logMessage(f"Error during file upload: {e}", TAG, level=Qgis.MessageLevel.Critical)
             return f"Error during file upload: {e}"
 
-    def process_and_upload_project(self, server_config: ServerConfig) -> Optional[str]:
+    def process_and_upload_project(self, server_config: ServerConfig, api_request: ApiRequest) -> Optional[str]:
         """
         Executes the steps to zip the project, upload it, and delete the ZIP file.
 
@@ -165,7 +165,7 @@ class QgisServerApiUpload:
                 return "Failed to create ZIP file for the project."
 
             # Step 2: Upload the ZIP file
-            upload_error = self.api_upload(self.source_project_zip_file_path, server_config)
+            upload_error = self.api_upload(self.source_project_zip_file_path, api_request, server_config)
             if upload_error:
                 QgsMessageLog.logMessage(f"Upload failed: {upload_error}", TAG, level=Qgis.MessageLevel.Critical)
                 return f"Upload failed: {upload_error}"

@@ -11,6 +11,7 @@ from qgis.PyQt.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView, QWid
 from qgis.core import Qgis, QgsSettings, QgsMessageLog
 from qgis.utils import iface
 
+from .api_request import ApiRequest
 from .qgis_server_api_upload import QgisServerApiUpload
 from .mapbender_api_upload import MapbenderApiUpload
 from .dialogs.server_config_dialog import ServerConfigDialog
@@ -227,6 +228,12 @@ class MainDialog(BASE, WIDGET):
         self.update_server_table()
         self.update_server_combo_box()
 
+    def initialize_api_request(self) -> None:
+        """Initializes the ApiRequest instance."""
+        server_config = ServerConfig.getParamsFromSettings(self.serverConfigComboBox.currentText())
+        api_request = ApiRequest(server_config)
+        return server_config, api_request
+
     def handle_project(self) -> None:
         if not qgis_project_is_saved():
             return
@@ -239,37 +246,36 @@ class MainDialog(BASE, WIDGET):
                 show_fail_box_ok("Please complete Mapbender parameters",
                                  "Please enter a valid Mapbender URL title")
                 return
-
-            wms_url = self.upload_project_qgis_server()
+            server_config, api_request = self.initialize_api_request()
+            wms_url = self.upload_project_qgis_server(server_config, api_request)
             if not wms_url:
                 return
 
             if action == "publish":
-                self.mb_publish(self.server_config, wms_url)
+                self.mb_publish(server_config, api_request, wms_url)
             else:
-                self.mb_update(self.server_config, wms_url)
+                self.mb_update(server_config, api_request, wms_url)
         finally:
             # Restore default cursor
             QApplication.restoreOverrideCursor()
 
 
-    def upload_project_qgis_server(self) -> None:
+    def upload_project_qgis_server(self, server_config: ServerConfig, api_request) -> None:
         QgsMessageLog.logMessage("Preparing upload to QGIS server...", TAG, level=Qgis.MessageLevel.Info)
 
-        # Get server config params and project paths
-        self.server_config = ServerConfig.getParamsFromSettings(self.serverConfigComboBox.currentText())
-        paths = Paths.get_paths(self.server_config.projects_path)
+        # Get server config: project paths
+        paths = Paths.get_paths(server_config.projects_path)
 
-        qgis_server_upload = QgisServerApiUpload(paths)
-        result_error = qgis_server_upload.process_and_upload_project(self.server_config)
+        qgis_server_upload = QgisServerApiUpload(api_request, paths)
+        result_error = qgis_server_upload.process_and_upload_project(server_config, api_request)
         if result_error:
             show_fail_box_ok("Failed", result_error)
             return None
         else:
-            wms_url = qgis_server_upload.get_wms_url(self.server_config)
+            wms_url = qgis_server_upload.get_wms_url(server_config)
             return wms_url
 
-    def mb_publish(self, server_config: ServerConfig, wms_url: str) -> None:
+    def mb_publish(self, server_config: ServerConfig, api_request: ApiRequest, wms_url: str) -> None:
         """
         Publishes the WMS on Mapbender using the ApiRequest class.
 
@@ -284,7 +290,7 @@ class MainDialog(BASE, WIDGET):
         template_slug = self.mbSlugComboBox.currentText()
 
         try:
-            mb_upload = MapbenderApiUpload(server_config, wms_url)
+            mb_upload = MapbenderApiUpload(server_config, api_request, wms_url)
             exit_status, source_ids = mb_upload.mb_upload()
             if exit_status != 0 or not source_ids:
                 QgsMessageLog.logMessage(f"DEBUGGING FAILED mb_upload", TAG, level=Qgis.MessageLevel.Info)
@@ -333,10 +339,10 @@ class MainDialog(BASE, WIDGET):
             QgsMessageLog.logMessage(f"Error in mb_publish: {e}", TAG, level=Qgis.MessageLevel.Critical)
         return
 
-    def mb_update(self, server_config: ServerConfig, wms_url: str) -> None:
+    def mb_update(self, server_config: ServerConfig, api_request: ApiRequest, wms_url: str)-> None:
         QgsMessageLog.logMessage(f"Preparing Mapbender update...", TAG, level=Qgis.MessageLevel.Info)
         try:
-            mb_reload = MapbenderApiUpload(self.server_config, wms_url)
+            mb_reload = MapbenderApiUpload(server_config, api_request, wms_url)
             exit_status, source_ids = mb_reload.mb_reload()
             if exit_status != 0 or not source_ids:
                 show_fail_box_ok("Failed", f"No source to update. WMS {wms_url} is not an existing source in Mapbender.")

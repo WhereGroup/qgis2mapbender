@@ -7,10 +7,11 @@ from .settings import TAG
 
 
 class MapbenderApiUpload:
-    def __init__(self, server_config, wms_url):
+    def __init__(self, server_config, api_request, wms_url):
         self.server_config = server_config
         self.wms_url = wms_url
-        self.api_request = ApiRequest(self.server_config)
+        self.api_request = api_request
+        #self.api_request = ApiRequest(self.server_config)
         QgsMessageLog.logMessage(f"Initializing MapbenderApiUpload...", TAG, level=Qgis.MessageLevel.Info)
 
     def mb_upload(self) -> tuple[int, list[int]]:
