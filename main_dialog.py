@@ -321,6 +321,9 @@ class MainDialog(BASE, WIDGET):
                 show_fail_box_ok("Failed", f"WMS could not be assigned to Mapbender application.\n{output_wms_assign}")
                 return
 
+            QgsMessageLog.logMessage(
+                f"SUCCESS WMS successfully created: {wms_url} and added to Mapbender application : {slug}", TAG,
+                level=Qgis.MessageLevel.Info)
             show_succes_box_ok(
                 "Success report",
                 f"WMS successfully created:\n\n{wms_url}\n\nAnd added to Mapbender application:\n\n"
@@ -343,6 +346,15 @@ class MainDialog(BASE, WIDGET):
                 show_fail_box_ok("Failed", f"No source to update. WMS {wms_url} is not an existing source in Mapbender.")
                 QgsMessageLog.logMessage(f"FAILED mb_update: No source to update. WMS {wms_url} is not an existing source in Mapbender.", TAG, level=Qgis.MessageLevel.Info)
                 return
+            else:
+                QgsMessageLog.logMessage(f"SUCCES WMS:{wms_url} nsuccessfully updated in Mapbender application(s): {source_ids}", TAG, level=Qgis.MessageLevel.Info)
+                show_succes_box_ok(
+                    "Success report",
+                    f"WMS: \n\n{wms_url}\n\nsuccessfully updated in Mapbender application(s):\n"
+                    f"{source_ids}"
+                )
+                self.close()
+
         except Exception as e:
             show_fail_box_ok("Failed", f"An error occurred during Mapbender update: {e}")
             QgsMessageLog.logMessage(f"Error in mb_update: {e}", TAG, level=Qgis.MessageLevel.Critical)
