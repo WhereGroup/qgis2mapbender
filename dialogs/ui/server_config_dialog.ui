@@ -127,21 +127,6 @@
         <item row="2" column="0" colspan="2">
          <layout class="QFormLayout" name="formLayout">
           <item row="0" column="0">
-           <widget class="QLabel" name="binConsoleCommandLabel">
-            <property name="font">
-             <font>
-              <strikeout>true</strikeout>
-             </font>
-            </property>
-            <property name="text">
-             <string>Mapbender bin/console command*</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="binConsoleCommandLineEdit"/>
-          </item>
-          <item row="1" column="0">
            <widget class="QLabel" name="qgisProjectPathLabel">
             <property name="font">
              <font>
@@ -153,17 +138,17 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="0" column="1">
            <widget class="QLineEdit" name="qgisProjectPathLineEdit"/>
           </item>
-          <item row="2" column="0">
+          <item row="1" column="0">
            <widget class="QLabel" name="qgisServerPathLabel">
             <property name="text">
              <string>QGIS-Server URL*</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
+          <item row="1" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
              <widget class="QComboBox" name="protocolQgisServerCmbBox">
@@ -196,7 +181,7 @@
             </item>
            </layout>
           </item>
-          <item row="3" column="0">
+          <item row="2" column="0">
            <widget class="QLabel" name="mbPathLabel">
             <property name="font">
              <font>
@@ -208,17 +193,17 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="2" column="1">
            <widget class="QLineEdit" name="mbPathLineEdit"/>
           </item>
-          <item row="4" column="0">
+          <item row="3" column="0">
            <widget class="QLabel" name="mbBasisUrlLabel">
             <property name="text">
              <string>Mapbender basis URL*</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
+          <item row="3" column="1">
            <layout class="QHBoxLayout" name="internHLayout">
             <item>
              <widget class="QComboBox" name="protocolMapbenderCmbBox">
@@ -255,7 +240,7 @@
             </item>
            </layout>
           </item>
-          <item row="5" column="0">
+          <item row="4" column="0">
            <widget class="QLabel" name="winPKPathLabel">
             <property name="font">
              <font>
@@ -267,7 +252,7 @@
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
+          <item row="4" column="1">
            <widget class="QgsFileWidget" name="winPKFileWidget"/>
           </item>
          </layout>
