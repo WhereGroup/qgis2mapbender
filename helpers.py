@@ -1,6 +1,4 @@
 import logging
-import os
-import platform
 import re
 from typing import Optional
 from urllib.parse import urlparse
@@ -42,19 +40,32 @@ def check_if_qgis_project_is_dirty_and_save() -> None:
             QgsProject.instance().write()
         return ret
 
+
 def qgis_project_is_saved() -> bool:
-    # Get and check .qgz project path
-    #source_project_dir_path = QgsProject.instance().readPath("./")
+    """
+    Checks if the current QGIS project is saved.
+
+    Returns:
+        bool: True if the project is saved, False otherwise.
+    """
     source_project_file_path = QgsProject.instance().fileName()
-    #if source_project_dir_path == "./" or source_project_file_path == "":
     if not source_project_file_path:
-        show_fail_box_ok('Failed',
-                         "Please use the QGIS2Mapbender from a saved QGIS-Project")
+        show_fail_box_ok('Failed', "Please use the QGIS2Mapbender from a saved QGIS-Project")
         return False
     return True
 
 
-def create_fail_box(title, text):
+def create_fail_box(title: str, text: str) -> QMessageBox:
+    """
+    Creates a QMessageBox with a failure icon.
+
+    Args:
+        title (str): The title of the message box.
+        text (str): The text to display in the message box.
+
+    Returns:
+        QMessageBox: The created message box.
+    """
     failBox = QMessageBox()
     failBox.setIconPixmap(QPixmap(':/images/themes/default/mIconWarning.svg'))
     failBox.setWindowTitle(title)
@@ -62,19 +73,49 @@ def create_fail_box(title, text):
     return failBox
 
 
-def show_fail_box_ok(title, text):
+def show_fail_box_ok(title: str, text: str) -> int:
+    """
+    Displays a failure message box with an OK button.
+
+    Args:
+        title (str): The title of the message box.
+        text (str): The text to display in the message box.
+
+    Returns:
+        int: The button clicked by the user.
+    """
     failBox = create_fail_box(title, text)
     failBox.setStandardButtons(QMessageBox.StandardButton.Ok)
     return failBox.exec()
 
 
-def show_fail_box_yes_no(title, text):
+def show_fail_box_yes_no(title: str, text: str) -> int:
+    """
+    Displays a failure message box with Yes and No buttons.
+
+    Args:
+        title (str): The title of the message box.
+        text (str): The text to display in the message box.
+
+    Returns:
+        int: The button clicked by the user.
+    """
     failBox = create_fail_box(title, text)
     failBox.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
     return failBox.exec()
 
 
-def show_succes_box_ok(title: object, text: object) -> int:
+def show_succes_box_ok(title: str, text: str) -> int:
+    """
+    Displays a success message box with an OK button.
+
+    Args:
+        title (str): The title of the message box.
+        text (str): The text to display in the message box.
+
+    Returns:
+        int: The button clicked by the user.
+    """
     successBox = QMessageBox()
     successBox.setIconPixmap(QPixmap(':/images/themes/default/mIconSuccess.svg'))
     successBox.setWindowTitle(title)
@@ -83,7 +124,16 @@ def show_succes_box_ok(title: object, text: object) -> int:
     return successBox.exec()
 
 
-def show_question_box(text):
+def show_question_box(text: str) -> int:
+    """
+    Displays a question message box with Yes and No buttons.
+
+    Args:
+        text (str): The question to display in the message box.
+
+    Returns:
+        int: The button clicked by the user.
+    """
     questionBox = QMessageBox()
     questionBox.setIcon(QMessageBox.Icon.Question)
     questionBox.setText(text)
@@ -91,15 +141,28 @@ def show_question_box(text):
     return questionBox.exec()
 
 
-def list_qgs_settings_child_groups(key):
+def list_qgs_settings_child_groups(key: str) -> list:
+    """
+    Lists the child groups of a given key in QGIS settings.
+
+    Args:
+        key (str): The key to search for child groups.
+
+    Returns:
+        list: A list of child group names.
+    """
     s = QgsSettings()
     s.beginGroup(key)
     subkeys = s.childGroups()
     s.endGroup
     return subkeys
 
+
 @contextmanager
 def waitCursor():
+    """
+    A context manager to set the cursor to a wait state during a long-running operation.
+    """
     try:
         QgsApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         yield
@@ -109,14 +172,30 @@ def waitCursor():
         QgsApplication.restoreOverrideCursor()
 
 
-def validate_no_spaces(*variables):
+def validate_no_spaces(*variables: str) -> bool:
+    """
+    Validates that none of the provided variables contain spaces.
+
+    Args:
+        *variables (str): The variables to validate.
+
+    Returns:
+        bool: True if none of the variables contain spaces, False otherwise.
+    """
     for var in variables:
         if " " in var:
             return False
     return True
 
 
-def update_mb_slug_in_settings(mb_slug, is_mb_slug) -> None:
+def update_mb_slug_in_settings(mb_slug: str, is_mb_slug: bool) -> None:
+    """
+    Updates the Mapbender slug in QGIS settings.
+
+    Args:
+        mb_slug (str): The Mapbender slug to update.
+        is_mb_slug (bool): Whether to add or remove the slug.
+    """
     s = QgsSettings()
     if s.contains(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/mb_templates"):
         s.beginGroup(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/")
@@ -143,8 +222,15 @@ def update_mb_slug_in_settings(mb_slug, is_mb_slug) -> None:
 
 
 def uri_validator(url: str) -> bool:
-    """Validating a URL in Python.
-    It only checks if the URL is malformed and does not check the response of the http request."""
+    """
+    Validates a URL to check if it is well-formed.
+
+    Args:
+        url (str): The URL to validate.
+
+    Returns:
+        bool: True if the URL is well-formed, False otherwise.
+    """
     try:
         result = urlparse(url)
         return all([result.scheme, result.netloc])
@@ -152,24 +238,49 @@ def uri_validator(url: str) -> bool:
         return False
 
 
-def starts_with_single_slash_or_colon(s) -> bool:
-    """To check if a string starts with only one '/' or with a column using regular expressions (regex)"""
-    # Regex pattern to check if string starts with exactly one "/"
+def starts_with_single_slash_or_colon(s: str) -> bool:
+    """
+    Checks if a string starts with a single slash or a colon.
+
+    Args:
+        s (str): The string to check.
+
+    Returns:
+        bool: True if the string starts with a single slash or a colon, False otherwise.
+    """
     pattern = r"^(/[^/]|:)"
     return bool(re.match(pattern, s))
 
 
-def ends_with_single_slash(s) -> bool:
-    """To check if a string ends with only one '/' using regular expressions (regex)"""
-    # Regex pattern to check if string starts with exactly one "/"
+def ends_with_single_slash(s: str) -> bool:
+    """
+    Checks if a string ends with a single slash.
+
+    Args:
+        s (str): The string to check.
+
+    Returns:
+        bool: True if the string ends with a single slash, False otherwise.
+    """
     pattern = r"[^/]/$"
     return bool(re.search(pattern, s))
 
 
 def check_if_project_folder_exists_on_server(conn: Connection, path: str) -> bool:
+    """
+    Checks if a project folder exists on a remote server.
+
+    Args:
+        conn (Connection): The connection to the remote server.
+        path (str): The path to the folder on the server.
+
+    Returns:
+        bool: True if the folder exists, False otherwise.
+    """
     if conn.run(f'test -d {path}', warn=True).failed:
        return False
     return True
+
 
 def handle_error(error: Exception, user_message: Optional[str] = None) -> None:
     """
