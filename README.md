@@ -5,17 +5,12 @@ QGIS plugin to transfer your QGIS Server project on your server and publish your
 
 ## Installation and Requirements
 ### Installing the plugin
-- To install the plugin, simply copy the folder with the plugin code into your QGIS profile folder:
-  - Windows: C:\Users{USER}\AppData\Roaming\QGIS\QGIS3\profiles\{PROFILE}\python\plugins\
-  - Linux: /home/{USER}/.local/share/QGIS/QGIS3/profiles/{PROFILE}/python/plugins
+Installation is possible directly from the QGIS plugin repository.
+Alternatively, a release can be downloaded here and the zipped folder can be installed manually as a QGIS extension. There are no further dependencies.
 
 ### Requirements on your local system
 - The QGIS project must be saved in the same folder as the data.
-- Install fabric2 e.g. using the QGIS console if the library is not already installed:
-  ```
-  import pip
-  pip.main(['install', 'fabric2'])
-  ```
+
 ### Requirements on your server
 - QGIS Server is installed on your server.
 - Mapbender is installed on your server.
