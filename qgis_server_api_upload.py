@@ -5,9 +5,10 @@ from typing import Optional
 from qgis.core import QgsMessageLog, Qgis
 
 from .api_request import ApiRequest
-from .helpers import show_fail_box_ok, waitCursor
+from .helpers import waitCursor
 from .server_config import ServerConfig
 from .settings import TAG
+
 
 class QgisServerApiUpload:
     def __init__(self, api_request, paths):

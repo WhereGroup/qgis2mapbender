@@ -1,7 +1,7 @@
-from qgis.core import QgsMessageLog, Qgis
 from typing import Optional
 
-from .api_request import ApiRequest
+from qgis.core import QgsMessageLog, Qgis
+
 from .helpers import show_fail_box_ok
 from .settings import TAG
 

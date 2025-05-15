@@ -2,7 +2,7 @@ import requests
 from typing import Optional
 import re
 
-from qgis._core import QgsMessageLog, Qgis
+from qgis.core import QgsMessageLog, Qgis
 
 from .settings import TAG, MAPBENDER_API
 from .helpers import handle_error
