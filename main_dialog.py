@@ -248,6 +248,7 @@ class MainDialog(BASE, WIDGET):
                 show_fail_box_ok("Please complete Mapbender parameters",
                                  "Please enter a valid Mapbender URL title")
                 return
+
             server_config, api_request = self.initialize_api_request()
             wms_url = self.upload_project_qgis_server(server_config, api_request)
             if not wms_url:
