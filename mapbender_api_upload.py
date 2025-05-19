@@ -11,7 +11,6 @@ class MapbenderApiUpload:
         self.server_config = server_config
         self.wms_url = wms_url
         self.api_request = api_request
-        #self.api_request = ApiRequest(self.server_config)
 
     def mb_upload(self) -> tuple[int, list[int]]:
         try:

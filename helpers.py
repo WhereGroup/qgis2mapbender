@@ -31,8 +31,8 @@ def check_if_qgis_project_is_dirty_and_save() -> None:
     if QgsProject.instance().isDirty():
         msgBox = QMessageBox()
         msgBox.setWindowTitle("")
-        msgBox.setText("The project has been modified.")
-        msgBox.setInformativeText("Do you want to save your changes?")
+        msgBox.setText("There are unsaved changes.")
+        msgBox.setInformativeText("Do you want to save your changes before continuing?")
         msgBox.setStandardButtons(QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel)
         msgBox.setDefaultButton(QMessageBox.StandardButton.Save)
         ret = msgBox.exec()
@@ -44,6 +44,8 @@ def check_if_qgis_project_is_dirty_and_save() -> None:
 def qgis_project_is_saved() -> bool:
     """
     Checks if the current QGIS project is saved.
+
+    If the project is not saved, display a message box to inform the user.
 
     Returns:
         bool: True if the project is saved, False otherwise.

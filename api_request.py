@@ -156,7 +156,6 @@ class ApiRequest:
         """
         endpoint = "/wms/show"
         params = {"id": wms_url, "json": True}
-        #params = {"id": ''} # for tests
         self._ensure_token()
 
         response = self._send_request(endpoint, "get", params=params)
@@ -203,12 +202,12 @@ class ApiRequest:
                     return response.status_code, added_source_id, None
                 else:
                     error_message = "Added source ID not readable from API-answer."
-                    QgsMessageLog.logMessage(f"CRITICAL WMS could not be added to Mapbender. Reason: {error_message}",
+                    QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: {error_message}",
                                              TAG, level=Qgis.MessageLevel.Critical)
                     return response.status_code, None, error_message
             except ValueError as e:
                 error_message = f"Response from the server cannot be processed. Details: {e}"
-                QgsMessageLog.logMessage(f"CRITICAL WMS could not be added to Mapbender. Reason: {error_message}", TAG,
+                QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: {error_message}", TAG,
                                          level=Qgis.MessageLevel.Critical)
                 return 500, None, error_message
             else:

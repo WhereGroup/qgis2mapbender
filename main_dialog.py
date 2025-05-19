@@ -15,7 +15,7 @@ from .api_request import ApiRequest
 from .qgis_server_api_upload import QgisServerApiUpload
 from .mapbender_api_upload import MapbenderApiUpload
 from .dialogs.server_config_dialog import ServerConfigDialog
-from .helpers import qgis_project_is_saved, \
+from .helpers import qgis_project_is_saved, check_if_qgis_project_is_dirty_and_save, \
     show_fail_box_ok, show_succes_box_ok, \
     list_qgs_settings_child_groups, show_question_box, \
     update_mb_slug_in_settings
@@ -237,6 +237,8 @@ class MainDialog(BASE, WIDGET):
     def handle_project(self) -> None:
         if not qgis_project_is_saved():
             return
+
+        check_if_qgis_project_is_dirty_and_save()
 
         # Set waiting cursor
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
