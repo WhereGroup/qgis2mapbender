@@ -8,6 +8,7 @@ from decorator import contextmanager
 
 from qgis.PyQt.QtGui import QPixmap
 from qgis.PyQt.QtWidgets import QMessageBox
+from qgis._core import QgsMessageLog, Qgis
 from qgis.core import QgsApplication, QgsProject, QgsSettings
 
 from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
@@ -268,7 +269,7 @@ def ends_with_single_slash(s: str) -> bool:
     return bool(re.search(pattern, s))
 
 
-def handle_error(error: Exception, user_message: Optional[str] = None) -> None:
+def error_logging_and_user_message(error: Exception, user_message: Optional[str] = None) -> None:
     """
     Handles errors by logging them and optionally displaying a user-friendly message.
 
@@ -276,7 +277,7 @@ def handle_error(error: Exception, user_message: Optional[str] = None) -> None:
         error (Exception): The exception to handle.
         user_message (Optional[str]): A user-friendly message to display (optional).
     """
-    logging.error(f"{TAG} - {str(error)}")
+    QgsMessageLog.logMessage(user_message, TAG, level=Qgis.MessageLevel.Critical)
     if user_message:
         msg_box = QMessageBox()
         msg_box.setIcon(QMessageBox.Icon.Critical)

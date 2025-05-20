@@ -5,7 +5,7 @@ import re
 from qgis.core import QgsMessageLog, Qgis
 
 from .settings import TAG, MAPBENDER_API
-from .helpers import handle_error
+from .helpers import error_logging_and_user_message
 
 
 class ApiRequest:
@@ -37,11 +37,11 @@ class ApiRequest:
             if self.token:
                 self.headers["Authorization"] = f"Bearer {self.token}"
         except ValueError as e:
-            handle_error(e, "Authentication error: Please check your credentials.")
+            error_logging_and_user_message(e, "Authentication error: Please check your credentials.")
         except ConnectionError as e:
-            handle_error(e, "Connection error: Please check your network connection.")
+            error_logging_and_user_message(e, "Connection error: Please check your network connection.")
         except Exception as e:
-            handle_error(e, f"Error: {e}")
+            error_logging_and_user_message(e, f"Error: {e}")
 
     def _authenticate(self) -> Optional[str]:
         """
@@ -56,7 +56,7 @@ class ApiRequest:
             "password": self.server_config.password
         }
         try:
-            response = self._send_request(endpoint, "post", json=credentials)
+            response = self._sendRequest(endpoint, "post", json=credentials)
             if response and response.status_code == 200:
                 return response.json().get("token")
             elif response and response.status_code == 404:
@@ -86,7 +86,7 @@ class ApiRequest:
         """
         return self.token is not None
 
-    def _send_request(self, endpoint: str, method: str, **kwargs) -> Optional[requests.Response]:
+    def _sendRequest(self, endpoint: str, method: str, **kwargs) -> Optional[requests.Response]:
         """
         Sends a request to the API with the specified method and parameters.
 
@@ -99,20 +99,21 @@ class ApiRequest:
             Optional[requests.Response]: The response object, or None if an error occurs.
         """
         url = f"{self.api_url}{endpoint}"
-        if endpoint != "/login_check" and endpoint !="/upload/zip":
+        # if endpoint != "/login_check" and endpoint !="/upload/zip":
+        if endpoint != "/login_check":
             QgsMessageLog.logMessage(f"Sending request to endpoint {endpoint} with kwargs: {kwargs}", TAG, level=Qgis.MessageLevel.Info)
 
         try:
             response = self.session.request(method=method.upper(), url=url, headers= self.headers, **kwargs)
-            response.raise_for_status()  # Raise an exception for HTTP errors
             return response
         except requests.HTTPError as http_err:
-            handle_error(http_err, f"HTTP error occurred: {http_err}")
+            error_logging_and_user_message(http_err, f"HTTP error occurred: {http_err}")
+
         except requests.RequestException as req_err:
-            handle_error(req_err, f"Request error occurred: {req_err}")
+            error_logging_and_user_message(req_err, f"Request error occurred: {req_err}")
         return None
 
-    def upload_zip(self, file_path: str) -> tuple[int, Optional[dict]]:
+    def uploadZip(self, file_path: str) -> Optional[any]:
         """
         Uploads a ZIP file to the server and handles the response.
         The endpoint api/upload/zip uploads a ZIP file to the server and extracts its contents into the upload
@@ -123,26 +124,31 @@ class ApiRequest:
             file_path (str): Path to the ZIP file.
 
         Returns:
-            tuple[int, Optional[dict]]: Status code and JSON response from the API.
+            Optional[any]: ...
         """
 
         endpoint = "/upload/zip"
+        #json = None
+        status_code = None
         try:
             with open(file_path, "rb") as file:
                 files = {"file": file}
-                response = self._send_request(endpoint, "post", files=files)
-                if response:
-                    return response.status_code, response.json()
-                QgsMessageLog.logMessage(f"File not found: {file_path}", TAG, level=Qgis.MessageLevel.Warning)
-                return 500, {"error": "Failed to receive a valid response from the server."}
+                response = self._sendRequest(endpoint, "post", files=files)
+                if response.status_code == 200:
+                    QgsMessageLog.logMessage("Zip file uploaded and extracted successfully.", TAG,
+                                             level=Qgis.MessageLevel.Info)
+                    #json = response.json()
+                elif response.status_code == 400:
+                    QgsMessageLog.logMessage("400 Invalid request: No file uploaded or wrong file type.", TAG,
+                                             level=Qgis.MessageLevel.Critical)
+                elif response.status_code == 500:
+                    QgsMessageLog.logMessage("500 Server error: Failed to move or extract the file.", TAG,
+                                             level=Qgis.MessageLevel.Critical)
+            return response.status_code
         except FileNotFoundError:
-            return 400, {"error": f"File not found: {file_path}"}
-        except requests.RequestException as e:
-            QgsMessageLog.logMessage(f"Request error: {e}", TAG, level=Qgis.MessageLevel.Critical)
-            return 500, {"error": f"Error during the request: {e}"}
-        except Exception as e:
-            QgsMessageLog.logMessage(f"Unexpected error: {e}", TAG, level=Qgis.MessageLevel.Critical)
-            return 500, {"error": f"Unexpected error: {e}"}
+            QgsMessageLog.logMessage(f"File not found: {file_path}", TAG, level=Qgis.MessageLevel.Warning)
+            return status_code
+
 
     def wms_show(self, wms_url: str) -> tuple[int, Optional[dict]]:
         """
@@ -158,7 +164,7 @@ class ApiRequest:
         params = {"id": wms_url, "json": True}
         self._ensure_token()
 
-        response = self._send_request(endpoint, "get", params=params)
+        response = self._sendRequest(endpoint, "get", params=params)
         if response:
             try:
                 data = response.json()
@@ -184,7 +190,7 @@ class ApiRequest:
         params = {"serviceUrl": wms_url}
 
         self._ensure_token()
-        response = self._send_request(endpoint, "get", params=params)
+        response = self._sendRequest(endpoint, "get", params=params)
         if response:
             try:
                 response_json = response.json()
@@ -227,7 +233,7 @@ class ApiRequest:
         endpoint = "/wms/reload"
         params = {"id": source_id, "serviceUrl": wms_url}
         self._ensure_token()
-        response = self._send_request(endpoint, "get", params=params)
+        response = self._sendRequest(endpoint, "get", params=params)
         if response:
             try:
                 return response.status_code, response.json(), None
@@ -251,7 +257,7 @@ class ApiRequest:
         if layer_set:
             params["layerset"] = layer_set
         self._ensure_token()
-        response = self._send_request(endpoint, "get", params=params)
+        response = self._sendRequest(endpoint, "get", params=params)
         if response:
             return response.status_code, response.json(), None
         return 500, {"error": "Failed to receive a valid response from the server."}, None
@@ -270,7 +276,7 @@ class ApiRequest:
         params = {"slug": template_slug}
         self._ensure_token()
         try:
-            response = self._send_request(endpoint, "get", params=params)
+            response = self._sendRequest(endpoint, "get", params=params)
             if response:
                 try:
                     response_json = response.json()

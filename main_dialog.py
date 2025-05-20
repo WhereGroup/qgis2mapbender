@@ -270,13 +270,13 @@ class MainDialog(BASE, WIDGET):
         paths = Paths.get_paths(server_config.projects_path)
 
         qgis_server_upload = QgisServerApiUpload(api_request, paths)
-        result_error = qgis_server_upload.process_and_upload_project(server_config, api_request)
-        if result_error:
-            show_fail_box_ok("Failed", result_error)
-            return None
-        else:
+        status_code = qgis_server_upload.process_and_upload_project(server_config, api_request)
+        if status_code:
             wms_url = qgis_server_upload.get_wms_url(server_config)
             return wms_url
+        else:
+            show_fail_box_ok("Failed", "Upload to QGIS server failed.")
+            return None
 
     def mb_publish(self, server_config: ServerConfig, api_request: ApiRequest, wms_url: str) -> None:
         """

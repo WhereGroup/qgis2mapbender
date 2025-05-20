@@ -96,59 +96,60 @@ class QgisServerApiUpload:
             except Exception as e:
                 QgsMessageLog.logMessage(f"Error while deleting ZIP file: {e}", TAG, level=Qgis.MessageLevel.Critical)
 
-    def api_upload(self, file_path: str, api_request, server_config: ServerConfig) -> Optional[str]:
-        """
-        Uploads and extracts the ZIP file to the server using the ApiRequest class.
-
-        Args:
-            file_path (str): Path to the ZIP file.
-            server_config (ServerConfig): Server configuration object.
-
-        Returns:
-            Optional[str]: Error message if the upload fails, None otherwise.
-        """
-        try:
-            if not os.path.isfile(file_path):
-                QgsMessageLog.logMessage(f"File not found: {file_path}", TAG, level=Qgis.MessageLevel.Critical)
-                return f"Error: File not found at {file_path}"
-
-            # TODO: Upload does not work if zip file is too big! Mapbender API returns:
-            # "Bad Request for url: http://mapbender-qgis.wheregroup.lan/mapbender/api/upload/zip"
-            # without explain what it is wrong!
-            # api_request = ApiRequest(server_config)
-            if api_request.token:
-                status_code, response_json = api_request.upload_zip(file_path)
-                if status_code == 200:
-                    QgsMessageLog.logMessage("Project ZIP file successfully uploaded and unzipped on QGIS server",
-                                             TAG, level=Qgis.MessageLevel.Info)
-                    return None
-                elif status_code == 400:
-                    error_message = (f"Error {status_code}: Invalid request. "
-                                     f"Message: {response_json.get('error')}.")
-                    QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Warning)
-                    return error_message
-                elif status_code == 401:
-                    error_message = (f"Error {status_code}: Unauthorized. "
-                                     f"Message: {response_json.get('error')}.")
-                    QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Warning)
-                    return error_message
-                elif status_code == 403:
-                    error_message = (f"Error {status_code}: Access Denied. "
-                                     f"Error: {response_json.get('error')}.")
-                    QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Warning)
-                    return error_message
-                elif status_code == 500:
-                    error_message = (f"Error {status_code}: Server error. "
-                                     f"Message: {response_json.get('error')}.")
-                    QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
-                    return error_message
-                else:
-                    error_message = f"Unexpected error with status code {status_code}."
-                    QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Warning)
-                    return error_message
-        except Exception as e:
-            QgsMessageLog.logMessage(f"Error during file upload: {e}", TAG, level=Qgis.MessageLevel.Critical)
-            return f"Error during file upload: {e}"
+    # def api_upload(self, file_path: str, api_request, server_config: ServerConfig) -> Optional[str]:
+    #     """
+    #     Uploads and extracts the ZIP file to the server using the ApiRequest class.
+    #
+    #     Args:
+    #         file_path (str): Path to the ZIP file.
+    #         server_config (ServerConfig): Server configuration object.
+    #
+    #     Returns:
+    #         Optional[str]: Error message if the upload fails, None otherwise.
+    #     """
+    #     try:
+    #         if not os.path.isfile(file_path):
+    #             QgsMessageLog.logMessage(f"File not found: {file_path}", TAG, level=Qgis.MessageLevel.Critical)
+    #             return f"Error: File not found at {file_path}"
+    #
+    #         # TODO: Upload does not work if zip file is too big! Mapbender API returns:
+    #         # "Bad Request for url: http://mapbender-qgis.wheregroup.lan/mapbender/api/upload/zip"
+    #         # without explain what it is wrong!
+    #         # api_request = ApiRequest(server_config)
+    #         if api_request.token:
+    #             status_code, response_json = api_request.uploadZip(file_path)
+    #             # QgsMessageLog.logMessage(f" DEBUGGING uploadZip: {status_code, response_json}", TAG, level=Qgis.MessageLevel.Warning)
+    #             # if status_code == 200:
+    #             #     QgsMessageLog.logMessage("Project ZIP file successfully uploaded and unzipped on QGIS server",
+    #             #                              TAG, level=Qgis.MessageLevel.Info)
+    #             #     return None
+    #             # elif status_code == 400:
+    #             #     error_message = (f"Error {status_code}: Invalid request. "
+    #             #                      f"Message: {response_json.get('error')}.")
+    #             #     QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Warning)
+    #             #     return error_message
+    #             # elif status_code == 401:
+    #             #     error_message = (f"Error {status_code}: Unauthorized. "
+    #             #                      f"Message: {response_json.get('error')}.")
+    #             #     QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Warning)
+    #             #     return error_message
+    #             # elif status_code == 403:
+    #             #     error_message = (f"Error {status_code}: Access Denied. "
+    #             #                      f"Error: {response_json.get('error')}.")
+    #             #     QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Warning)
+    #             #     return error_message
+    #             # elif status_code == 500:
+    #             #     error_message = (f"Error {status_code}: Server error. "
+    #             #                      f"Message json: {response_json.get('error')}. Message raw {response_json}.")
+    #             #     QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
+    #             #     return error_message
+    #             # else:
+    #             #     error_message = f"Unexpected error with status code {status_code}."
+    #             #     QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Warning)
+    #             #     return error_message
+    #     except Exception as e:
+    #         QgsMessageLog.logMessage(f"Error during file upload: {e}", TAG, level=Qgis.MessageLevel.Critical)
+    #         return f"Error during file upload: {e}"
 
     def process_and_upload_project(self, server_config: ServerConfig, api_request: ApiRequest) -> Optional[str]:
         """
@@ -161,23 +162,22 @@ class QgisServerApiUpload:
         Returns:
             Optional[str]: Error message if any step fails, None otherwise.
         """
-        try:
-            # Step 1: Create a ZIP of the local project directory
-            if not self.zip_local_project_dir():
-                return "Failed to create ZIP file for the project."
+        # Step 1: Create a ZIP of the local project directory
+        if not self.zip_local_project_dir():
+            return "Failed to create ZIP file for the project."
 
-            # Step 2: Upload the ZIP file
-            upload_error = self.api_upload(self.source_project_zip_file_path, api_request, server_config)
-            if upload_error:
-                QgsMessageLog.logMessage(f"Upload failed: {upload_error}", TAG, level=Qgis.MessageLevel.Critical)
-                return f"Upload failed: {upload_error}"
+        # Step 2: Upload the ZIP file
+        if not os.path.isfile(self.source_project_zip_file_path):
+            QgsMessageLog.logMessage(f"File not found: {self.source_project_zip_file_path}", TAG, level=Qgis.MessageLevel.Critical)
+            return f"Error: File not found at {self.source_project_zip_file_path}"
 
-            # Step 3: Delete the local ZIP file
-            self.delete_local_project_zip_file()
+        if api_request.token:
+            #response_json = api_request.uploadZip(self.source_project_zip_file_path)
+            status_code= api_request.uploadZip(self.source_project_zip_file_path)
 
-            return None # successful upload
-
-        except Exception as e:
-            error_message = f"An unexpected error occurred: {e}"
-            QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
-            return error_message
+        # Step 3: Delete the local ZIP file
+        self.delete_local_project_zip_file()
+        if status_code == 200:
+            return status_code
+        else:
+            return None
