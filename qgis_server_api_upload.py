@@ -176,7 +176,7 @@ class QgisServerApiUpload:
 
         # Step 3: Delete the local ZIP file
         self.delete_local_project_zip_file()
-        if status_code == 200:
+        if status_code:
             return status_code
         else:
             return None
