@@ -128,7 +128,6 @@ class ApiRequest:
         """
 
         endpoint = "/upload/zip"
-        #json = None
         status_code = None
         try:
             with open(file_path, "rb") as file:
@@ -137,9 +136,9 @@ class ApiRequest:
                 if response.status_code == 200:
                     QgsMessageLog.logMessage("Zip file uploaded and extracted successfully.", TAG,
                                              level=Qgis.MessageLevel.Info)
-                    #json = response.json()
                 elif response.status_code == 400:
-                    QgsMessageLog.logMessage("400 Invalid request: No file uploaded or wrong file type.", TAG,
+                    QgsMessageLog.logMessage("400 Invalid request: No file uploaded or wrong file type. "
+                                             "Please check the variables upload_max_filesize, post_max_size and max_file_uploads in the apache configuration", TAG,
                                              level=Qgis.MessageLevel.Critical)
                 elif response.status_code == 500:
                     QgsMessageLog.logMessage("500 Server error: Failed to move or extract the file.", TAG,
