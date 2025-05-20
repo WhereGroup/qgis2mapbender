@@ -172,7 +172,6 @@ class QgisServerApiUpload:
             return f"Error: File not found at {self.source_project_zip_file_path}"
 
         if api_request.token:
-            #response_json = api_request.uploadZip(self.source_project_zip_file_path)
             status_code= api_request.uploadZip(self.source_project_zip_file_path)
 
         # Step 3: Delete the local ZIP file
