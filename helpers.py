@@ -268,22 +268,6 @@ def ends_with_single_slash(s: str) -> bool:
     return bool(re.search(pattern, s))
 
 
-def check_if_project_folder_exists_on_server(conn: Connection, path: str) -> bool:
-    """
-    Checks if a project folder exists on a remote server.
-
-    Args:
-        conn (Connection): The connection to the remote server.
-        path (str): The path to the folder on the server.
-
-    Returns:
-        bool: True if the folder exists, False otherwise.
-    """
-    if conn.run(f'test -d {path}', warn=True).failed:
-       return False
-    return True
-
-
 def handle_error(error: Exception, user_message: Optional[str] = None) -> None:
     """
     Handles errors by logging them and optionally displaying a user-friendly message.
