@@ -242,6 +242,7 @@ class MainDialog(BASE, WIDGET):
 
         # Set waiting cursor
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        wms_url = None
         try:
             action = "publish" if self.publishRadioButton.isChecked() else "update"
             if action == "publish" and self.mbSlugComboBox.currentText() == '':
@@ -252,7 +253,15 @@ class MainDialog(BASE, WIDGET):
             server_config, api_request = self.initialize_api_request()
             if not api_request.token:
                 return
-            wms_url = self.upload_project_qgis_server(server_config, api_request)
+
+            QgsMessageLog.logMessage("Preparing upload to QGIS server...", TAG, level=Qgis.MessageLevel.Info)
+            # Get server config: project paths
+            paths = Paths.get_paths(server_config.projects_path)
+            qgis_server_upload = QgisServerApiUpload(api_request, paths)
+            status_code = qgis_server_upload.process_and_upload_project(server_config, api_request)
+
+            if status_code == 200:
+                wms_url = qgis_server_upload.get_wms_url(server_config)
             if not wms_url:
                 return
 
@@ -265,25 +274,19 @@ class MainDialog(BASE, WIDGET):
             QApplication.restoreOverrideCursor()
 
 
-    def upload_project_qgis_server(self, server_config: ServerConfig, api_request) -> None:
-        QgsMessageLog.logMessage("Preparing upload to QGIS server...", TAG, level=Qgis.MessageLevel.Info)
+    # def upload_project_qgis_server(self, server_config: ServerConfig, api_request) -> Optional[str]:
+    #     QgsMessageLog.logMessage("Preparing upload to QGIS server...", TAG, level=Qgis.MessageLevel.Info)
+    #
+    #     # Get server config: project paths
+    #     paths = Paths.get_paths(server_config.projects_path)
+    #
+    #     qgis_server_upload = QgisServerApiUpload(api_request, paths)
+    #     status_code = qgis_server_upload.process_and_upload_project(server_config, api_request)
+    #     wms_url = None
+    #     if status_code == 200:
+    #         wms_url = qgis_server_upload.get_wms_url(server_config)
+    #     return wms_url
 
-        # Get server config: project paths
-        paths = Paths.get_paths(server_config.projects_path)
-
-        qgis_server_upload = QgisServerApiUpload(api_request, paths)
-        status_code = qgis_server_upload.process_and_upload_project(server_config, api_request)
-        if status_code == 200:
-            wms_url = qgis_server_upload.get_wms_url(server_config)
-            return wms_url
-        elif status_code == 400 and status_code == 500:
-            show_fail_box_ok("Failed", f"Upload to QGIS server failed. Error code: {status_code}. Please see logs under QGIS2Mapbender"
-                                       f"for more details.")
-            return None
-        else:
-            show_fail_box_ok("Failed",
-                f"Upload to QGIS server failed. Please see logs under QGIS2Mapbender for more details.")
-            return None
 
     def mb_publish(self, server_config: ServerConfig, api_request: ApiRequest, wms_url: str) -> None:
         """

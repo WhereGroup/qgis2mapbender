@@ -151,7 +151,7 @@ class QgisServerApiUpload:
     #         QgsMessageLog.logMessage(f"Error during file upload: {e}", TAG, level=Qgis.MessageLevel.Critical)
     #         return f"Error during file upload: {e}"
 
-    def process_and_upload_project(self, server_config: ServerConfig, api_request: ApiRequest) -> Optional[str]:
+    def process_and_upload_project(self, server_config: ServerConfig, api_request: ApiRequest) -> Optional[int]:
         """
         Executes the steps to zip the project, upload it, and delete the ZIP file.
 
@@ -160,24 +160,23 @@ class QgisServerApiUpload:
 
 
         Returns:
-            Optional[str]: Error message if any step fails, None otherwise.
+            Optional[str]: status code
         """
+        status_code = None
         # Step 1: Create a ZIP of the local project directory
         if not self.zip_local_project_dir():
-            return "Failed to create ZIP file for the project."
+            QgsMessageLog.logMessage(f"Failed to create ZIP file for the project.", TAG,
+                                     level=Qgis.MessageLevel.Critical)
 
         # Step 2: Upload the ZIP file
-        if not os.path.isfile(self.source_project_zip_file_path):
-            QgsMessageLog.logMessage(f"File not found: {self.source_project_zip_file_path}", TAG, level=Qgis.MessageLevel.Critical)
-            return f"Error: File not found at {self.source_project_zip_file_path}"
+        elif not os.path.isfile(self.source_project_zip_file_path):
+            QgsMessageLog.logMessage(f"File not found: {self.source_project_zip_file_path}", TAG,
+                                     level=Qgis.MessageLevel.Critical)
 
-        status_code = None
-        if api_request.token:
+        elif api_request.token:
             status_code= api_request.uploadZip(self.source_project_zip_file_path)
 
-        # Step 3: Delete the local ZIP file
-        self.delete_local_project_zip_file()
-        if status_code:
-            return status_code
-        else:
-            return None
+            # Step 3: Delete the local ZIP file
+            self.delete_local_project_zip_file()
+
+        return status_code

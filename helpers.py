@@ -2,6 +2,8 @@ import logging
 import re
 from typing import Optional
 from urllib.parse import urlparse
+
+from PyQt5.QtWidgets import QApplication
 from fabric2 import Connection
 from qgis.PyQt.QtCore import Qt
 from decorator import contextmanager
@@ -119,6 +121,7 @@ def show_succes_box_ok(title: str, text: str) -> int:
     Returns:
         int: The button clicked by the user.
     """
+    QApplication.restoreOverrideCursor()
     successBox = QMessageBox()
     successBox.setIconPixmap(QPixmap(':/images/themes/default/mIconSuccess.svg'))
     successBox.setWindowTitle(title)

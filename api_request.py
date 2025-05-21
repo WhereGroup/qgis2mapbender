@@ -5,7 +5,7 @@ import re
 from qgis.core import QgsMessageLog, Qgis
 
 from .settings import TAG, MAPBENDER_API
-from .helpers import error_logging_and_user_message
+from .helpers import error_logging_and_user_message, show_fail_box_ok
 
 
 class ApiRequest:
@@ -112,7 +112,7 @@ class ApiRequest:
             error_logging_and_user_message(req_err, f"Request error occurred: {req_err}")
         return None
 
-    def uploadZip(self, file_path: str) -> Optional[any]:
+    def uploadZip(self, file_path: str) -> Optional[int]:
         """
         Uploads a ZIP file to the server and handles the response.
         The endpoint api/upload/zip uploads a ZIP file to the server and extracts its contents into the upload
@@ -123,29 +123,33 @@ class ApiRequest:
             file_path (str): Path to the ZIP file.
 
         Returns:
-            Optional[any]: ...
+            Optional[int]: status code
         """
 
         endpoint = "/upload/zip"
         status_code = None
+        ERROR_MSG_400 = ("400 Invalid request: No file uploaded or wrong file type. Please check the variables "
+                         "upload_max_filesize, post_max_size and max_file_uploads in the apache configuration")
+        ERROR_MSG_500 = "500 Server error: Failed to move or extract the file."
         try:
             with open(file_path, "rb") as file:
                 files = {"file": file}
                 response = self._sendRequest(endpoint, "post", files=files)
-                if response.status_code == 200:
+                status_code  = response.status_code if response else None
+                if status_code == 200:
                     QgsMessageLog.logMessage("Zip file uploaded and extracted successfully.", TAG,
                                              level=Qgis.MessageLevel.Info)
-                elif response.status_code == 400:
-                    QgsMessageLog.logMessage("400 Invalid request: No file uploaded or wrong file type. "
-                                             "Please check the variables upload_max_filesize, post_max_size and max_file_uploads in the apache configuration", TAG,
+                elif status_code in (400, 500):
+                    msg_str = ERROR_MSG_400 if status_code == 400 else ERROR_MSG_500
+                    QgsMessageLog.logMessage({msg_str}, TAG,
                                              level=Qgis.MessageLevel.Critical)
-                elif response.status_code == 500:
-                    QgsMessageLog.logMessage("500 Server error: Failed to move or extract the file.", TAG,
-                                             level=Qgis.MessageLevel.Critical)
-            return response.status_code
+                    show_fail_box_ok("Failed",
+                                     f"Upload to QGIS server failed. Error code: {status_code}. Please see logs under QGIS2Mapbender"
+                                     f"for more details.")
+
         except FileNotFoundError:
             QgsMessageLog.logMessage(f"File not found: {file_path}", TAG, level=Qgis.MessageLevel.Warning)
-            return status_code
+        return status_code
 
 
     def wms_show(self, wms_url: str) -> tuple[int, Optional[dict]]:
