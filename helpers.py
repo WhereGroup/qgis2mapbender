@@ -30,18 +30,21 @@ def get_plugin_dir() -> str:
 def get_project_layer_names() -> list:
     return [layer.name() for layer in QgsProject.instance().mapLayers().values()]
 
-def check_if_qgis_project_is_dirty_and_save() -> None:
+def check_if_qgis_project_is_dirty_and_save() -> bool:
     if QgsProject.instance().isDirty():
         msgBox = QMessageBox()
         msgBox.setWindowTitle("")
         msgBox.setText("There are unsaved changes.")
         msgBox.setInformativeText("Do you want to save your changes before continuing?")
-        msgBox.setStandardButtons(QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel)
+        msgBox.setStandardButtons(QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Cancel)
         msgBox.setDefaultButton(QMessageBox.StandardButton.Save)
         ret = msgBox.exec()
         if ret == QMessageBox.StandardButton.Save:
             QgsProject.instance().write()
-        return ret
+            return True
+        elif ret == QMessageBox.StandardButton.Cancel:
+            return False
+    return True
 
 
 def qgis_project_is_saved() -> bool:

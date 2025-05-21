@@ -238,7 +238,8 @@ class MainDialog(BASE, WIDGET):
         if not qgis_project_is_saved():
             return
 
-        check_if_qgis_project_is_dirty_and_save()
+        if not check_if_qgis_project_is_dirty_and_save:
+            return
 
         # Set waiting cursor
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
@@ -272,20 +273,6 @@ class MainDialog(BASE, WIDGET):
         finally:
             # Restore default cursor
             QApplication.restoreOverrideCursor()
-
-
-    # def upload_project_qgis_server(self, server_config: ServerConfig, api_request) -> Optional[str]:
-    #     QgsMessageLog.logMessage("Preparing upload to QGIS server...", TAG, level=Qgis.MessageLevel.Info)
-    #
-    #     # Get server config: project paths
-    #     paths = Paths.get_paths(server_config.projects_path)
-    #
-    #     qgis_server_upload = QgisServerApiUpload(api_request, paths)
-    #     status_code = qgis_server_upload.process_and_upload_project(server_config, api_request)
-    #     wms_url = None
-    #     if status_code == 200:
-    #         wms_url = qgis_server_upload.get_wms_url(server_config)
-    #     return wms_url
 
 
     def mb_publish(self, server_config: ServerConfig, api_request: ApiRequest, wms_url: str) -> None:

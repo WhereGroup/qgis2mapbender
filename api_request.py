@@ -55,16 +55,22 @@ class ApiRequest:
             "username": self.server_config.username,
             "password": self.server_config.password
         }
-        try:
-            response = self._sendRequest(endpoint, "post", json=credentials)
-            if response and response.status_code == 200:
-                return response.json().get("token")
-            elif response and response.status_code == 404:
-                raise ValueError("Invalid URL. Please check the server configuration (Is the URL valid?).")
+        token = None
+        ERROR_MSG_404 = "Authentication failed: 404 Invalid URL. Please check the server configuration (Is the URL valid?)"
+        ERROR_MSG_OTHER = "Authentication failed: invalid credentials. Please verify your username and password."
+
+        response = self._sendRequest(endpoint, "post", json=credentials)
+        if response:
+            if response.status_code == 200:
+                token = response.json().get("token")
             else:
-                raise ValueError("Invalid credentials. Please verify your username and password.")
-        except requests.RequestException as e:
-            raise ConnectionError(f"Error authenticating with the API: {e}")
+                QgsMessageLog.logMessage(f"Authentication failed with status code: {response.status_code}", TAG,
+                                         level=Qgis.MessageLevel.Critical)
+                msg_str = ERROR_MSG_404 if response.status_code == 404 else ERROR_MSG_OTHER
+                show_fail_box_ok("Authentication failed", msg_str)
+        else:
+            show_fail_box_ok("Authentication failed", ERROR_MSG_OTHER)
+        return token
 
     def _ensure_token(self) -> None:
         """
@@ -107,9 +113,9 @@ class ApiRequest:
             response = self.session.request(method=method.upper(), url=url, headers= self.headers, **kwargs)
             return response
         except requests.HTTPError as http_err:
-            error_logging_and_user_message(http_err, f"HTTP error occurred: {http_err}")
+            error_logging_and_user_message(http_err)
         except requests.RequestException as req_err:
-            error_logging_and_user_message(req_err, f"Request error occurred: {req_err}")
+            error_logging_and_user_message(req_err)
         return None
 
     def uploadZip(self, file_path: str) -> Optional[int]:
