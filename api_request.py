@@ -51,6 +51,7 @@ class ApiRequest:
         }
         token = None
         ERROR_MSG_404 = "Authentication failed: 404 invalid URL. Please check the server configuration (Is the URL valid?)"
+        ERROR_MSG_401 = "Authentication failed: 401. Please check username and password"
         ERROR_MSG_OTHER = "Authentication failed. Please see logs under QGIS2Mapbender for more information."
 
         response = self._sendRequest(endpoint, "post", json=credentials)
@@ -61,9 +62,9 @@ class ApiRequest:
             if response.status_code == 200:
                 token = response.json().get("token")
             else:
+                msg_str = ERROR_MSG_404 if response.status_code == 404 else ERROR_MSG_401 if response.status_code == 401 else ERROR_MSG_OTHER
                 QgsMessageLog.logMessage(f"Authentication failed with status code: {response.status_code}", TAG,
                                          level=Qgis.MessageLevel.Critical)
-                msg_str = ERROR_MSG_404 if response.status_code == 404 else ERROR_MSG_OTHER
                 show_fail_box_ok("Authentication failed", msg_str)
         return token
 
@@ -130,25 +131,25 @@ class ApiRequest:
 
         endpoint = "/upload/zip"
         status_code = None
-        ERROR_MSG_400 = ("400 Invalid request: No file uploaded or wrong file type. Please check the variables "
+        ERROR_MSG_400 = ("Error 400 Invalid request: No file uploaded or wrong file type. Please check the variables "
                          "upload_max_filesize, post_max_size and max_file_uploads in the apache configuration")
-        ERROR_MSG_500 = "500 Server error: Failed to move or extract the file."
+        ERROR_MSG_403 = "Error 403: user has unsufficient rights."
+        ERROR_MSG_500 = "Error 500, Server error: Failed to move or extract the file."
+
         try:
             with open(file_path, "rb") as file:
                 files = {"file": file}
                 response = self._sendRequest(endpoint, "post", files=files)
-                status_code  = response.status_code if response else None
+                status_code  = response.status_code
                 if status_code == 200:
                     QgsMessageLog.logMessage("Zip file uploaded and extracted successfully.", TAG,
                                              level=Qgis.MessageLevel.Info)
-                elif status_code in (400, 500):
-                    msg_str = ERROR_MSG_400 if status_code == 400 else ERROR_MSG_500
-                    QgsMessageLog.logMessage({msg_str}, TAG,
-                                             level=Qgis.MessageLevel.Critical)
+                else:
+                    msg_str = ERROR_MSG_400 if status_code == 400 else ERROR_MSG_500 if status_code == 500 else ERROR_MSG_403 if status_code == 403 else "Error: "+ str(
+                        status_code)
+                    QgsMessageLog.logMessage(msg_str, TAG, level=Qgis.MessageLevel.Critical)
                     show_fail_box_ok("Failed",
-                                     f"Upload to QGIS server failed. Error code: {status_code}. Please see logs under QGIS2Mapbender"
-                                     f"for more details.")
-
+                        f"Upload to QGIS server failed. {msg_str}")
         except FileNotFoundError:
             QgsMessageLog.logMessage(f"File not found: {file_path}", TAG, level=Qgis.MessageLevel.Warning)
         return status_code
