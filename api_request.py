@@ -32,16 +32,10 @@ class ApiRequest:
         """
         Authenticates and sets the token in the headers if successful.
         """
-        try:
-            self.token = self._authenticate()
-            if self.token:
-                self.headers["Authorization"] = f"Bearer {self.token}"
-        except ValueError as e:
-            error_logging_and_user_message(e, "_initialize_authentication VALUE ERROR Authentication error: Please check your credentials.")
-        except ConnectionError as e:
-            error_logging_and_user_message(e, "Connection error: Please check your network connection.")
-        except Exception as e:
-            error_logging_and_user_message(e, f"Error: {e}")
+        self.token = self._authenticate()
+        if self.token:
+            self.headers["Authorization"] = f"Bearer {self.token}"
+
 
     def _authenticate(self) -> Optional[str]:
         """
@@ -57,10 +51,13 @@ class ApiRequest:
         }
         token = None
         ERROR_MSG_404 = "Authentication failed: 404 invalid URL. Please check the server configuration (Is the URL valid?)"
-        ERROR_MSG_OTHER = "Authentication failed: invalid credentials. Please verify your username and password."
+        ERROR_MSG_OTHER = "Authentication failed. Please see logs under QGIS2Mapbender for more information."
 
         response = self._sendRequest(endpoint, "post", json=credentials)
-        if response:
+        if response == None:
+            show_fail_box_ok("Authentication failed", ERROR_MSG_OTHER)
+            return token
+        if response.status_code:
             if response.status_code == 200:
                 token = response.json().get("token")
             else:
@@ -68,9 +65,8 @@ class ApiRequest:
                                          level=Qgis.MessageLevel.Critical)
                 msg_str = ERROR_MSG_404 if response.status_code == 404 else ERROR_MSG_OTHER
                 show_fail_box_ok("Authentication failed", msg_str)
-        else:
-            show_fail_box_ok("Authentication failed", ERROR_MSG_OTHER)
         return token
+
 
     def _ensure_token(self) -> None:
         """
