@@ -250,6 +250,8 @@ class MainDialog(BASE, WIDGET):
                 return
 
             server_config, api_request = self.initialize_api_request()
+            if not api_request.token:
+                return
             wms_url = self.upload_project_qgis_server(server_config, api_request)
             if not wms_url:
                 return

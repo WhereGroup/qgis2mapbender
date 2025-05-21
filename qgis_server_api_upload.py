@@ -171,6 +171,7 @@ class QgisServerApiUpload:
             QgsMessageLog.logMessage(f"File not found: {self.source_project_zip_file_path}", TAG, level=Qgis.MessageLevel.Critical)
             return f"Error: File not found at {self.source_project_zip_file_path}"
 
+        status_code = None
         if api_request.token:
             status_code= api_request.uploadZip(self.source_project_zip_file_path)
 

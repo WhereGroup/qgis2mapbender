@@ -37,7 +37,7 @@ class ApiRequest:
             if self.token:
                 self.headers["Authorization"] = f"Bearer {self.token}"
         except ValueError as e:
-            error_logging_and_user_message(e, "Authentication error: Please check your credentials.")
+            error_logging_and_user_message(e, "_initialize_authentication VALUE ERROR Authentication error: Please check your credentials.")
         except ConnectionError as e:
             error_logging_and_user_message(e, "Connection error: Please check your network connection.")
         except Exception as e:
@@ -60,7 +60,7 @@ class ApiRequest:
             if response and response.status_code == 200:
                 return response.json().get("token")
             elif response and response.status_code == 404:
-                raise ValueError("Invalid URL. Please check the server configuration (URL is valid?).")
+                raise ValueError("Invalid URL. Please check the server configuration (Is the URL valid?).")
             else:
                 raise ValueError("Invalid credentials. Please verify your username and password.")
         except requests.RequestException as e:
@@ -108,7 +108,6 @@ class ApiRequest:
             return response
         except requests.HTTPError as http_err:
             error_logging_and_user_message(http_err, f"HTTP error occurred: {http_err}")
-
         except requests.RequestException as req_err:
             error_logging_and_user_message(req_err, f"Request error occurred: {req_err}")
         return None
