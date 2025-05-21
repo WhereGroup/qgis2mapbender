@@ -4,7 +4,6 @@ from typing import Optional
 from urllib.parse import urlparse
 
 from PyQt5.QtWidgets import QApplication
-from fabric2 import Connection
 from qgis.PyQt.QtCore import Qt
 from decorator import contextmanager
 
@@ -92,25 +91,27 @@ def show_fail_box_ok(title: str, text: str) -> int:
     Returns:
         int: The button clicked by the user.
     """
+    QApplication.restoreOverrideCursor()
     failBox = create_fail_box(title, text)
     failBox.setStandardButtons(QMessageBox.StandardButton.Ok)
     return failBox.exec()
 
 
-def show_fail_box_yes_no(title: str, text: str) -> int:
-    """
-    Displays a failure message box with Yes and No buttons.
-
-    Args:
-        title (str): The title of the message box.
-        text (str): The text to display in the message box.
-
-    Returns:
-        int: The button clicked by the user.
-    """
-    failBox = create_fail_box(title, text)
-    failBox.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-    return failBox.exec()
+# def show_fail_box_yes_no(title: str, text: str) -> int:
+#     """
+#     Displays a failure message box with Yes and No buttons.
+#
+#     Args:
+#         title (str): The title of the message box.
+#         text (str): The text to display in the message box.
+#
+#     Returns:
+#         int: The button clicked by the user.
+#     """
+#     QApplication.restoreOverrideCursor()
+#     failBox = create_fail_box(title, text)
+#     failBox.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+#     return failBox.exec()
 
 
 def show_succes_box_ok(title: str, text: str) -> int:
@@ -283,7 +284,7 @@ def error_logging_and_user_message(error: Exception, user_message: Optional[str]
         error (Exception): The exception to handle.
         user_message (Optional[str]): A user-friendly message to display (optional).
     """
-    QgsMessageLog.logMessage(user_message, TAG, level=Qgis.MessageLevel.Critical)
+    QgsMessageLog.logMessage(str(error), TAG, level=Qgis.MessageLevel.Critical)
     if user_message:
         msg_box = QMessageBox()
         msg_box.setIcon(QMessageBox.Icon.Critical)

@@ -56,7 +56,7 @@ class ApiRequest:
             "password": self.server_config.password
         }
         token = None
-        ERROR_MSG_404 = "Authentication failed: 404 Invalid URL. Please check the server configuration (Is the URL valid?)"
+        ERROR_MSG_404 = "Authentication failed: 404 invalid URL. Please check the server configuration (Is the URL valid?)"
         ERROR_MSG_OTHER = "Authentication failed: invalid credentials. Please verify your username and password."
 
         response = self._sendRequest(endpoint, "post", json=credentials)
