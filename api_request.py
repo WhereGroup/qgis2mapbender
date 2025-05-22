@@ -52,19 +52,20 @@ class ApiRequest:
         ERROR_MSG_404 = "Authentication failed: 404 invalid URL. Please check the server configuration (Is the URL valid?)"
         ERROR_MSG_401 = "Authentication failed: 401. Please check username and password"
         ERROR_MSG_OTHER = "Authentication failed. Please see logs under QGIS2Mapbender for more information."
+        ERROR_MSG_TITLE = "Failed to obtain a valid token. Authentication failed"
 
         response = self._sendRequest(endpoint, "post", json=credentials)
         if response == None:
-            show_fail_box_ok("Authentication failed", ERROR_MSG_OTHER)
+            show_fail_box_ok(ERROR_MSG_TITLE, ERROR_MSG_OTHER)
             return self.token
         if response.status_code:
             if response.status_code == 200:
                 self.token = response.json().get("token")
             else:
                 msg_str = ERROR_MSG_404 if response.status_code == 404 else ERROR_MSG_401 if response.status_code == 401 else ERROR_MSG_OTHER
-                QgsMessageLog.logMessage(f"Authentication failed with status code: {response.status_code}", TAG,
+                QgsMessageLog.logMessage(f"{ERROR_MSG_TITLE} with status code: {response.status_code}", TAG,
                                          level=Qgis.MessageLevel.Critical)
-                show_fail_box_ok("Authentication failed", msg_str)
+                show_fail_box_ok(ERROR_MSG_TITLE, msg_str)
         return self.token
 
 
@@ -76,8 +77,6 @@ class ApiRequest:
             self.token = self._authenticate()
             if self.token:
                 self.headers["Authorization"] = f"Bearer {self.token}"
-            else:
-                raise ValueError("Failed to authenticate and obtain a valid token.")
 
     def _token_is_available(self) -> bool:
         """
