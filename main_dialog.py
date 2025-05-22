@@ -290,7 +290,7 @@ class MainDialog(BASE, WIDGET):
 
         try:
             mb_upload = MapbenderApiUpload(server_config, api_request, wms_url)
-            exit_status_mb_upload, source_ids = mb_upload.mb_upload()
+            exit_status_mb_upload, source_ids, is_reloaded = mb_upload.mb_upload()
             if exit_status_mb_upload != 0 or not source_ids:
                 QgsMessageLog.logMessage(f"FAILED mb_upload", TAG, level=Qgis.MessageLevel.Info)
                 return
@@ -314,15 +314,24 @@ class MainDialog(BASE, WIDGET):
             if exit_status_wms_assign != 200:
                 show_fail_box_ok("Failed", f"WMS could not be assigned to Mapbender application.")
                 return
-
-            QgsMessageLog.logMessage(
-                f"WMS successfully created: {wms_url} and added to Mapbender application : {slug}", TAG,
-                level=Qgis.MessageLevel.Info)
-            show_succes_box_ok(
-                "Success report",
-                f"WMS successfully created:\n\n{wms_url}\n\nAnd added to Mapbender application:\n\n"
-                f"{server_config.mb_protocol}{server_config.mb_basis_url}/application/{slug}"
-            )
+            if is_reloaded:
+                QgsMessageLog.logMessage(
+                    f"WMS {wms_url} already existed as a Mapbender source and was successfully reloaded (sources {source_ids}) and added to Mapbender application : {slug}", TAG,
+                    level=Qgis.MessageLevel.Info)
+                show_succes_box_ok(
+                    "Success report",
+                    f"WMS \n\n{wms_url}\n\nalready existed as a Mapbender source and was successfully reloaded (sources {source_ids}) and added to Mapbender application:\n\n"
+                    f"{server_config.mb_protocol}{server_config.mb_basis_url}/application/{slug}"
+                )
+            else:
+                QgsMessageLog.logMessage(
+                    f"WMS successfully created: {wms_url} and added to Mapbender application : {slug}", TAG,
+                    level=Qgis.MessageLevel.Info)
+                show_succes_box_ok(
+                    "Success report",
+                    f"WMS successfully created:\n\n{wms_url}\n\nAnd added to Mapbender application:\n\n"
+                    f"{server_config.mb_protocol}{server_config.mb_basis_url}/application/{slug}"
+                )
             #self.close()
         except Exception as e:
             show_fail_box_ok("Failed", f"An error occurred during Mapbender publish: {e}")

@@ -12,7 +12,8 @@ class MapbenderApiUpload:
         self.wms_url = wms_url
         self.api_request = api_request
 
-    def mb_upload(self) -> tuple[int, list[int]]:
+    def mb_upload(self) -> tuple[int, list[int], bool]:
+        is_realoaded = False
         status_code_wms_show, source_ids = self.api_request.wms_show(self.wms_url)
         if status_code_wms_show != 200:
             show_fail_box_ok("Failed",
@@ -20,16 +21,17 @@ class MapbenderApiUpload:
                              f"Mapbender upload will be interrupted.")
             return 1, []
 
-        if source_ids:
+        if source_ids: # wms already exists as a mapbender source and will be reloaded
+            is_realoaded = True
             exit_status_reload, reloaded_source_ids = self._reload_sources(source_ids, self.wms_url)
             if exit_status_reload != 0:
                 return 1, []
-            return 0, reloaded_source_ids
-        else:
+            return 0, reloaded_source_ids, is_realoaded
+        else: #wms does not exist as a source and will be added to mapbender as a source
             status_code_add_wms, new_source_id = self.api_request.wms_add(self.wms_url)
             if status_code_add_wms == 200:
                 return 0, new_source_id
-            return 1, []
+            return 1, [], is_realoaded
 
 
     def mb_reload(self) -> tuple[int, list[int]]:
