@@ -171,7 +171,6 @@ class ApiRequest:
         response = self._sendRequest(endpoint, "get", params=params)
         try:
             response_json = response.json()
-            print("response wms/show: ", response, "response.json()", response_json, "status_code: ", response.status_code)
             source_ids = [item['id'] for item in response_json.get('message', []) if isinstance(item, dict) and 'id' in item]
             if source_ids:
                 QgsMessageLog.logMessage(f"WMS is already a source(s) in Mapbender with ID(s): {source_ids}", TAG,
@@ -243,7 +242,6 @@ class ApiRequest:
         response = self._sendRequest(endpoint, "get", params=params)
         try:
             response_json= response.json()
-            print("response json reload: ", response_json)
             return response.status_code, response_json
         except ValueError as e:
             return response.status_code, None
@@ -268,7 +266,6 @@ class ApiRequest:
         response = self._sendRequest(endpoint, "get", params=params)
         try:
             response_json = response.json()
-            print("response json assign: ", response_json)
             return response.status_code, response_json
         except ValueError as e:
             return response.status_code, None
