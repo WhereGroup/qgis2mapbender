@@ -316,11 +316,11 @@ class MainDialog(BASE, WIDGET):
                 return
             if is_reloaded:
                 QgsMessageLog.logMessage(
-                    f"WMS {wms_url} already existed as a Mapbender source and was successfully reloaded (sources {source_ids}) and added to Mapbender application : {slug}", TAG,
+                    f"WMS {wms_url} already existed as a Mapbender source(s) and was successfully reloaded (source(s) {source_ids}) and added to Mapbender application : {slug}", TAG,
                     level=Qgis.MessageLevel.Info)
                 show_succes_box_ok(
                     "Success report",
-                    f"WMS \n\n{wms_url}\n\nalready existed as a Mapbender source and was successfully reloaded (sources {source_ids}) and added to Mapbender application:\n\n"
+                    f"WMS \n\n{wms_url}\n\nalready existed as a Mapbender source(s) and was successfully reloaded (source(s) {source_ids}) and added to Mapbender application:\n\n"
                     f"{server_config.mb_protocol}{server_config.mb_basis_url}/application/{slug}"
                 )
             else:
