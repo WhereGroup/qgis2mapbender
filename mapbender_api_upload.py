@@ -13,13 +13,12 @@ class MapbenderApiUpload:
         self.api_request = api_request
 
     def mb_upload(self) -> tuple[int, list[int]]:
-        exit_status_wms_show, source_ids = self.api_request.wms_show(self.wms_url)
-        print("mb_upload", exit_status_wms_show)
-        if exit_status_wms_show != 200:
+        status_code_wms_show, source_ids = self.api_request.wms_show(self.wms_url)
+        if status_code_wms_show != 200:
             show_fail_box_ok("Failed",
                              f"WMS layer information could not be displayed. "
                              f"Mapbender upload will be interrupted.")
-            return exit_status_wms_show, []
+            return 1, []
 
         if source_ids:
             exit_status_reload, reloaded_source_ids = self._reload_sources(source_ids, self.wms_url)
@@ -27,10 +26,10 @@ class MapbenderApiUpload:
                 return 1, []
             return 0, reloaded_source_ids
         else:
-            exit_status_add, new_source_ids = self._add_new_source()
-            if exit_status_add != 0:
-                return 1, []
-            return 0, new_source_ids
+            status_code_add_wms, new_source_id = self.api_request.wms_add(self.wms_url)
+            if status_code_add_wms == 200:
+                return 0, new_source_id
+            return 1, []
 
 
     def mb_reload(self) -> tuple[int, list[int]]:
@@ -56,16 +55,16 @@ class MapbenderApiUpload:
 
 
     def _reload_sources(self, source_ids: list[int], wms_url: str) -> tuple[int, list[int]]:
-        exit_status_list = []
+        status_code_list = []
         reloaded_source_ids = []
 
         for source_id in source_ids:
-            exit_status, response_json  = self.api_request.wms_reload(source_id, wms_url)
-            exit_status_list.append(exit_status)
-        if exit_status == 200:
-            reloaded_source_ids.append(source_id)
+            exit_status_reload_wms, response_json  = self.api_request.wms_reload(source_id, wms_url)
+            status_code_list.append(exit_status_reload_wms)
+            if exit_status_reload_wms == 200:
+                reloaded_source_ids.append(source_id)
 
-        if not all(status == 200 for status in exit_status_list):
+        if not all(status == 200 for status in status_code_list):
             QgsMessageLog.logMessage(f"Reloaded sources: {reloaded_source_ids}. WMS could not be reloaded in (all sources) in Mapbender.", TAG, level=Qgis.MessageLevel.Critical)
             show_fail_box_ok("Failed",
                              f"Reloaded sources: {reloaded_source_ids}. WMS could not be reloaded in (all sources) in Mapbender.")
@@ -74,20 +73,20 @@ class MapbenderApiUpload:
         QgsMessageLog.logMessage(f"All sources (with IDs : {reloaded_source_ids}) reloaded successfully.", TAG, level=Qgis.MessageLevel.Info)
         return 0, reloaded_source_ids
 
-    def _add_new_source(self) -> tuple[int, Optional[int]]:
-        """
-        Adds a new WMS source to Mapbender.
+    # def _add_new_source(self) -> tuple[int, Optional[int]]:
+    #     """
+    #     Adds a new WMS source to Mapbender.
+    #
+    #     :return: A tuple containing:
+    #              - exit_status (0 = success, 1 = fail)
+    #              - source_id (ID of the newly added source, or None if failed)
+    #     """
+    #     exit_status, source_id = self.api_request.wms_add(self.wms_url)
+    #     print("exit_status, source_id:", exit_status, source_id)
+    #     return exit_status, source_id
 
-        :return: A tuple containing:
-                 - exit_status (0 = success, 1 = fail)
-                 - source_id (ID of the newly added source, or None if failed)
-        """
-        exit_status, source_id = self.api_request.wms_add(self.wms_url)
-        print("exit_status, source_id:", exit_status, source_id)
-        return exit_status, source_id
 
-
-    def app_clone(self, template_slug: str) -> tuple[int, str, Optional[str]]:
+    def app_clone(self, template_slug: str) -> tuple[int, str]:
         """
         Clones an existing application in the Application backend. This will create a new application with
         a _imp suffix as application name.
@@ -96,8 +95,7 @@ class MapbenderApiUpload:
         :return:slug of the new clone app
         :return:error_output
         """
-        exit_status, response_json, error_output =  self.api_request.app_clone(template_slug)
-        QgsMessageLog.logMessage(f"DEBUGGING '{exit_status, response_json, error_output}'", TAG, level=Qgis.MessageLevel.Info)
+        exit_status, response_json =  self.api_request.app_clone(template_slug)
 
         if response_json and "message" in response_json:
             message = response_json["message"]
@@ -109,7 +107,7 @@ class MapbenderApiUpload:
         else:
             slug = None
             QgsMessageLog.logMessage("No valid message in response_json.", TAG, level=Qgis.MessageLevel.Warning)
-        return exit_status, slug, error_output
+        return exit_status, slug
 
     def wms_assign(self, slug: str, source_id: int, layer_set: str) -> tuple[int, str, Optional[str]]:
         """
@@ -118,10 +116,8 @@ class MapbenderApiUpload:
         :param layer_set:
         :return: exit_status (0 = success, 1 = fail), output, error_output
         """
-        exit_status, output, error_output = self.api_request.wms_assign(slug, source_id, layer_set)
+        exit_status, output = self.api_request.wms_assign(slug, source_id, layer_set)
 
         if output is None:
             output = ""
-        if error_output is None:
-            error_output = ""
-        return exit_status, output, error_output
+        return exit_status, output

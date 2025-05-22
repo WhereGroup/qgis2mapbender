@@ -214,9 +214,6 @@ class ApiRequest:
                 return response.status_code, None
 
             if added_source_id:
-                QgsMessageLog.logMessage(
-                    f"Response wms/add: status={response.status_code}, added_source_id={added_source_id}, error=None", TAG,
-                    level=Qgis.MessageLevel.Info)
                 QgsMessageLog.logMessage(f"New source added with ID: {added_source_id}", TAG, level=Qgis.MessageLevel.Info)
                 return response.status_code, added_source_id
             else:
@@ -266,13 +263,17 @@ class ApiRequest:
         params = {"application": application, "source": source}
         if layer_set:
             params["layerset"] = layer_set
+        self._ensure_token()
 
         response = self._sendRequest(endpoint, "get", params=params)
-        if response:
-            return response.status_code, response.json(), None
-        return 500, {"error": "Failed to receive a valid response from the server."}, None
+        try:
+            response_json = response.json()
+            print("response json assign: ", response_json)
+            return response.status_code, response_json
+        except ValueError as e:
+            return response.status_code, None
 
-    def app_clone(self, template_slug: str) -> tuple[int, Optional[dict], Optional[str]]:
+    def app_clone(self, template_slug: str) -> tuple[int, Optional[dict]]:
         """
         Clones an application using the provided template slug.
 
@@ -285,22 +286,12 @@ class ApiRequest:
         endpoint = "/application/clone"
         params = {"slug": template_slug}
         self._ensure_token()
-        
+
+        response = self._sendRequest(endpoint, "get", params=params)
         try:
-            response = self._sendRequest(endpoint, "get", params=params)
-            if response:
-                try:
-                    response_json = response.json()
-                    return response.status_code, response_json, None
-                except ValueError as e:
-                    error_message = f"Error parsing the response: {e}"
-                    QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
-                    return 500, None, error_message
-            else:
-                error_message = "No valid answer"
-                QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
-                return 500, None, error_message
-        except requests.RequestException as e:
-            error_message = f"Request error: {e}"
+            response_json = response.json()
+            return response.status_code, response_json
+        except ValueError as e:
+            error_message = f"Error parsing the response: {e}"
             QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
-            return 500, None, error_message
+            return response.status_code, None
