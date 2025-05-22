@@ -144,7 +144,7 @@ class ServerConfigDialog(BASE, WIDGET):
                 status_code = api_request.uploadZip(test_zip_path)
                 if status_code != 200:
                     failed_tests.append(
-                        f"Server upload is not validated (status code {status_code}): {response_upload.get('error')}.")
+                        f"Server upload is not validated (status code {status_code}).")
                 else:
                     successful_tests.append("Server upload is validated.")
         except Exception as e:

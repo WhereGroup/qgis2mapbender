@@ -68,7 +68,6 @@ class ApiRequest:
                 show_fail_box_ok(ERROR_MSG_TITLE, msg_str)
         return self.token
 
-
     def _ensure_token(self) -> None:
         """
         Ensures that a valid token is available. If the token is missing or invalid, it re-authenticates.
@@ -100,7 +99,7 @@ class ApiRequest:
             Optional[requests.Response]: The response object, or None if an error occurs.
         """
         url = f"{self.api_url}{endpoint}"
-        # if endpoint != "/login_check" and endpoint !="/upload/zip":
+
         if endpoint != "/login_check":
             QgsMessageLog.logMessage(f"Sending request to endpoint {endpoint} with kwargs: {kwargs}", TAG, level=Qgis.MessageLevel.Info)
 
@@ -129,6 +128,8 @@ class ApiRequest:
 
         endpoint = "/upload/zip"
         status_code = None
+        self._ensure_token()
+
         ERROR_MSG_400 = ("Error 400 Invalid request: No file uploaded or wrong file type. Please check the variables "
                          "upload_max_filesize, post_max_size and max_file_uploads in the apache configuration")
         ERROR_MSG_403 = "Error 403: user has unsufficient rights."
@@ -140,7 +141,7 @@ class ApiRequest:
                 response = self._sendRequest(endpoint, "post", files=files)
                 status_code  = response.status_code
                 if status_code == 200:
-                    QgsMessageLog.logMessage("Zip file uploaded and extracted successfully.", TAG,
+                    QgsMessageLog.logMessage(f"Server response {status_code}: Zip file uploaded and extracted successfully.", TAG,
                                              level=Qgis.MessageLevel.Info)
                 else:
                     msg_str = ERROR_MSG_400 if status_code == 400 else ERROR_MSG_500 if status_code == 500 else ERROR_MSG_403 if status_code == 403 else "Error: "+ str(
@@ -153,7 +154,7 @@ class ApiRequest:
         return status_code
 
 
-    def wms_show(self, wms_url: str) -> tuple[int, Optional[dict]]:
+    def wms_show(self, wms_url: str) -> tuple[int, Optional[list]]:
         """
         Displays a WMS layer using the provided WMS URL.
 
@@ -168,18 +169,23 @@ class ApiRequest:
         self._ensure_token()
 
         response = self._sendRequest(endpoint, "get", params=params)
-        if response:
-            try:
-                data = response.json()
-                return response.status_code, data
-            except ValueError as e:
-                QgsMessageLog.logMessage(f"Error while processing the response:  {e}", TAG, level=Qgis.MessageLevel.Warning)
-                return 500, None
-        else:
-            QgsMessageLog.logMessage("No valid response from API endpoint wms/show.", TAG, level=Qgis.MessageLevel.Critical)
-            return 500, None
+        try:
+            response_json = response.json()
+            print("response wms/show: ", response, "response.json()", response_json, "status_code: ", response.status_code)
+            source_ids = [item['id'] for item in response_json.get('message', []) if isinstance(item, dict) and 'id' in item]
+            if source_ids:
+                QgsMessageLog.logMessage(f"WMS is already a source(s) in Mapbender with ID(s): {source_ids}", TAG,
+                                         level=Qgis.MessageLevel.Info)
+            else:
+                QgsMessageLog.logMessage(f"WMS does not exist as a source in Mapbender yet.", TAG,
+                                         level=Qgis.MessageLevel.Info)
+            return response.status_code, source_ids
+        except ValueError as e:
+            QgsMessageLog.logMessage(f"Error while processing the response from endpoint wms/show:  {e}", TAG, level=Qgis.MessageLevel.Warning)
+            return response.status_code, None
 
-    def wms_add(self, wms_url: str) -> tuple[int, Optional[dict]]:
+
+    def wms_add(self, wms_url: str) -> tuple[int, Optional[str]]:
         """
         Adds a WMS layer using the provided WMS URL.
 
@@ -187,42 +193,42 @@ class ApiRequest:
             wms_url (str): The WMS URL to add.
 
         Returns:
-            tuple[int, Optional[dict]]: Status code and JSON response from the API.
+            tuple[int, Optional[dict]]: Status code and id of added source.
         """
         endpoint = "/wms/add"
         params = {"serviceUrl": wms_url}
-
         self._ensure_token()
+
         response = self._sendRequest(endpoint, "get", params=params)
         if response:
             try:
                 response_json = response.json()
-                QgsMessageLog.logMessage(f"DEBUGGING Full API response as JSON: {response_json}", TAG, level=Qgis.MessageLevel.Info)
-
                 # extract id:
                 message = response_json.get("message", "")
                 match = re.search(r"#(\d+)", message)
                 added_source_id = match.group(1) if match else None
-
-                if added_source_id:
-                    QgsMessageLog.logMessage(
-                        f"DEBUGGING Response: status={response.status_code}, added_source_id={added_source_id}, error=None", TAG,
-                        level=Qgis.MessageLevel.Info)
-                    return response.status_code, added_source_id, None
-                else:
-                    error_message = "Added source ID not readable from API-answer."
-                    QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: {error_message}",
-                                             TAG, level=Qgis.MessageLevel.Critical)
-                    return response.status_code, None, error_message
             except ValueError as e:
                 error_message = f"Response from the server cannot be processed. Details: {e}"
                 QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: {error_message}", TAG,
                                          level=Qgis.MessageLevel.Critical)
-                return 500, None, error_message
-            else:
-                return 500, None, "Failed to receive a valid response from the server."
+                return response.status_code, None
 
-    def wms_reload(self, source_id: str, wms_url: str) -> tuple[int, Optional[dict], Optional[str]]:
+            if added_source_id:
+                QgsMessageLog.logMessage(
+                    f"Response wms/add: status={response.status_code}, added_source_id={added_source_id}, error=None", TAG,
+                    level=Qgis.MessageLevel.Info)
+                QgsMessageLog.logMessage(f"New source added with ID: {added_source_id}", TAG, level=Qgis.MessageLevel.Info)
+                return response.status_code, added_source_id
+            else:
+                error_message = f"Status code: {response.status_code}. But added source ID not readable from API-answer. Full API response as JSON: {response_json}"
+                QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: {error_message}",
+                                         TAG, level=Qgis.MessageLevel.Critical)
+                return response.status_code, None
+        else:
+            return response.status_code, None
+
+
+    def wms_reload(self, source_id: str, wms_url: str) -> tuple[int, Optional[dict]]:
         """
         Reloads a WMS layer using the provided source ID and WMS URL.
 
@@ -236,13 +242,14 @@ class ApiRequest:
         endpoint = "/wms/reload"
         params = {"id": source_id, "serviceUrl": wms_url}
         self._ensure_token()
+
         response = self._sendRequest(endpoint, "get", params=params)
-        if response:
-            try:
-                return response.status_code, response.json(), None
-            except ValueError as e:
-                return 500, None, f"Error by parsing the response: {e}"
-        return 500, None, {"error": "Failed to receive a valid response from the server."}
+        try:
+            response_json= response.json()
+            print("response json reload: ", response_json)
+            return response.status_code, response_json
+        except ValueError as e:
+            return response.status_code, None
 
     def wms_assign(self, application: str, source: int, layer_set: Optional[str]) -> tuple[int, str, Optional[str]]:
         """
@@ -259,7 +266,7 @@ class ApiRequest:
         params = {"application": application, "source": source}
         if layer_set:
             params["layerset"] = layer_set
-        self._ensure_token()
+
         response = self._sendRequest(endpoint, "get", params=params)
         if response:
             return response.status_code, response.json(), None
@@ -278,6 +285,7 @@ class ApiRequest:
         endpoint = "/application/clone"
         params = {"slug": template_slug}
         self._ensure_token()
+        
         try:
             response = self._sendRequest(endpoint, "get", params=params)
             if response:

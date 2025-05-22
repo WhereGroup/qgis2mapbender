@@ -228,7 +228,7 @@ class MainDialog(BASE, WIDGET):
         self.update_server_table()
         self.update_server_combo_box()
 
-    def initialize_api_request(self) -> None:
+    def initialize_api_request(self) -> tuple[ServerConfig, ApiRequest]:
         """Initializes the ApiRequest instance."""
         server_config = ServerConfig.getParamsFromSettings(self.serverConfigComboBox.currentText())
         api_request = ApiRequest(server_config)
@@ -238,7 +238,8 @@ class MainDialog(BASE, WIDGET):
         if not qgis_project_is_saved():
             return
 
-        if not check_if_qgis_project_is_dirty_and_save:
+        if not check_if_qgis_project_is_dirty_and_save():
+            QgsMessageLog.logMessage("Publish/Update cancelled by the user (unsaved changes).", TAG, level=Qgis.MessageLevel.Info)
             return
 
         # Set waiting cursor
@@ -259,9 +260,9 @@ class MainDialog(BASE, WIDGET):
             # Get server config: project paths
             paths = Paths.get_paths(server_config.projects_path)
             qgis_server_upload = QgisServerApiUpload(api_request, paths)
-            status_code = qgis_server_upload.process_and_upload_project(server_config, api_request)
+            status_code_server_upload = qgis_server_upload.process_and_upload_project(api_request)
 
-            if status_code == 200:
+            if status_code_server_upload == 200:
                 wms_url = qgis_server_upload.get_wms_url(server_config)
             if not wms_url:
                 return

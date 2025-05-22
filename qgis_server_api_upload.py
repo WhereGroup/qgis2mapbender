@@ -151,13 +151,12 @@ class QgisServerApiUpload:
     #         QgsMessageLog.logMessage(f"Error during file upload: {e}", TAG, level=Qgis.MessageLevel.Critical)
     #         return f"Error during file upload: {e}"
 
-    def process_and_upload_project(self, server_config: ServerConfig, api_request: ApiRequest) -> Optional[int]:
+    def process_and_upload_project(self, api_request: ApiRequest) -> Optional[int]:
         """
         Executes the steps to zip the project, upload it, and delete the ZIP file.
 
         Args:
             server_config (ServerConfig): Server configuration.
-
 
         Returns:
             Optional[str]: status code
@@ -177,7 +176,6 @@ class QgisServerApiUpload:
             status_code= api_request.uploadZip(self.source_project_zip_file_path)
 
             # Step 3: Delete the local ZIP file
-            self.delete_local_project_zip_file()
+            #self.delete_local_project_zip_file()
 
-        print(status_code)
         return status_code
