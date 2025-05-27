@@ -98,7 +98,7 @@
              <item row="4" column="0">
               <widget class="QLabel" name="layerSetLabel">
                <property name="text">
-                <string>Layer set (optional)</string>
+                <string>Layerset (optional)</string>
                </property>
               </widget>
              </item>
