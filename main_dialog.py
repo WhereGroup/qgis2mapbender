@@ -52,7 +52,6 @@ class MainDialog(BASE, WIDGET):
         self.setupUi(self)
         self.setupConnections()
 
-
     def setupUi(self, widget) -> None:
         super().setupUi(widget)
         self.warningFirstServerLabel.setPixmap(QPixmap(':/images/themes/default/mIconWarning.svg'))
@@ -100,8 +99,8 @@ class MainDialog(BASE, WIDGET):
         self.updateRadioButton.clicked.connect(self.disable_publish_parameters)
         self.mbSlugComboBox.lineEdit().textChanged.connect(self.validate_slug_not_empty)
         self.mbSlugComboBox.currentIndexChanged.connect(self.validate_slug_not_empty)
-        self.publishButton.clicked.connect(self.handle_project)
-        self.updateButton.clicked.connect(self.handle_project)
+        self.publishButton.clicked.connect(self.run)
+        self.updateButton.clicked.connect(self.run)
         self.buttonBoxTab1.rejected.connect(self.reject)
         self.addServerConfigButton.clicked.connect(self.on_add_server_config_clicked)
         self.duplicateServerConfigButton.clicked.connect(self.on_duplicate_server_config_clicked)
@@ -200,10 +199,10 @@ class MainDialog(BASE, WIDGET):
     def on_add_server_config_clicked(self) -> None:
         self.open_server_config_dialog()
 
-    def get_selected_server_config(self) -> str:
+    def get_selected_server_config(self) -> Optional[str]:
         selected_row = self.serverTableWidget.currentRow()
         if selected_row == -1:
-            return
+            return None
         return self.serverTableWidget.item(selected_row, 0).text()
 
     def on_duplicate_server_config_clicked(self) -> None:
@@ -234,7 +233,28 @@ class MainDialog(BASE, WIDGET):
         api_request = ApiRequest(server_config)
         return server_config, api_request
 
-    def handle_project(self) -> None:
+    def run(self) -> None:
+        """
+        Executes the publishing or updating process for the current QGIS project.
+
+        This method:
+        - Verifies the QGIS project is saved and prompts for saving if needed
+        - Sets the cursor to indicate an ongoing process
+        - Validates input parameters based on selected mode (Publish/Update)
+        - Initializes API connection using server configuration
+        - Uploads the project to QGIS-Server
+        - Performs either publication (mb_publish) or update (mb_update) on Mapbender
+
+        The method uses the current dialog state (selected radio buttons,
+        server configuration, and input fields) for processing.
+
+        Error handling occurs throughout the various steps with appropriate feedback
+        to the user. The cursor is restored at the end regardless of outcome.
+
+        Returns:
+            None
+        """
+
         if not qgis_project_is_saved():
             return
 
@@ -260,7 +280,7 @@ class MainDialog(BASE, WIDGET):
             # Get server config: project paths
             paths = Paths.get_paths(server_config.projects_path)
             qgis_server_upload = QgisServerApiUpload(api_request, paths)
-            status_code_server_upload = qgis_server_upload.process_and_upload_project(api_request)
+            status_code_server_upload = qgis_server_upload.process_and_upload_project()
 
             if status_code_server_upload == 200:
                 wms_url = qgis_server_upload.get_wms_url(server_config)
