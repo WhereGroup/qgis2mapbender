@@ -112,22 +112,6 @@ class MapbenderApiUpload:
             QgsMessageLog.logMessage("No valid message in response_json.", TAG, level=Qgis.MessageLevel.Warning)
         return exit_status, slug
 
-    def assign_wms_to_source(self, slug: str, source_id: int, layer_set: str) -> tuple[int, Optional[str]]:
-        """
-        Assigns a WMS source to a Mapbender app.
-
-        Args:
-            slug (str): The slug of the Mapbender app.
-            source_id (int): The ID of the WMS source to assign.
-            layer_set (str): The layer set to assign.
-
-        Returns:
-            tuple[int, Optional[str]]: A tuple containing:
-                - An exit status (0 = success, 1 = failure).
-                - The output message if successful, None otherwise.
-        """
-        exit_status, output = self.api_request.wms_assign(slug, source_id, layer_set)
-
-        if output is None:
-            output = ""
-        return exit_status, output
+    def assign_wms_to_source(self, slug: str, source_id: int, layer_set: str) -> int:
+        exit_status = self.api_request.wms_assign(slug, source_id, layer_set)
+        return exit_status

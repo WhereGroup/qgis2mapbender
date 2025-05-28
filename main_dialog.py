@@ -341,7 +341,7 @@ class MainDialog(BASE, WIDGET):
             else:
                 slug = input_slug
 
-            exit_status_wms_assign, output_wms_assign= mb_upload.assign_wms_to_source(slug, source_ids[0], layer_set)
+            exit_status_wms_assign = mb_upload.assign_wms_to_source(slug, source_ids[0], layer_set)
             if exit_status_wms_assign != 200:
                 show_fail_box_ok("Failed", f"WMS could not be assigned to Mapbender application.")
                 return
