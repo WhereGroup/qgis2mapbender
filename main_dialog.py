@@ -317,7 +317,7 @@ class MainDialog(BASE, WIDGET):
         # Parameters
         is_clone_app = self.cloneTemplateRadioButton.isChecked()
         layer_set = self.layerSetLineEdit.text()
-        slug = self.mbSlugComboBox.currentText()
+        input_slug = self.mbSlugComboBox.currentText()
 
         try:
             mb_upload = MapbenderApiUpload(server_config, api_request, wms_url)
@@ -327,19 +327,21 @@ class MainDialog(BASE, WIDGET):
                 return
 
             if is_clone_app:
-                exit_status_app_clone, slug = mb_upload.clone_app_and_get_slug(slug)
+                exit_status_app_clone, slug = mb_upload.clone_app_and_get_slug(input_slug)
                 if exit_status_app_clone != 200:
                     show_fail_box_ok("Failed", f"Application could not be cloned.")
-                    update_mb_slug_in_settings(slug, is_mb_slug=False)
+                    update_mb_slug_in_settings(input_slug, is_mb_slug=False)
                     self.update_slug_combo_box()
                     return
                 QgsMessageLog.logMessage(f"Application was cloned to {slug}", TAG,
                                          level=Qgis.MessageLevel.Info)
 
-                update_mb_slug_in_settings(slug, is_mb_slug=True)
+                update_mb_slug_in_settings(input_slug, is_mb_slug=True)
                 self.update_slug_combo_box()
+            else:
+                slug = input_slug
 
-            exit_status_wms_assign, output_wms_assign= mb_upload.wms_assign(slug, source_ids[0], layer_set)
+            exit_status_wms_assign, output_wms_assign= mb_upload.assign_wms_to_source(slug, source_ids[0], layer_set)
             if exit_status_wms_assign != 200:
                 show_fail_box_ok("Failed", f"WMS could not be assigned to Mapbender application.")
                 return
