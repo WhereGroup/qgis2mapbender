@@ -95,9 +95,6 @@ class QgisServerApiUpload:
         """
         Executes the steps to zip the project, upload it, and delete the ZIP file.
 
-        Args:
-            server_config (ServerConfig): Server configuration.
-
         Returns:
             Optional[str]: status code
         """
