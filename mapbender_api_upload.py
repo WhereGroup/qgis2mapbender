@@ -88,30 +88,31 @@ class MapbenderApiUpload:
         return 0, reloaded_source_ids
 
 
-    def app_clone(self, template_slug: str) -> tuple[int, str]:
+    def clone_app_and_get_slug(self, template_slug: str) -> tuple[int, Optional[str]]:
         """
-        Clones an existing application in the Application backend. This will create a new application with
-        a _imp suffix as application name.
-        :param template_slug: template slug to clone
-        :return: exit_status (0 = success, 1 = fail),
-        :return:slug of the new clone app
-        :return:error_output
+        Clones a Mapbender app template and retrieves its slug.
+
+        Args:
+            template_slug (str): The slug of the template to clone.
+
+        Returns:
+            tuple[int, Optional[str]]: A tuple containing:
+                - An exit status (0 = success, 1 = failure).
+                - The slug of the cloned app if successful, None otherwise.
         """
         exit_status, response_json =  self.api_request.app_clone(template_slug)
-
+        slug = None
         if response_json and "message" in response_json:
             message = response_json["message"]
             try:
                 slug = (message.split("slug", 1)[1]).split(",")[0].strip()
             except IndexError:
-                slug = None
                 QgsMessageLog.logMessage("Failed to parse slug from message.", TAG, level=Qgis.MessageLevel.Warning)
         else:
-            slug = None
             QgsMessageLog.logMessage("No valid message in response_json.", TAG, level=Qgis.MessageLevel.Warning)
         return exit_status, slug
 
-    def wms_assign(self, slug: str, source_id: int, layer_set: str) -> tuple[int, str, Optional[str]]:
+    def wms_assign(self, slug: str, source_id: int, layer_set: str) -> tuple[int, Optional[str]]:
         """
         :param slug:
         :param source_id:

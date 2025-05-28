@@ -298,15 +298,26 @@ class MainDialog(BASE, WIDGET):
 
     def mb_publish(self, server_config: ServerConfig, api_request: ApiRequest, wms_url: str) -> None:
         """
-        Publishes the WMS on Mapbender using the ApiRequest class.
+        Publishes a WMS to Mapbender and assigns it to an application.
+
+        This method performs the following steps:
+        - Initializes a MapbenderApiUpload instance with server configuration and API request.
+        - Uploads the WMS to Mapbender.
+        - Clones an application if requested, or assigns the WMS to an existing application.
+        - Handles success or failure scenarios with appropriate user feedback.
 
         Args:
-            wms_url: The WMS URL to be published.
+            server_config (ServerConfig): The server configuration object.
+            api_request (ApiRequest): The API request object.
+            wms_url (str): The URL of the WMS to be published.
+
+        Returns:
+            None
         """
         # Parameters
-        clone_app = self.cloneTemplateRadioButton.isChecked()
+        is_clone_app = self.cloneTemplateRadioButton.isChecked()
         layer_set = self.layerSetLineEdit.text()
-        template_slug = self.mbSlugComboBox.currentText()
+        slug = self.mbSlugComboBox.currentText()
 
         try:
             mb_upload = MapbenderApiUpload(server_config, api_request, wms_url)
@@ -315,22 +326,20 @@ class MainDialog(BASE, WIDGET):
                 QgsMessageLog.logMessage(f"FAILED mb_upload", TAG, level=Qgis.MessageLevel.Info)
                 return
 
-            if clone_app:
-                exit_status_app_clone, slug = mb_upload.app_clone(template_slug)
+            if is_clone_app:
+                exit_status_app_clone, slug = mb_upload.clone_app_and_get_slug(slug)
                 if exit_status_app_clone != 200:
                     show_fail_box_ok("Failed", f"Application could not be cloned.")
-                    update_mb_slug_in_settings(template_slug, is_mb_slug=False)
+                    update_mb_slug_in_settings(slug, is_mb_slug=False)
                     self.update_slug_combo_box()
                     return
                 QgsMessageLog.logMessage(f"Application was cloned to {slug}", TAG,
                                          level=Qgis.MessageLevel.Info)
 
-                update_mb_slug_in_settings(template_slug, is_mb_slug=True)
+                update_mb_slug_in_settings(slug, is_mb_slug=True)
                 self.update_slug_combo_box()
-                exit_status_wms_assign, output_wms_assign = mb_upload.wms_assign(slug, source_ids[0], layer_set)
-            else:
-                slug = self.mbSlugComboBox.currentText()
-                exit_status_wms_assign, output_wms_assign= mb_upload.wms_assign(slug, source_ids[0], layer_set)
+
+            exit_status_wms_assign, output_wms_assign= mb_upload.wms_assign(slug, source_ids[0], layer_set)
             if exit_status_wms_assign != 200:
                 show_fail_box_ok("Failed", f"WMS could not be assigned to Mapbender application.")
                 return
@@ -358,7 +367,24 @@ class MainDialog(BASE, WIDGET):
             QgsMessageLog.logMessage(f"Error in mb_publish: {e}", TAG, level=Qgis.MessageLevel.Critical)
         return
 
-    def mb_update(self, server_config: ServerConfig, api_request: ApiRequest, wms_url: str)-> None:
+    @staticmethod
+    def mb_update(server_config: ServerConfig, api_request: ApiRequest, wms_url: str)-> None:
+        """
+        Updates an existing WMS in Mapbender by reloading its source.
+
+        This method performs the following steps:
+        - Initializes a MapbenderApiUpload instance with server configuration and API request.
+        - Attempts to reload the WMS source.
+        - Handles success or failure scenarios with appropriate user feedback.
+
+        Args:
+            server_config (ServerConfig): The server configuration object.
+            api_request (ApiRequest): The API request object.
+            wms_url (str): The URL of the WMS to be updated.
+
+        Returns:
+            None
+        """
         try:
             mb_reload = MapbenderApiUpload(server_config, api_request, wms_url)
             exit_status, source_ids = mb_reload.mb_reload()
