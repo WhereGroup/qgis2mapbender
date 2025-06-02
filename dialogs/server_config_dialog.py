@@ -50,6 +50,7 @@ class ServerConfigDialog(BASE, WIDGET):
         self.authcfg = ''
         self.selected_server_config_name = server_config_name
         self.mode = mode
+        self.credentialsPlainTextRadioButton.setChecked(True)
         self.dialogButtonBox.button(QDialogButtonBox.StandardButton.Save).setEnabled(False)
         self.testButton.setEnabled(False)
         if server_config_name:
