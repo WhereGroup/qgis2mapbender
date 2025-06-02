@@ -114,4 +114,16 @@ class MapbenderApiUpload:
 
     def assign_wms_to_source(self, slug: str, source_id: int, layer_set: str) -> int:
         exit_status = self.api_request.wms_assign(slug, source_id, layer_set)
+        if exit_status == 404:
+            msg = (f"WMS {self.wms_url} was successfully created and uploaded to Mapbender, but not assigned to an "
+                   f"application. \n\nApplication '{slug}' does not exists. Please choose a different application.")
+            QgsMessageLog.logMessage(msg, TAG, level=Qgis.MessageLevel.Warning)
+            show_fail_box_ok("Failed",msg)
+            return exit_status
+        if exit_status == 200:
+            QgsMessageLog.logMessage(f"WMS successfully assigned to source {source_id} with slug {slug}.", TAG, level=Qgis.MessageLevel.Info)
+        else:
+            QgsMessageLog.logMessage(f"Failed to assign WMS to source {source_id} with slug {slug}.", TAG, level=Qgis.MessageLevel.Critical)
+            show_fail_box_ok("Failed",
+                             f"Failed to assign WMS to source {source_id} with slug {slug}.")
         return exit_status

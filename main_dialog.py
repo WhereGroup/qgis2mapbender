@@ -329,9 +329,9 @@ class MainDialog(BASE, WIDGET):
             if is_clone_app:
                 exit_status_app_clone, slug = mb_upload.clone_app_and_get_slug(input_slug)
                 if exit_status_app_clone != 200:
-                    show_fail_box_ok("Failed", f"Error by copying the given application. Application with slug"
-                                               f" '{input_slug}' not found. \n \nWMS {wms_url}  was successfully created "
-                                               f"and uploaded to Mapbender, but not assigned to an application.")
+                    show_fail_box_ok("Failed", f"WMS {wms_url}  was successfully created and uploaded to "
+                                               f"Mapbender, but not assigned to an application. \n \nError by copying "
+                                               f"the given application. Application with slug {input_slug}' not found.")
                     update_mb_slug_in_settings(input_slug, is_mb_slug=False)
                     self.update_slug_combo_box()
                     return
@@ -345,7 +345,6 @@ class MainDialog(BASE, WIDGET):
 
             exit_status_wms_assign = mb_upload.assign_wms_to_source(slug, source_ids[0], layer_set)
             if exit_status_wms_assign != 200:
-                show_fail_box_ok("Failed", f"WMS could not be assigned to Mapbender application.")
                 return
             if is_reloaded:
                 QgsMessageLog.logMessage(
