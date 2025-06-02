@@ -50,7 +50,7 @@ class ApiRequest:
             "password": self.server_config.password
         }
         ERROR_MSG_404 = "Authentication failed: 404 invalid URL. Please check the server configuration (Is the URL valid?)"
-        ERROR_MSG_401 = "Authentication failed: 401. Please check username and password"
+        ERROR_MSG_401 = "Authentication failed: 401. Please check user name and password"
         ERROR_MSG_OTHER = "Authentication failed. Please see logs under QGIS2Mapbender for more information."
         ERROR_MSG_TITLE = "Failed to obtain a valid token. Authentication failed"
 
