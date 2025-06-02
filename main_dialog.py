@@ -353,7 +353,7 @@ class MainDialog(BASE, WIDGET):
                 show_succes_box_ok(
                     "Success report",
                     f"WMS \n\n{wms_url}\n\nalready existed as a Mapbender source(s) and was successfully reloaded (source(s) {source_ids}) and added to Mapbender application:\n\n"
-                    f"{server_config.mb_protocol}{server_config.mb_basis_url}/application/{slug}"
+                    f"{slug}"
                 )
             else:
                 QgsMessageLog.logMessage(
@@ -362,7 +362,7 @@ class MainDialog(BASE, WIDGET):
                 show_succes_box_ok(
                     "Success report",
                     f"WMS successfully created:\n\n{wms_url}\n\nAnd added to Mapbender application:\n\n"
-                    f"{server_config.mb_protocol}{server_config.mb_basis_url}/application/{slug}"
+                    f"{slug}"
                 )
             #self.close()
         except Exception as e:
