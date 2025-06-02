@@ -105,6 +105,7 @@ class ApiRequest:
 
         try:
             response = self.session.request(method=method.upper(), url=url, headers= self.headers, **kwargs)
+            print(f"endpoint {endpoint}: status code: {response.status_code}. Response as text: {response.text}")
             return response
         except requests.HTTPError as http_err:
             error_logging_and_user_message(http_err)
@@ -146,6 +147,7 @@ class ApiRequest:
                 else:
                     msg_str = ERROR_MSG_400 if status_code == 400 else ERROR_MSG_500 if status_code == 500 else ERROR_MSG_403 if status_code == 403 else "Error: "+ str(
                         status_code)
+                    msg_str = "Error: "+ str(response.text)
                     QgsMessageLog.logMessage(msg_str, TAG, level=Qgis.MessageLevel.Critical)
                     show_fail_box_ok("Failed",
                         f"Upload to QGIS server failed. {msg_str}")
@@ -283,6 +285,10 @@ class ApiRequest:
         self._ensure_token()
 
         response = self._sendRequest(endpoint, "get", params=params)
+        if response.status_code == 404:
+            error_message = f"Error 404: Error by copying the given application. Application with slug '{template_slug}' not found."
+            QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
+            return response.status_code, None
         try:
             response_json = response.json()
             return response.status_code, response_json
