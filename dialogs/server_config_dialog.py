@@ -19,7 +19,7 @@ WIDGET, BASE = uic.loadUiType(os.path.join(
 
 class ServerConfigDialog(BASE, WIDGET):
     serverConfigNameLineEdit: QLineEdit
-    serverAddressLineEdit: QLineEdit
+    # serverAddressLineEdit: QLineEdit
     credentialsPlainTextRadioButton: QRadioButton
     credentialsAuthDbRadioButton: QRadioButton
     userNameLineEdit: QLineEdit
@@ -37,7 +37,7 @@ class ServerConfigDialog(BASE, WIDGET):
         self.setupUi(self)
         self.mandatoryFields = [
             self.serverConfigNameLineEdit,
-            self.serverAddressLineEdit,
+            # self.serverAddressLineEdit,
             self.qgisProjectPathLineEdit,
             self.qgisServerPathLineEdit,
             self.mbBasisUrlLineEdit,
@@ -66,7 +66,7 @@ class ServerConfigDialog(BASE, WIDGET):
         regex_validator = QRegularExpressionValidator(regex)
         int_validator = QIntValidator()
         self.serverConfigNameLineEdit.setValidator(regex_validator)
-        self.serverAddressLineEdit.setValidator(regex_validator)
+        # self.serverAddressLineEdit.setValidator(regex_validator)
         self.userNameLineEdit.setValidator(regex_validator)
         self.passwordLineEdit.setValidator(regex_validator)
         self.qgisProjectPathLineEdit.setValidator(regex_validator)
@@ -78,7 +78,7 @@ class ServerConfigDialog(BASE, WIDGET):
         self.dialogButtonBox.accepted.connect(self.saveServerConfig)
         self.dialogButtonBox.rejected.connect(self.reject)
         self.serverConfigNameLineEdit.textChanged.connect(self.validateFields)
-        self.serverAddressLineEdit.textChanged.connect(self.onChangeServerName)
+        # self.serverAddressLineEdit.textChanged.connect(self.onChangeServerName)
         self.credentialsPlainTextRadioButton.toggled.connect(self.onToggleCredential)
         self.qgisProjectPathLineEdit.textChanged.connect(self.validateFields)
         self.qgisServerPathLineEdit.textChanged.connect(self.validateFields)
@@ -93,11 +93,16 @@ class ServerConfigDialog(BASE, WIDGET):
         with waitCursor():
             errorMsg, successMsg  = self.execTestsImpl()
 
-        if errorMsg:
+        if errorMsg and successMsg:
             show_fail_box_ok(
                 "Test Results",
                 f"<b>Failed Tests:</b><ul>{''.join(f'<li>{test}</li>' for test in errorMsg.splitlines())}</ul>"
                 f"<b>Successful Tests:</b><ul>{''.join(f'<li>{test}</li>' for test in successMsg.splitlines())}</ul>"
+            )
+        if errorMsg and not successMsg:
+            show_fail_box_ok(
+                "Test Results",
+                f"<b>Failed Tests:</b><ul>{''.join(f'<li>{test}</li>' for test in errorMsg.splitlines())}</ul>"
             )
         else:
             self.testButton.setIcon(self.checkedIcon)
@@ -121,12 +126,12 @@ class ServerConfigDialog(BASE, WIDGET):
         failed_tests = []
         successful_tests = []
 
-        # Test 1: Server URL validation
-        serverUrl = configFromForm.url
-        if not uri_validator(serverUrl):
-            failed_tests.append("The provided server URL is invalid.")
-        else:
-            successful_tests.append("The provided server URL is valid.")
+        # # Test 1: Server URL validation
+        # serverUrl = configFromForm.url
+        # if not uri_validator(serverUrl):
+        #     failed_tests.append("The provided server URL is invalid.")
+        # else:
+        #     successful_tests.append("The provided server URL is valid.")
 
         # Test 2: Token generation
         try:
@@ -188,7 +193,7 @@ class ServerConfigDialog(BASE, WIDGET):
         self.authcfg = server_config.authcfg
         if mode == 'edit':
             self.serverConfigNameLineEdit.setText(server_config_name)
-        self.serverAddressLineEdit.setText(server_config.url)
+        # self.serverAddressLineEdit.setText(server_config.url)
         self.userNameLineEdit.setText(server_config.username)
         self.passwordLineEdit.setText(server_config.password)
         if server_config.authcfg:
@@ -204,7 +209,7 @@ class ServerConfigDialog(BASE, WIDGET):
     def getServerConfigFromFormular(self) -> ServerConfig:
         return ServerConfig(
             name=self.serverConfigNameLineEdit.text(),
-            url=self.serverAddressLineEdit.text(),
+            # url=self.serverAddressLineEdit.text(),
             username=self.userNameLineEdit.text(),
             password=self.passwordLineEdit.text(),
             projects_path=self.qgisProjectPathLineEdit.text(),

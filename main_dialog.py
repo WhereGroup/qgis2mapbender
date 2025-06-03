@@ -118,9 +118,9 @@ class MainDialog(BASE, WIDGET):
 
             server_config = ServerConfig.getParamsFromSettings(name)
 
-            item_url = QTableWidgetItem()
-            item_url.setText(server_config.url)
-            self.serverTableWidget.setItem(i, 1, item_url)
+            # item_url = QTableWidgetItem()
+            # item_url.setText(server_config.url)
+            # self.serverTableWidget.setItem(i, 1, item_url)
 
             # Further columns (see settings.py SERVER_TABLE_HEADERS)
             # item_path_qgis_projects = QTableWidgetItem()
