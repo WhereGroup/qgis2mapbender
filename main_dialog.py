@@ -179,7 +179,7 @@ class MainDialog(BASE, WIDGET):
         self.publishButton.setEnabled(self.mbSlugComboBox.currentText() != '')
 
     def open_server_config_dialog(self, config_name: Optional[str] = None, mode: Optional[str] = None) -> None:
-        new_server_config_dialog = ServerConfigDialog(server_config_name=config_name, mode=mode, parent=iface.mainWindow())
+        new_server_config_dialog = ServerConfigDialog(server_config_name=config_name, mode=mode) #, parent=iface.mainWindow())
         new_server_config_dialog.exec()
         self.update_server_table()
         self.update_server_combo_box()
