@@ -19,7 +19,6 @@ WIDGET, BASE = uic.loadUiType(os.path.join(
 
 class ServerConfigDialog(BASE, WIDGET):
     serverConfigNameLineEdit: QLineEdit
-    # serverAddressLineEdit: QLineEdit
     credentialsPlainTextRadioButton: QRadioButton
     credentialsAuthDbRadioButton: QRadioButton
     userNameLineEdit: QLineEdit
@@ -37,7 +36,6 @@ class ServerConfigDialog(BASE, WIDGET):
         self.setupUi(self)
         self.mandatoryFields = [
             self.serverConfigNameLineEdit,
-            # self.serverAddressLineEdit,
             self.qgisProjectPathLineEdit,
             self.qgisServerPathLineEdit,
             self.mbBasisUrlLineEdit,
@@ -64,9 +62,7 @@ class ServerConfigDialog(BASE, WIDGET):
         # QLineEdit validators
         regex = QRegularExpression("[^\\s;]*")  # regex for blank spaces and semicolon
         regex_validator = QRegularExpressionValidator(regex)
-        int_validator = QIntValidator()
         self.serverConfigNameLineEdit.setValidator(regex_validator)
-        # self.serverAddressLineEdit.setValidator(regex_validator)
         self.userNameLineEdit.setValidator(regex_validator)
         self.passwordLineEdit.setValidator(regex_validator)
         self.qgisProjectPathLineEdit.setValidator(regex_validator)
@@ -78,7 +74,6 @@ class ServerConfigDialog(BASE, WIDGET):
         self.dialogButtonBox.accepted.connect(self.saveServerConfig)
         self.dialogButtonBox.rejected.connect(self.reject)
         self.serverConfigNameLineEdit.textChanged.connect(self.validateFields)
-        # self.serverAddressLineEdit.textChanged.connect(self.onChangeServerName)
         self.credentialsPlainTextRadioButton.toggled.connect(self.onToggleCredential)
         self.qgisProjectPathLineEdit.textChanged.connect(self.validateFields)
         self.qgisServerPathLineEdit.textChanged.connect(self.validateFields)
@@ -126,21 +121,14 @@ class ServerConfigDialog(BASE, WIDGET):
         failed_tests = []
         successful_tests = []
 
-        # # Test 1: Server URL validation
-        # serverUrl = configFromForm.url
-        # if not uri_validator(serverUrl):
-        #     failed_tests.append("The provided server URL is invalid.")
-        # else:
-        #     successful_tests.append("The provided server URL is valid.")
-
-        # Test 2: Token generation
+        # Test 1: Token generation
         try:
             api_request = ApiRequest(configFromForm)
             if not api_request._token_is_available():
                 failed_tests.append("Token generation failed. Please check your credentials.")
             else:
                 successful_tests.extend(["Credentials are valid.","Token generation was successful."])
-                # Test 3: ZIP upload
+                # Test 2: ZIP upload
                 test_zip_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data/test_upload.zip'))
                 status_code = api_request.uploadZip(test_zip_path)
                 if status_code != 200:
@@ -151,7 +139,7 @@ class ServerConfigDialog(BASE, WIDGET):
         except Exception as e:
             show_fail_box_ok("Error", f"An error occurred during API initialization: {str(e)}")
 
-        # Test 4: QGIS server connection
+        # Test 3: QGIS server connection
         wmsServiceRequest = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities"
         qgiServerUrl = (f'{configFromForm.qgis_server_path}'
                         f'{wmsServiceRequest}')
@@ -161,7 +149,7 @@ class ServerConfigDialog(BASE, WIDGET):
         else:
             successful_tests.append("Connection to QGIS Server was successful.")
 
-        # Test 5: Mapbender connection
+        # Test 4: Mapbender connection
         mapbenderUrl = configFromForm.mb_basis_url
         errorStr = self.testHttpConn(mapbenderUrl, 'Mapbender', configFromForm.mb_basis_url)
         if errorStr:
@@ -193,7 +181,6 @@ class ServerConfigDialog(BASE, WIDGET):
         self.authcfg = server_config.authcfg
         if mode == 'edit':
             self.serverConfigNameLineEdit.setText(server_config_name)
-        # self.serverAddressLineEdit.setText(server_config.url)
         self.userNameLineEdit.setText(server_config.username)
         self.passwordLineEdit.setText(server_config.password)
         if server_config.authcfg:
@@ -209,7 +196,6 @@ class ServerConfigDialog(BASE, WIDGET):
     def getServerConfigFromFormular(self) -> ServerConfig:
         return ServerConfig(
             name=self.serverConfigNameLineEdit.text(),
-            # url=self.serverAddressLineEdit.text(),
             username=self.userNameLineEdit.text(),
             password=self.passwordLineEdit.text(),
             projects_path=self.qgisProjectPathLineEdit.text(),
