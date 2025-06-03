@@ -80,7 +80,7 @@ class MainDialog(BASE, WIDGET):
         self.removeServerConfigButton.setIcon(QIcon(':/images/themes/default/mIconDelete.svg'))
         self.editServerConfigButton.setIcon(QIcon(':/images/themes/default/mActionAllEdits.svg'))
         server_table_headers = ["Name",
-                                "URL"]  # , "QGIS-Projects path", "QGIS-Server path" , "Mapbender app path", "Mapbender basis URL"
+                                "Mapbender URL"]  # "QGIS-Server path" ,
         self.serverTableWidget.setColumnCount(len(server_table_headers))
         self.serverTableWidget.setHorizontalHeaderLabels(server_table_headers)
         self.serverTableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
@@ -118,26 +118,14 @@ class MainDialog(BASE, WIDGET):
 
             server_config = ServerConfig.getParamsFromSettings(name)
 
-            # item_url = QTableWidgetItem()
-            # item_url.setText(server_config.url)
-            # self.serverTableWidget.setItem(i, 1, item_url)
+            item_mb_basis_url = QTableWidgetItem()
+            item_mb_basis_url.setText(server_config.mb_basis_url)
+            self.serverTableWidget.setItem(i, 1, item_mb_basis_url)
 
-            # Further columns (see settings.py SERVER_TABLE_HEADERS)
-            # item_path_qgis_projects = QTableWidgetItem()
-            # item_path_qgis_projects.setText(server_config.projects_path)
-            # self.serverTableWidget.setItem(i, 2, item_path_qgis_projects)
-            #
+            # Further columns
             # item_qgis_server_path = QTableWidgetItem()
             # item_qgis_server_path.setText(server_config.qgis_server_path)
-            # self.serverTableWidget.setItem(i, 3, item_qgis_server_path)
-            #
-            # item_mb_app_path = QTableWidgetItem()
-            # item_mb_app_path.setText(server_config.mb_app_path)
-            # self.serverTableWidget.setItem(i, 4, item_mb_app_path)
-            #
-            # item_mb_basis_url = QTableWidgetItem()
-            # item_mb_basis_url.setText(server_config.mb_basis_url)
-            # self.serverTableWidget.setItem(i, 5, item_mb_basis_url)
+            # self.serverTableWidget.setItem(i, 2, item_qgis_server_path)
 
         self.update_server_combo_box()
 
