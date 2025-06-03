@@ -8,7 +8,6 @@ from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
 @dataclass
 class ServerConfig:
     name: str
-    url: str
     username: str
     password: str
     projects_path: str
@@ -19,7 +18,6 @@ class ServerConfig:
 
     def save(self, encrypted: bool):
         s = QgsSettings()
-        s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/url", self.url)
         if encrypted:
             s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/username", '')
             s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/password", '')
@@ -62,7 +60,6 @@ class ServerConfig:
     @staticmethod
     def getParamsFromSettings(name: str):
         s = QgsSettings()
-        url = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/url")
         projects_path = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/projects_path")
         username = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/username")
         password = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/password")
@@ -71,8 +68,8 @@ class ServerConfig:
         authcfg = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/authcfg")
         if authcfg:
             username, password = ServerConfig.get_username_and_password_from_auth_db(authcfg)
-        return ServerConfig(name, url, username, password, projects_path, qgis_server_path,
-                        mb_basis_url, authcfg)
+        return ServerConfig(name, username, password, projects_path, qgis_server_path,
+                            mb_basis_url, authcfg)
 
     @staticmethod
     def get_username_and_password_from_auth_db(authcfg):

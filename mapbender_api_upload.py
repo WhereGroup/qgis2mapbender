@@ -120,9 +120,9 @@ class MapbenderApiUpload:
             QgsMessageLog.logMessage(msg, TAG, level=Qgis.MessageLevel.Warning)
             show_fail_box_ok("Failed",msg)
             return exit_status
-        if exit_status == 200:
+        elif exit_status == 200:
             QgsMessageLog.logMessage(f"WMS with source id {source_id} successfully assigned to slug {slug}.", TAG, level=Qgis.MessageLevel.Info)
-        if exit_status == 500:
+        elif exit_status == 500:
             QgsMessageLog.logMessage(f"Failed to assign WMS with source id {source_id} to slug {slug}. Please "
                                      f"check if the application has at least one layerset.", TAG, level=Qgis.MessageLevel.Critical)
             show_fail_box_ok("Failed",
