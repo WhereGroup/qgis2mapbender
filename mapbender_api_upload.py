@@ -127,7 +127,11 @@ class MapbenderApiUpload:
                                      f"check if the application has at least one layerset.", TAG, level=Qgis.MessageLevel.Critical)
             show_fail_box_ok("Failed",
                              f"WMS {self.wms_url} successfully created and uploaded to Mapbender. \n\nFailed to "
-                             f"assign WMS with source id {source_id} to slug {slug}.\n\nPlease check if the application has at least one layerset.")
+                             f"assign WMS with source id {source_id} to slug {slug}.\n\nPlease check if the application "
+                             f"has at least one layerset or if the given layerset exists. \n\nThese applications should "
+                             f"have at least one layerset: layerset named 'main' (default layerset for adding a new WMS "
+                             f"to the application) OR layerset named with any other name (in this case, the name of the "
+                             f"layerset should be specified when using the plugin)")
         else:
             QgsMessageLog.logMessage(f"Failed to assign WMS with source id {source_id} to slug {slug}.", TAG, level=Qgis.MessageLevel.Critical)
             show_fail_box_ok("Failed",
