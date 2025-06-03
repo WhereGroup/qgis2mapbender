@@ -25,12 +25,8 @@ class ServerConfigDialog(BASE, WIDGET):
     userNameLineEdit: QLineEdit
     passwordLineEdit: QLineEdit
     authLabel: QLabel
-    protocolQgisServerCmbBox: QComboBox
-    # serverConfigNameLabel1: QLabel
     qgisServerPathLineEdit: QLineEdit     # TODO: better to rename qgisServerUrlLineEdit
     qgisProjectPathLineEdit: QLineEdit
-    protocolMapbenderCmbBox: QComboBox
-    # serverConfigNameLabel2: QLabel
     mbBasisUrlLineEdit: QLineEdit
     # buttons
     testButton: QPushButton
@@ -126,8 +122,7 @@ class ServerConfigDialog(BASE, WIDGET):
         successful_tests = []
 
         # Test 1: Server URL validation
-        serverUrl = (f'{self.protocolQgisServerCmbBox.currentText()}'
-                        f'{configFromForm.url}')
+        serverUrl = configFromForm.url
         if not uri_validator(serverUrl):
             failed_tests.append("The provided server URL is invalid.")
         else:
@@ -153,8 +148,7 @@ class ServerConfigDialog(BASE, WIDGET):
 
         # Test 4: QGIS server connection
         wmsServiceRequest = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities"
-        qgiServerUrl = (f'{self.protocolQgisServerCmbBox.currentText()}'
-                        f'{configFromForm.qgis_server_path}'
+        qgiServerUrl = (f'{configFromForm.qgis_server_path}'
                         f'{wmsServiceRequest}')
         errorStr = self.testHttpConn(qgiServerUrl, 'Qgis Server', configFromForm.qgis_server_path)
         if errorStr:
@@ -163,19 +157,12 @@ class ServerConfigDialog(BASE, WIDGET):
             successful_tests.append("Connection to QGIS Server was successful.")
 
         # Test 5: Mapbender connection
-        mapbenderUrl = (f'{configFromForm.mb_protocol}'
-                        f'{configFromForm.mb_basis_url}')
+        mapbenderUrl = configFromForm.mb_basis_url
         errorStr = self.testHttpConn(mapbenderUrl, 'Mapbender', configFromForm.mb_basis_url)
         if errorStr:
             failed_tests.append(errorStr)
         else:
             successful_tests.append("Connection to Mapbender was successful.")
-
-        # if failed_tests:
-        #     QgsMessageLog.logMessage(f"Fehlgeschlagene Tests:\n{chr(10).join(failed_tests)}", TAG, level=Qgis.Warning)
-        # if successful_tests:
-        #     QgsMessageLog.logMessage(f"Erfolgreiche Tests:\n{chr(10).join(successful_tests)}", TAG, level=Qgis.Info)
-
         return "\n".join(failed_tests) if failed_tests else None, "\n".join(
             successful_tests) if successful_tests else None
 
@@ -211,9 +198,7 @@ class ServerConfigDialog(BASE, WIDGET):
             self.authLabel.setText('')
             self.credentialsPlainTextRadioButton.setChecked(True)
         self.qgisProjectPathLineEdit.setText(server_config.projects_path)
-        self.protocolQgisServerCmbBox.setCurrentText(server_config.qgis_server_protocol)
         self.qgisServerPathLineEdit.setText(server_config.qgis_server_path)
-        self.protocolMapbenderCmbBox.setCurrentText(server_config.mb_protocol)
         self.mbBasisUrlLineEdit.setText(server_config.mb_basis_url)
 
     def getServerConfigFromFormular(self) -> ServerConfig:
@@ -223,9 +208,7 @@ class ServerConfigDialog(BASE, WIDGET):
             username=self.userNameLineEdit.text(),
             password=self.passwordLineEdit.text(),
             projects_path=self.qgisProjectPathLineEdit.text(),
-            qgis_server_protocol=self.protocolQgisServerCmbBox.currentText(),
             qgis_server_path=self.qgisServerPathLineEdit.text(),
-            mb_protocol=self.protocolMapbenderCmbBox.currentText(),
             mb_basis_url=self.mbBasisUrlLineEdit.text(),
             authcfg=self.authcfg,
         )

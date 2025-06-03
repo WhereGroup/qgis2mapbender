@@ -30,7 +30,7 @@ class QgisServerApiUpload:
         """
         wms_service_version_request = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities&map="
         server_project_dir = self.source_project_file_name.split('.')[0]
-        wms_url = (f'{server_config.qgis_server_protocol}{server_config.qgis_server_path}'
+        wms_url = (f'{server_config.qgis_server_path}'
                    f'{wms_service_version_request}{server_config.projects_path}{server_project_dir}/'
                    f'{self.source_project_file_name}')
         QgsMessageLog.logMessage(f"WMS URL: {wms_url}", TAG, level=Qgis.MessageLevel.Info)

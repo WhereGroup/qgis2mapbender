@@ -12,9 +12,7 @@ class ServerConfig:
     username: str
     password: str
     projects_path: str
-    qgis_server_protocol: str
     qgis_server_path: str
-    mb_protocol: str
     mb_basis_url: str
     authcfg: str
 
@@ -33,11 +31,8 @@ class ServerConfig:
             s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/authcfg", '')
 
         s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/projects_path", self.projects_path)
-        s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/qgis_server_protocol",
-                   self.qgis_server_protocol)
         s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/qgis_server_path",
                    self.qgis_server_path)
-        s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/mb_protocol", self.mb_protocol)
         s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/mb_basis_url", self.mb_basis_url)
 
     @staticmethod
@@ -72,15 +67,12 @@ class ServerConfig:
         username = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/username")
         password = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/password")
         qgis_server_path = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/qgis_server_path")
-        qgis_server_protocol = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/qgis_server_protocol")
-        mb_protocol = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/mb_protocol")
         mb_basis_url = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/mb_basis_url")
         authcfg = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/authcfg")
         if authcfg:
             username, password = ServerConfig.get_username_and_password_from_auth_db(authcfg)
-
-        return ServerConfig(name, url, username, password, projects_path, qgis_server_protocol, qgis_server_path,
-                            mb_protocol, mb_basis_url, authcfg)
+        return ServerConfig(name, url, username, password, projects_path, qgis_server_path,
+                        mb_basis_url, authcfg)
 
     @staticmethod
     def get_username_and_password_from_auth_db(authcfg):

@@ -4,7 +4,7 @@ import re
 
 from qgis.core import QgsMessageLog, Qgis
 
-from .settings import TAG, MAPBENDER_API
+from .settings import TAG
 from .helpers import error_logging_and_user_message, show_fail_box_ok
 
 
@@ -22,7 +22,8 @@ class ApiRequest:
         """
         self.server_config = server_config
         self.session = requests.Session()
-        self.api_url = f"{self.server_config.mb_protocol}{self.server_config.url}{MAPBENDER_API}"
+        mb_base_url = re.match(r"(https?://[^/]+/mapbender)", self.server_config.mb_basis_url).group(1)
+        self.api_url = f"{mb_base_url}/api"
         QgsMessageLog.logMessage(f"Configuring API requests to URL: {self.api_url}", TAG, level=Qgis.MessageLevel.Info)
         self.headers = {}
         self.token = None
