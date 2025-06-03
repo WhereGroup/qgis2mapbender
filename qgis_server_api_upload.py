@@ -15,15 +15,15 @@ class QgisServerApiUpload:
         self.source_project_dir_name = paths.source_project_dir_name
         self.source_project_file_name = paths.source_project_file_name
         self.source_project_zip_file_path = paths.source_project_zip_file_path
-        self.server_project_parent_dir_path = paths.server_project_parent_dir_path
         self.api_request = api_request
 
-    def get_wms_url(self, server_config: ServerConfig) -> str:
+    def get_wms_url(self, server_config: ServerConfig, upload_dir: str) -> str:
         """
         Constructs the WMS URL for the uploaded project.
 
         Args:
             server_config: The server configuration object.
+            upload_dir: The directory where the project is uploaded.
 
         Returns:
             str: The WMS URL.
@@ -31,12 +31,12 @@ class QgisServerApiUpload:
         wms_service_version_request = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities&map="
         server_project_dir = self.source_project_file_name.split('.')[0]
         wms_url = (f'{server_config.qgis_server_path}'
-                   f'{wms_service_version_request}{server_config.projects_path}{server_project_dir}/'
+                   f'{wms_service_version_request}{upload_dir}{server_project_dir}/'
                    f'{self.source_project_file_name}')
         QgsMessageLog.logMessage(f"WMS URL: {wms_url}", TAG, level=Qgis.MessageLevel.Info)
         return wms_url
 
-    def process_and_upload_project(self) -> Optional[int]:
+    def process_and_upload_project(self) -> Optional[tuple[str, Optional[str]]]:
         """
         Executes the steps to zip the project, upload it, and delete the ZIP file.
 
@@ -55,12 +55,12 @@ class QgisServerApiUpload:
                                      level=Qgis.MessageLevel.Critical)
 
         elif self.api_request.token:
-            status_code= self.api_request.uploadZip(self.source_project_zip_file_path)
+            status_code, upload_dir = self.api_request.uploadZip(self.source_project_zip_file_path)
 
             # Step 3: Delete the local ZIP file
             self._delete_local_project_zip_file()
 
-        return status_code
+        return status_code, upload_dir
 
     def _zip_local_project_dir(self) -> bool:
         """

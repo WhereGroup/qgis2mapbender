@@ -25,7 +25,6 @@ class ServerConfigDialog(BASE, WIDGET):
     passwordLineEdit: QLineEdit
     authLabel: QLabel
     qgisServerPathLineEdit: QLineEdit     # TODO: better to rename qgisServerUrlLineEdit
-    qgisProjectPathLineEdit: QLineEdit
     mbBasisUrlLineEdit: QLineEdit
     # buttons
     testButton: QPushButton
@@ -36,7 +35,6 @@ class ServerConfigDialog(BASE, WIDGET):
         self.setupUi(self)
         self.mandatoryFields = [
             self.serverConfigNameLineEdit,
-            self.qgisProjectPathLineEdit,
             self.qgisServerPathLineEdit,
             self.mbBasisUrlLineEdit,
         ]
@@ -54,8 +52,6 @@ class ServerConfigDialog(BASE, WIDGET):
             self.testButton.setEnabled(True)
 
         self.serverConfigNameLineEdit.setToolTip('Custom server configuration name without blank spaces')
-        self.qgisProjectPathLineEdit.setToolTip('Example: /data/qgis-projects/')
-        self.qgisProjectPathLineEdit.setPlaceholderText('/data/qgis-projects/')
         self.qgisServerPathLineEdit.setToolTip('Example: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi')
         self.mbBasisUrlLineEdit.setToolTip('Example: [SERVER_NAME]/mapbender/index_dev.php/')
 
@@ -65,7 +61,6 @@ class ServerConfigDialog(BASE, WIDGET):
         self.serverConfigNameLineEdit.setValidator(regex_validator)
         self.userNameLineEdit.setValidator(regex_validator)
         self.passwordLineEdit.setValidator(regex_validator)
-        self.qgisProjectPathLineEdit.setValidator(regex_validator)
         self.qgisServerPathLineEdit.setValidator(regex_validator)
         self.mbBasisUrlLineEdit.setValidator(regex_validator)
         self.checkedIcon = QIcon(":images/themes/default/mIconSuccess.svg")
@@ -75,7 +70,6 @@ class ServerConfigDialog(BASE, WIDGET):
         self.dialogButtonBox.rejected.connect(self.reject)
         self.serverConfigNameLineEdit.textChanged.connect(self.validateFields)
         self.credentialsPlainTextRadioButton.toggled.connect(self.onToggleCredential)
-        self.qgisProjectPathLineEdit.textChanged.connect(self.validateFields)
         self.qgisServerPathLineEdit.textChanged.connect(self.validateFields)
         self.mbBasisUrlLineEdit.textChanged.connect(self.validateFields)
         self.testButton.clicked.connect(self.execTests)
@@ -189,7 +183,6 @@ class ServerConfigDialog(BASE, WIDGET):
         else:
             self.authLabel.setText('')
             self.credentialsPlainTextRadioButton.setChecked(True)
-        self.qgisProjectPathLineEdit.setText(server_config.projects_path)
         self.qgisServerPathLineEdit.setText(server_config.qgis_server_path)
         self.mbBasisUrlLineEdit.setText(server_config.mb_basis_url)
 
@@ -198,7 +191,6 @@ class ServerConfigDialog(BASE, WIDGET):
             name=self.serverConfigNameLineEdit.text(),
             username=self.userNameLineEdit.text(),
             password=self.passwordLineEdit.text(),
-            projects_path=self.qgisProjectPathLineEdit.text(),
             qgis_server_path=self.qgisServerPathLineEdit.text(),
             mb_basis_url=self.mbBasisUrlLineEdit.text(),
             authcfg=self.authcfg,

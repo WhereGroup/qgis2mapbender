@@ -114,7 +114,7 @@ class ApiRequest:
             error_logging_and_user_message(req_err)
         return None
 
-    def uploadZip(self, file_path: str) -> Optional[int]:
+    def uploadZip(self, file_path: str) -> tuple[Optional[int], Optional[str]]:
         """
         Uploads a ZIP file to the server and handles the response.
         The endpoint api/upload/zip uploads a ZIP file to the server and extracts its contents into the upload
@@ -126,6 +126,7 @@ class ApiRequest:
 
         Returns:
             Optional[int]: status code
+            upload_dir (Optional[str]): The directory where the ZIP file was uploaded and extracted.
         """
 
         endpoint = "/upload/zip"
@@ -136,6 +137,7 @@ class ApiRequest:
                          "upload_max_filesize, post_max_size and max_file_uploads in the apache configuration")
         ERROR_MSG_403 = "Error 403: user has unsufficient rights."
         ERROR_MSG_500 = "Error 500, Server error: Failed to move or extract the file."
+        upload_dir = None
 
         try:
             with open(file_path, "rb") as file:
@@ -143,7 +145,8 @@ class ApiRequest:
                 response = self._sendRequest(endpoint, "post", files=files)
                 status_code  = response.status_code
                 if status_code == 200:
-                    QgsMessageLog.logMessage(f"Server response {status_code}: Zip file uploaded and extracted successfully.", TAG,
+                    upload_dir = response.json().get("upload_dir", None)
+                    QgsMessageLog.logMessage(f"Server response {status_code}: Zip file uploaded and extracted successfully in upload_dir {upload_dir}.", TAG,
                                              level=Qgis.MessageLevel.Info)
                 else:
                     msg_str = ERROR_MSG_400 if status_code == 400 else ERROR_MSG_500 if status_code == 500 else ERROR_MSG_403 if status_code == 403 else "Error: "+ str(
@@ -154,7 +157,7 @@ class ApiRequest:
                         f"Upload to QGIS server failed. {msg_str}")
         except FileNotFoundError:
             QgsMessageLog.logMessage(f"File not found: {file_path}", TAG, level=Qgis.MessageLevel.Warning)
-        return status_code
+        return status_code, upload_dir
 
 
     def wms_show(self, wms_url: str) -> tuple[int, Optional[list]]:

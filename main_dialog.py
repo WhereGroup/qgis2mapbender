@@ -266,12 +266,12 @@ class MainDialog(BASE, WIDGET):
 
             QgsMessageLog.logMessage("Preparing upload to QGIS server...", TAG, level=Qgis.MessageLevel.Info)
             # Get server config: project paths
-            paths = Paths.get_paths(server_config.projects_path)
+            paths = Paths.get_paths()
             qgis_server_upload = QgisServerApiUpload(api_request, paths)
-            status_code_server_upload = qgis_server_upload.process_and_upload_project()
+            status_code_server_upload, upload_dir = qgis_server_upload.process_and_upload_project()
 
             if status_code_server_upload == 200:
-                wms_url = qgis_server_upload.get_wms_url(server_config)
+                wms_url = qgis_server_upload.get_wms_url(server_config, upload_dir)
             if not wms_url:
                 return
 
