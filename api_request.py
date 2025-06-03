@@ -265,7 +265,9 @@ class ApiRequest:
             int: Status code of the request.
         """
         endpoint = "/wms/assign"
-        params = {"application": application, "source": source}
+        format = "image/png"
+        infoformat = "text/html"
+        params = {"application": application, "source": source, "format": format , "infoformat": infoformat}
         if layer_set:
             params["layerset"] = layer_set
         self._ensure_token()
