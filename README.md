@@ -36,9 +36,9 @@ The figure below shows a typical configuration of the connection to the server.
 A few comments on a standard configuration:
 
 | **Parameter**          | **Description**                                           | **Example**                          |
-|------------------------|-----------------------------------------------------------|------------------------------------------------|
-| **Mapbender base URL** | The URL where all your Mapbender applications are listed. | https://example-server.lan/mapbender/index.php  |                                                                                                                                  |
-| **QGIS-Server URL:**   | The URL to access your QGIS Server services.              | https://example-server.lan/cgi-bin/qgis_mapserv.fcgi    |
+|------------------------|-----------------------------------------------------------|-----------------------------------------------|
+| **Mapbender base URL** | The URL where all your Mapbender applications are listed. | https://example-server.lan/mapbender  |                                                                                                                                  |
+| **QGIS-Server URL:**   | The URL to access your QGIS Server services.              | https://example-server.lan/cgi-bin/qgis_mapserv.fcgi   |
 
 
 ## Support
