@@ -115,7 +115,7 @@
           <item row="2" column="0">
            <widget class="QLabel" name="mbBasisUrlLabel">
             <property name="text">
-             <string>Mapbender basis URL*</string>
+             <string>Mapbender base URL*</string>
             </property>
            </widget>
           </item>
