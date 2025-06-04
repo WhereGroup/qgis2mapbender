@@ -11,7 +11,7 @@ Alternatively, a release can be downloaded here and the zipped folder can be ins
 ### Requirements on your local system
 - The QGIS project must be saved in the same folder as the data.
 
-**_~~`### Requirements on your server
+### Requirements on your server
 - QGIS Server is installed on your server.
 - Mapbender is installed on your server.
 - Configure Apache authorisation and upload directory (see https://doc.mapbender.org/en/customization/api.html)
@@ -22,8 +22,7 @@ Alternatively, a release can be downloaded here and the zipped folder can be ins
   - layerset named "main" OR 
   - layerset named with any other name.
   
-  The field "layerset" in QGIS2Mapbender is the id or name of the layerset to clone or use. Defaults to "main" or the first layerset in the application.**_~~
-`
+  The field "layerset" in QGIS2Mapbender is the id or name of the layerset to clone or use. Defaults to "main" or the first layerset in the application.
 
 ### Configuring the connection to the server 
 The figure below shows a typical configuration of the connection to the server.
