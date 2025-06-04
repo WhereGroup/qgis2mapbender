@@ -16,7 +16,9 @@ Alternatively, a release can be downloaded here and the zipped folder can be ins
 - Mapbender is installed on your server.
 - Configure Apache authorisation and upload directory (see https://doc.mapbender.org/en/customization/api.html)
 - Configure the parameters "upload_max_filesize" and "post_max_size" (maximum size of all data sent via a POST request, its value should be equal to or greater than upload_max_filesize) in php.ini to match the characteristics of the projects you plan to upload to the server. Remember that the folder containing your project and data will be zipped for uploading to the server.
-- Create at least one template application in Mapbender (that will be cloned and used to publish a new WMS) or an application that will be used to publish a new WMS. These applications should have at least one layerset: 
+- Create at least one template application in Mapbender (that will be cloned and used to publish a new WMS) or an application that will be used to publish a new WMS. 
+
+  These applications should have at least one instance of a map and one layerset: 
   - layerset named "main" OR 
   - layerset named with any other name.
   
