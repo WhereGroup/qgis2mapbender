@@ -137,7 +137,6 @@ class ServerConfigDialog(BASE, WIDGET):
         #wmsServiceRequest = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities"
         #qgisServerUrl = (f'{configFromForm.qgis_server_path}{wmsServiceRequest}')
         qgisServerUrl = configFromForm.qgis_server_path
-        print('test qgis server url + get cap:', qgisServerUrl)
         errorStr = self.testHttpConn(qgisServerUrl, 'Qgis Server', configFromForm.qgis_server_path)
         if errorStr:
             failed_tests.append(errorStr)
