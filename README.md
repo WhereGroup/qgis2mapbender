@@ -14,6 +14,8 @@ Alternatively, a release can be downloaded here and the zipped folder can be ins
 ### Requirements on your server
 - QGIS Server is installed on your server.
 - Mapbender is installed on your server.
+
+### Requirements on your Mapbender instance
 - Configure Apache authorisation and upload directory (see https://doc.mapbender.org/en/customization/api.html)
 - Configure the parameters "upload_max_filesize" and "post_max_size" (maximum size of all data sent via a POST request, its value should be equal to or greater than upload_max_filesize) in php.ini to match the characteristics of the projects you plan to upload to the server. Remember that the folder containing your project and data will be zipped for uploading to the server.
 - Create at least one template application in Mapbender (that will be cloned and used to publish a new WMS) or an application that will be used to publish a new WMS. 
@@ -23,6 +25,9 @@ Alternatively, a release can be downloaded here and the zipped folder can be ins
   - layerset named with any other name.
   
   The field "layerset" in QGIS2Mapbender is the id or name of the layerset to clone or use. Defaults to "main" or the first layerset in the application.
+
+- All users (except for the super user with the id 1, where this permission is automatically granted) need to have the global permission access_api in order to perform any operation on the API.
+Additionally, users need to have the specific permission required to upload files or perform an action, e.g. to duplicate an application, they need to have read rights on the existing application as well as the global permission create_applications.
 
 ### Configuring the connection to the server 
 The figure below shows a typical configuration of the connection to the server.
