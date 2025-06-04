@@ -134,10 +134,11 @@ class ServerConfigDialog(BASE, WIDGET):
             show_fail_box_ok("Error", f"An error occurred during API initialization: {str(e)}")
 
         # Test 3: QGIS server connection
-        wmsServiceRequest = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities"
-        qgiServerUrl = (f'{configFromForm.qgis_server_path}'
-                        f'{wmsServiceRequest}')
-        errorStr = self.testHttpConn(qgiServerUrl, 'Qgis Server', configFromForm.qgis_server_path)
+        #wmsServiceRequest = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities"
+        #qgisServerUrl = (f'{configFromForm.qgis_server_path}{wmsServiceRequest}')
+        qgisServerUrl = configFromForm.qgis_server_path
+        print('test qgis server url + get cap:', qgisServerUrl)
+        errorStr = self.testHttpConn(qgisServerUrl, 'Qgis Server', configFromForm.qgis_server_path)
         if errorStr:
             failed_tests.append(errorStr)
         else:
