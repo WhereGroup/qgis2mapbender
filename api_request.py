@@ -22,8 +22,9 @@ class ApiRequest:
         """
         self.server_config = server_config
         self.session = requests.Session()
-        mb_base_url = re.match(r"(https?://[^/]+/mapbender)", self.server_config.mb_basis_url).group(1)
-        self.api_url = f"{mb_base_url}/api"
+        if self.server_config.mb_basis_url.endswith("/"):
+            self.server_config.mb_basis_url = self.server_config.mb_basis_url.rstrip("/")
+        self.api_url = f"{self.server_config.mb_basis_url}/api"
         QgsMessageLog.logMessage(f"Configuring API requests to URL: {self.api_url}", TAG, level=Qgis.MessageLevel.Info)
         self.headers = {}
         self.token = None
