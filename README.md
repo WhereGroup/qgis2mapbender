@@ -28,6 +28,7 @@ Alternatively, a release can be downloaded here and the zipped folder can be ins
 ### Configuring the connection to the server 
 The figure below shows a typical configuration of the connection to the server.
 ![img_1.png](data/img_server_config_readme.png)
+
 A few comments on a standard configuration:
 
 | **Parameter**          | **Description**                                           | **Example**                          |
