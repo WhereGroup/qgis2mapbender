@@ -124,20 +124,21 @@ class ServerConfigDialog(BASE, WIDGET):
                 successful_tests.extend(["Credentials are valid.","Token generation was successful."])
                 # Test 2: ZIP upload
                 test_zip_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data/test_upload.zip'))
-                status_code = api_request.uploadZip(test_zip_path)
+                status_code, upload_dir = api_request.uploadZip(test_zip_path)
                 if status_code != 200:
                     failed_tests.append(
                         f"Server upload is not validated (status code {status_code}).")
                 else:
-                    successful_tests.append("Server upload is validated.")
+                    successful_tests.append(f"Server upload is validated. Upload directory on server: {upload_dir}.")
         except Exception as e:
-            show_fail_box_ok("Error", f"An error occurred during API initialization: {str(e)}")
+            show_fail_box_ok("Error", f"An error occurred during API initialization: {str(e)}.\nAPI tests "
+                                      f"(token generation, upload to server, etc.) could not be executed")
 
         # Test 3: QGIS server connection
         #wmsServiceRequest = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities"
         #qgisServerUrl = (f'{configFromForm.qgis_server_path}{wmsServiceRequest}')
         qgisServerUrl = configFromForm.qgis_server_path
-        errorStr = self.testHttpConn(qgisServerUrl, 'Qgis Server', configFromForm.qgis_server_path)
+        errorStr = self.testHttpConn(qgisServerUrl, 'Qgis Server')
         if errorStr:
             failed_tests.append(errorStr)
         else:
@@ -145,7 +146,7 @@ class ServerConfigDialog(BASE, WIDGET):
 
         # Test 4: Mapbender connection
         mapbenderUrl = configFromForm.mb_basis_url
-        errorStr = self.testHttpConn(mapbenderUrl, 'Mapbender', configFromForm.mb_basis_url)
+        errorStr = self.testHttpConn(mapbenderUrl, 'Mapbender')
         if errorStr:
             failed_tests.append(errorStr)
         else:
@@ -153,7 +154,7 @@ class ServerConfigDialog(BASE, WIDGET):
         return "\n".join(failed_tests) if failed_tests else None, "\n".join(
             successful_tests) if successful_tests else None
 
-    def testHttpConn(self, url: str, serverName: str, lastPart: str) -> Optional[str]:
+    def testHttpConn(self, url: str, serverName: str) -> Optional[str]:
         # if not starts_with_single_slash_or_colon(lastPart):
         #     return f"Is the address {url} correct?"
 
