@@ -31,7 +31,7 @@ Additionally, users need to have the specific permission required to upload file
 
 ### Configuring the connection to the server 
 The figure below shows a typical configuration of the connection to the server.
-![img_1.png](data/img_server_config_readme.png)
+![img_1.png](resources/img_server_config_readme.png)
 
 A few comments on a standard configuration:
 
