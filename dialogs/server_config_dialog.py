@@ -129,7 +129,7 @@ class ServerConfigDialog(BASE, WIDGET):
             else:
                 successful_tests.extend(["Credentials are valid.","Token generation was successful."])
                 # Test 2: ZIP upload
-                test_zip_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data/test_upload.zip'))
+                test_zip_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../resources/test_upload/test_upload.zip'))
                 status_code, upload_dir = api_request.uploadZip(test_zip_path)
                 if status_code != 200:
                     failed_tests.append(

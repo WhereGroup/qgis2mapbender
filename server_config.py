@@ -51,7 +51,7 @@ class ServerConfig:
         conf.setConfig("username", username)
         conf.setConfig("password", password)
 
-        # Register data in authdb returning the ``authcfg`` of the stored configuration
+        # Register test_upload in authdb returning the ``authcfg`` of the stored configuration
         auth_manager.storeAuthenticationConfig(conf, overwrite=True)
         return conf.id()
 
