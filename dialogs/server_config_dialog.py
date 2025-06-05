@@ -51,6 +51,9 @@ class ServerConfigDialog(BASE, WIDGET):
             self.dialogButtonBox.button(QDialogButtonBox.StandardButton.Save).setEnabled(True)
             self.testButton.setEnabled(True)
 
+        button_save = self.dialogButtonBox.button(QDialogButtonBox.StandardButton.Save)
+        button_save.setText('Save')
+
         self.serverConfigNameLineEdit.setToolTip('Custom server configuration name without blank spaces')
         self.qgisServerPathLineEdit.setToolTip('Example: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi')
         self.mbBasisUrlLineEdit.setToolTip('Example: [SERVER_NAME]/mapbender/index_dev.php/')
@@ -73,6 +76,9 @@ class ServerConfigDialog(BASE, WIDGET):
         self.qgisServerPathLineEdit.textChanged.connect(self.validateFields)
         self.mbBasisUrlLineEdit.textChanged.connect(self.validateFields)
         self.testButton.clicked.connect(self.execTests)
+
+        button_cancel = self.dialogButtonBox.button(QDialogButtonBox.StandardButton.Cancel)
+        button_cancel.setText('Cancel')
 
     def execTests(self) -> None:
         """

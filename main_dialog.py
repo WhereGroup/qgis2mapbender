@@ -93,6 +93,10 @@ class MainDialog(BASE, WIDGET):
         self.removeServerConfigButton.setToolTip("Remove selected server configuration")
         self.buttonBoxTab2.rejected.connect(self.reject)
 
+        # Set Button Tab2 to english
+        button_close_tab2 = self.buttonBoxTab2.button(QDialogButtonBox.Close)
+        button_close_tab2.setText("Close")
+
     def setupConnections(self) -> None:
         self.tabWidget.currentChanged.connect(self.update_server_combo_box)
         self.publishRadioButton.clicked.connect(self.enable_publish_parameters)
@@ -107,6 +111,13 @@ class MainDialog(BASE, WIDGET):
         self.editServerConfigButton.clicked.connect(self.on_edit_server_config_clicked)
         self.removeServerConfigButton.clicked.connect(self.on_remove_server_config_clicked)
         self.serverTableWidget.doubleClicked.connect(self.on_edit_server_config_clicked)
+
+        # Set Button Tab1 to english
+        button_close_tab1 = self.buttonBoxTab1.button(QDialogButtonBox.Close)
+        button_close_tab1.setText("Close")
+        # Button had a blue background
+        button_close_tab1.setAutoDefault(False)
+        button_close_tab1.setDefault(False)
 
     def update_server_table(self) -> None:
         server_config_list = list_qgs_settings_child_groups(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection")
