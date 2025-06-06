@@ -279,7 +279,8 @@ class ApiRequest:
         endpoint = "/wms/assign"
         format = "image/png"
         infoformat = "text/html"
-        params = {"application": application, "source": source, "format": format , "infoformat": infoformat}
+        layerorder = "reverse"
+        params = {"application": application, "source": source, "format": format , "infoformat": infoformat, "layerorder": layerorder}
         if layer_set:
             params["layerset"] = layer_set
         self._ensure_token()
