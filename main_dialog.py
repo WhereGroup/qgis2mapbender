@@ -69,10 +69,12 @@ class MainDialog(BASE, WIDGET):
         self.publishButton.setEnabled(False)  # Enabled only if mbSlugComboBox has a value
         self.updateButton.setEnabled(False)
         # QLineValidator for slug:
-        regex_slug_layer_set = QRegularExpression("[^\\s;\\\\/]*")
-        regex_slug_layer_set_validator = QRegularExpressionValidator(regex_slug_layer_set)
-        self.mbSlugComboBox.setValidator(regex_slug_layer_set_validator)
-        self.layerSetLineEdit.setValidator(regex_slug_layer_set_validator)
+        regex_slug_url = QRegularExpression("[^\\s;\\\\/]*")
+        regex_layer_set = QRegularExpression("^(?!\\s)[^;/\\\\]*$")
+        regex_slug_url_validator = QRegularExpressionValidator(regex_slug_url)
+        regex_layer_set_validator = QRegularExpressionValidator(regex_layer_set)
+        self.mbSlugComboBox.setValidator(regex_slug_url_validator)
+        self.layerSetLineEdit.setValidator(regex_layer_set_validator)
 
         # Tab2
         self.addServerConfigButton.setIcon(QIcon(':/images/themes/default/mActionAdd.svg'))
