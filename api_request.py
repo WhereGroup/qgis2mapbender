@@ -141,7 +141,9 @@ class ApiRequest:
 
         try:
             with open(file_path, "rb") as file:
-                files = {"file": file}
+                #files = {"file": file}
+                files = {
+                    "file": (file_path, file, "application/zip")}
                 file_log = file.name if hasattr(file, "name") else str(file)
                 QgsMessageLog.logMessage(
                     f"Sending request to endpoint {endpoint} with file: {file_log}", TAG, level=Qgis.MessageLevel.Info)
