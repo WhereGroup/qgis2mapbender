@@ -1,7 +1,6 @@
 import os
 from typing import Optional
 
-
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import QSettings, QRegularExpression, Qt
 from qgis.PyQt.QtGui import QRegularExpressionValidator, QPixmap, QIcon
@@ -9,7 +8,6 @@ from qgis.PyQt.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView, QWid
     QTableWidget, QComboBox, QDialogButtonBox, QToolButton, QLabel, QApplication
 
 from qgis.core import Qgis, QgsSettings, QgsMessageLog
-from qgis.utils import iface
 
 from .api_request import ApiRequest
 from .qgis_server_api_upload import QgisServerApiUpload
@@ -266,6 +264,7 @@ class MainDialog(BASE, WIDGET):
         # Set waiting cursor
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         wms_url = None
+        api_request = None
         try:
             action = "publish" if self.publishRadioButton.isChecked() else "update"
             if action == "publish" and self.mbSlugComboBox.currentText() == '':
@@ -295,6 +294,8 @@ class MainDialog(BASE, WIDGET):
         finally:
             # Restore default cursor
             QApplication.restoreOverrideCursor()
+            if api_request is not None:
+                api_request.mark_api_requests_done()
 
 
     def mb_publish(self, server_config: ServerConfig, api_request: ApiRequest, wms_url: str) -> None:

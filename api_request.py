@@ -106,7 +106,6 @@ class ApiRequest:
             QgsMessageLog.logMessage(f"Sending request to endpoint {endpoint} with kwargs: {kwargs}", TAG, level=Qgis.MessageLevel.Info)
         try:
             response = self.session.request(method=method.upper(), url=url, headers= self.headers, **kwargs)
-            print(f"endpoint {endpoint}: status code: {response.status_code}. Response as text: {response.text}")
             return response
         except requests.HTTPError as http_err:
             QgsMessageLog.logMessage(str(http_err), TAG, level=Qgis.MessageLevel.Critical)
@@ -315,3 +314,24 @@ class ApiRequest:
             error_message = f"Error parsing the response: {e}"
             QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
             return response.status_code, None
+
+    def mark_api_requests_done(self):
+        self._api_requests_done = True
+        self.close()
+
+    def close(self):
+        """
+        Close the requests session to free up resources.
+        """
+        if self.session is not None:
+            self.session.close()
+            self.session = None
+            QgsMessageLog.logMessage("API session closed.", TAG, level=Qgis.MessageLevel.Info)
+        else:
+            QgsMessageLog.logMessage("API session already closed.", TAG, level=Qgis.MessageLevel.Info)
+
+    def __del__(self):
+        # As a safety net: close the session if it wasn't closed explicitly.
+        if self.session is not None:
+            self.session.close()
+            QgsMessageLog.logMessage("API session closed in __del__.", TAG, level=Qgis.MessageLevel.Info)
