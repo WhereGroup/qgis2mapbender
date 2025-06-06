@@ -332,7 +332,7 @@ class MainDialog(BASE, WIDGET):
                 if exit_status_app_clone != 200:
                     show_fail_box_ok("Failed", f"WMS {wms_url}  was successfully created and uploaded to "
                                                f"Mapbender, but not assigned to an application. \n \nError by copying "
-                                               f"the given application. Application with slug {input_slug}' not found.")
+                                               f"the given application. Application {input_slug}' not found.")
                     update_mb_slug_in_settings(input_slug, is_mb_slug=False)
                     self.update_slug_combo_box()
                     return
