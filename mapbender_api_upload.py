@@ -116,24 +116,24 @@ class MapbenderApiUpload:
         exit_status = self.api_request.wms_assign(slug, source_id, layer_set)
         if exit_status == 404:
             msg = (f"WMS {self.wms_url} was successfully created and uploaded to Mapbender, but not assigned to an "
-                   f"application. \n\nApplication '{slug}' does not exists. Please choose a different application.")
+                   f"application. \n\nApplication '{slug}' does not exist. Please choose a different application.")
             QgsMessageLog.logMessage(msg, TAG, level=Qgis.MessageLevel.Warning)
             show_fail_box_ok("Failed",msg)
             return exit_status
         elif exit_status == 200:
-            QgsMessageLog.logMessage(f"WMS with source id {source_id} successfully assigned to slug {slug}.", TAG, level=Qgis.MessageLevel.Info)
+            QgsMessageLog.logMessage(f"WMS with source id {source_id} successfully assigned to application '{slug}'.", TAG, level=Qgis.MessageLevel.Info)
         elif exit_status == 500:
-            QgsMessageLog.logMessage(f"Failed to assign WMS with source id {source_id} to slug {slug}. Please "
+            QgsMessageLog.logMessage(f"Failed to assign WMS with source id {source_id} to application '{slug}'. Please "
                                      f"check if the application has at least one layerset.", TAG, level=Qgis.MessageLevel.Critical)
             show_fail_box_ok("Failed",
                              f"WMS {self.wms_url} successfully created and uploaded to Mapbender. \n\nFailed to "
-                             f"assign WMS with source id {source_id} to slug {slug}.\n\nPlease check if the application "
-                             f"has at least one layerset or if the given layerset exists. \n\n**Requirements:** \nThe Mapbender applications should "
+                             f"assign WMS with source id {source_id} to application '{slug}'.\n\nPlease check if the application "
+                             f"has at least one layerset or if the given layerset exists. \n\nRequirements: \nThe Mapbender applications should "
                              f"have at least one layerset named 'main' or any other name. \n\nThe input parameter layerset (optional) in QGSI2Mapbender "
                              f"defaults to 'main' (if exists) or the first layerset in the application")
         else:
-            QgsMessageLog.logMessage(f"Failed to assign WMS with source id {source_id} to slug {slug}.", TAG, level=Qgis.MessageLevel.Critical)
+            QgsMessageLog.logMessage(f"Failed to assign WMS with source id {source_id} to application '{slug}'.", TAG, level=Qgis.MessageLevel.Critical)
             show_fail_box_ok("Failed",
                              f"WMS {self.wms_url} successfully created and uploaded to Mapbender. \n\nFailed to "
-                             f"assign WMS with source id {source_id} to slug {slug}.")
+                             f"assign WMS with source id {source_id} to application '{slug}'.")
         return exit_status
