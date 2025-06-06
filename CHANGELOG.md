@@ -3,8 +3,8 @@
 ### Features:
 * Connection to QGIS Server and Mapbender via Mapbender API
 * Direct SSH connection is not used anymore. Any reference to Fabric2 library was removed
-* Plugin set the image format to image/png by default
-* Plugin sets the featureinfo format to text/html by default
+* Plugin sets the GetMap format to image/png by default
+* Plugin sets the GetFeatureInfo format text/html by default
 * Plugin sets the layer ordering to reverse (QGIS) by default
 * Improved README
 * Simplified server configuration 
