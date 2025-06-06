@@ -16,29 +16,44 @@ Alternatively, a release can be downloaded here and the zipped folder can be ins
 - Mapbender is installed on your server.
 
 ### Requirements on your Mapbender instance
+
+**Apache**
 - Configure Apache authorisation and upload directory (see https://doc.mapbender.org/en/customization/api.html)
-- Configure the parameters "upload_max_filesize" and "post_max_size" (maximum size of all data sent via a POST request, its value should be equal to or greater than upload_max_filesize) in php.ini to match the characteristics of the projects you plan to upload to the server. Remember that the folder containing your project and data will be zipped for uploading to the server.
-- Create at least one template application in Mapbender (that will be cloned and used to publish a new WMS) or an application that will be used to publish a new WMS. 
 
-  These applications should have at least one instance of a map and one layerset: 
-  - layerset named "main" OR 
-  - layerset named with any other name.
+**PHP**
+- Configure the following parameters in php.ini to match the characteristics of the projects you plan to upload to the server. Remember that the folder containing your project and data will be zipped for uploading to the server.
+
+  - **upload_max_filesize** - the maximum size of an uploaded file. 
+  - **post_max_size** - maximum size of all data sent via a POST request, its value should be equal to or greater than upload_max_filesize
+
+**Mapbender**
+
+- Application: Create at least one template application in Mapbender (that can be copied and can be used to publish a new WMS) or an application that will be used directly to publish a new WMS. 
+
+- The applications should have at least one instance of a map and one layerset.
   
-  The field "layerset" in QGIS2Mapbender is the id or name of the layerset to clone or use. Defaults to "main" or the first layerset in the application.
+ Note: The field "layerset" in QGIS2Mapbender is the id or name of the layerset to use. Defaults are "main" or the first layerset in the application.
 
-- All users (except for the super user with the id 1, where this permission is automatically granted) need to have the global permission access_api in order to perform any operation on the API.
-Additionally, users need to have the specific permission required to upload files or perform an action, e.g. to duplicate an application, they need to have read rights on the existing application as well as the global permission create_applications.
+- User/Groups: All Mapbender users that should be authorized to use QGIS2Mapbender need special rights. There is only one exception and this is the Mapbender super user with the id 1, where this permission is automatically granted. 
+
+  - User/group needs to have the global permission **access_api** and **upload_files** in order to perform any operation on the API and to be able to upload files.
+  - User/group needs the global permission **create_applications** 
+  - User/group needs the global permission **sources_view**  
+  - User/group need to have **read** rights on the template application 
+
 
 ### Configuring the connection to the server 
+
 The figure below shows a typical configuration of the connection to the server.
-![img_1.png](resources/img_server_config_readme.png)
+
+![QGIS2Mapbender server configuration](resources/img_server_config_readme.png)
 
 A few comments on a standard configuration:
 
 | **Parameter**          | **Description**                                           | **Example**                          |
 |------------------------|-----------------------------------------------------------|-----------------------------------------------|
-| **Mapbender base URL** | The URL where all your Mapbender applications are listed. | https://example-server.lan/mapbender  |                                                                                                                                  |
-| **QGIS-Server URL:**   | The URL to access your QGIS Server services.              | https://example-server.lan/cgi-bin/qgis_mapserv.fcgi   |
+| **Mapbender base URL** | The Link to your Mapbender landing page (application overview) | http://localhost/mapbender/  |                                                                                                                                  |
+| **QGIS Server URL**   | The URL to access your QGIS Server services.              | http://localhost/cgi-bin/qgis_mapserv.fcgi   |
 
 
 ## Support
