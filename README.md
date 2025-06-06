@@ -25,6 +25,8 @@ Alternatively, a release can be downloaded here and the zipped folder can be ins
 
   - **upload_max_filesize** - the maximum size of an uploaded file. 
   - **post_max_size** - maximum size of all data sent via a POST request, its value should be equal to or greater than upload_max_filesize
+  - **max_execution_tine** - this sets the maximum time in seconds a script is allowed to parse input data.
+
 
 **Mapbender**
 
@@ -52,8 +54,8 @@ A few comments on a standard configuration:
 
 | **Parameter**          | **Description**                                           | **Example**                          |
 |------------------------|-----------------------------------------------------------|-----------------------------------------------|
-| **Mapbender base URL** | The Link to your Mapbender landing page (application overview) | http://localhost/mapbender/  |                                                                                                                                  |
-| **QGIS Server URL**   | The URL to access your QGIS Server services.              | http://localhost/cgi-bin/qgis_mapserv.fcgi   |
+| **Mapbender base URL** | Link to your Mapbender landing page (application overview) | http://localhost/mapbender/  |                                                                                                                                  |
+| **QGIS Server URL**   | URL to access your QGIS Server              | http://localhost/cgi-bin/qgis_mapserv.fcgi   |
 
 
 ## Support
