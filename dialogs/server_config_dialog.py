@@ -141,9 +141,9 @@ class ServerConfigDialog(BASE, WIDGET):
                                       f"(token generation, upload to server, etc.) could not be executed")
 
         # Test 3: QGIS server connection
-        #wmsServiceRequest = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities"
-        #qgisServerUrl = (f'{configFromForm.qgis_server_path}{wmsServiceRequest}')
-        qgisServerUrl = configFromForm.qgis_server_path
+        wmsServiceRequest = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities"
+        qgisServerUrl = (f'{configFromForm.qgis_server_path}{wmsServiceRequest}')
+        #qgisServerUrl = configFromForm.qgis_server_path
         errorStr = self.testHttpConn(qgisServerUrl, 'Qgis Server')
         if errorStr:
             failed_tests.append(errorStr)
@@ -170,8 +170,14 @@ class ServerConfigDialog(BASE, WIDGET):
 
         try:
             resp = requests.get(url)
-            if resp.status_code != 200:
-                return errorStr
+            if serverName != "Mapbender":
+                if resp.status_code != 200:
+                    content_type = resp.headers.get('Content-Type', '')
+                    if 'text/xml' not in content_type:
+                        return errorStr
+            else:
+                if resp.status_code != 200:
+                    return errorStr
         except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError) as error:
             return f"{errorStr}\n {str(error)}"
 
