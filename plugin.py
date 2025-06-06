@@ -1,11 +1,8 @@
 
 import os
 from typing import Optional
-
 from qgis.PyQt.QtWidgets import QAction
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QDockWidget
-
 from .main_dialog import MainDialog
 
 
@@ -20,14 +17,14 @@ class Qgis2Mapbender:
         """Create action that will start plugin configuration"""
         icon_path = os.path.join(os.path.dirname(__file__), 'resources/icons/qgis2mapbender.png')
         self.action = QAction(QIcon(icon_path), 'QGIS2Mapbender', self.iface.mainWindow())
-        self.iface.addPluginToMenu("&QGIS2Mapbender", self.action)
+        self.iface.addPluginToMenu("&Web", self.action)
         self.iface.addToolBarIcon(self.action)
 
         # Connect the action to the run method
         self.action.triggered.connect(self.run)
 
     def unload(self):
-        self.iface.removePluginMenu("&QGIS2Mapbender", self.action)
+        self.iface.removePluginMenu("&Web", self.action)
         self.iface.removeToolBarIcon(self.action)
         if self.dlg:
             self.dlg.close()
