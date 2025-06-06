@@ -5,7 +5,7 @@ import re
 from qgis.core import QgsMessageLog, Qgis
 
 from .settings import TAG
-from .helpers import error_logging_and_user_message, show_fail_box_ok
+from .helpers import show_fail_box_ok
 
 
 class ApiRequest:
@@ -109,9 +109,9 @@ class ApiRequest:
             print(f"endpoint {endpoint}: status code: {response.status_code}. Response as text: {response.text}")
             return response
         except requests.HTTPError as http_err:
-            error_logging_and_user_message(http_err)
+            QgsMessageLog.logMessage(str(http_err), TAG, level=Qgis.MessageLevel.Critical)
         except requests.RequestException as req_err:
-            error_logging_and_user_message(req_err)
+            QgsMessageLog.logMessage(str(req_err), TAG, level=Qgis.MessageLevel.Critical)
         return None
 
     def uploadZip(self, file_path: str) -> tuple[Optional[int], Optional[str]]:

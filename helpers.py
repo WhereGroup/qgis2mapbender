@@ -279,24 +279,6 @@ def ends_with_single_slash(s: str) -> bool:
     pattern = r"[^/]/$"
     return bool(re.search(pattern, s))
 
-
-def error_logging_and_user_message(error: Exception, user_message: Optional[str] = None) -> None:
-    """
-    Handles errors by logging them and optionally displaying a user-friendly message.
-
-    Args:
-        error (Exception): The exception to handle.
-        user_message (Optional[str]): A user-friendly message to display (optional).
-    """
-    QgsMessageLog.logMessage(str(error), TAG, level=Qgis.MessageLevel.Critical)
-    if user_message:
-        msg_box = QMessageBox()
-        msg_box.setIcon(QMessageBox.Icon.Critical)
-        msg_box.setWindowTitle("Error")
-        msg_box.setText(user_message)
-        msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
-        msg_box.exec()
-
 def get_size_and_unit(bytes_size):
     units = ["B", "KB", "MB", "GB", "TB"]
     size = float(bytes_size)
