@@ -140,17 +140,24 @@ class ApiRequest:
 
         try:
             with open(file_path, "rb") as file:
-                #files = {"file": file}
                 files = {
                     "file": (file_path, file, "application/zip")}
                 file_log = file.name if hasattr(file, "name") else str(file)
                 QgsMessageLog.logMessage(
                     f"Sending request to endpoint {endpoint} with file: {file_log}", TAG, level=Qgis.MessageLevel.Info)
                 response = self._sendRequest(endpoint, "post", files=files)
+                if response is None:
+                    msg_str = "No response from server."
+                    status_code = None
+                    QgsMessageLog.logMessage(f"Upload failed: {msg_str}", TAG, level=Qgis.MessageLevel.Critical)
+                    show_fail_box_ok("Failed", f"Upload to QGIS server failed. {msg_str}")
+                    return status_code, upload_dir
+
                 status_code  = response.status_code
                 if status_code == 200:
                     upload_dir = response.json().get("upload_dir", None)
-                    QgsMessageLog.logMessage(f"Server response {status_code}: Zip file uploaded and extracted successfully in upload_dir {upload_dir}.", TAG,
+                    QgsMessageLog.logMessage(f"Server response {status_code}: Zip file uploaded and extracted "
+                                             f"successfully in upload_dir {upload_dir}.", TAG,
                                              level=Qgis.MessageLevel.Info)
                 else:
                     if status_code == 400:
@@ -161,9 +168,9 @@ class ApiRequest:
                         msg_str = ERROR_MSG_403
                     else:
                         msg_str = f"Error: {status_code}"
-                    if response.text:
-                        msg_str += f" | Server response: {response.text}"
-                    QgsMessageLog.logMessage(msg_str, TAG, level=Qgis.MessageLevel.Critical)
+
+                    msg_str_response = f" | Server response: {response.text}" if response.text else ""
+                    QgsMessageLog.logMessage(msg_str + msg_str_response, TAG, level=Qgis.MessageLevel.Critical)
                     show_fail_box_ok("Failed",
                         f"Upload to QGIS server failed. {msg_str}")
         except FileNotFoundError:
