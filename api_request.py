@@ -102,9 +102,8 @@ class ApiRequest:
         """
         url = f"{self.api_url}{endpoint}"
 
-        if endpoint != "/login_check":
+        if endpoint != "/login_check" and endpoint != "/upload/zip":
             QgsMessageLog.logMessage(f"Sending request to endpoint {endpoint} with kwargs: {kwargs}", TAG, level=Qgis.MessageLevel.Info)
-
         try:
             response = self.session.request(method=method.upper(), url=url, headers= self.headers, **kwargs)
             print(f"endpoint {endpoint}: status code: {response.status_code}. Response as text: {response.text}")
@@ -132,17 +131,20 @@ class ApiRequest:
 
         endpoint = "/upload/zip"
         status_code = None
+        upload_dir = None
         self._ensure_token()
 
         ERROR_MSG_400 = ("Error 400 Invalid request: No file uploaded or wrong file type. Please check the variables "
                          "upload_max_filesize, post_max_size and max_file_uploads in the apache configuration")
         ERROR_MSG_403 = "Error 403: user has unsufficient rights."
         ERROR_MSG_500 = "Error 500, Server error: Failed to move or extract the file."
-        upload_dir = None
 
         try:
             with open(file_path, "rb") as file:
                 files = {"file": file}
+                file_log = file.name if hasattr(file, "name") else str(file)
+                QgsMessageLog.logMessage(
+                    f"Sending request to endpoint {endpoint} with file: {file_log}", TAG, level=Qgis.MessageLevel.Info)
                 response = self._sendRequest(endpoint, "post", files=files)
                 status_code  = response.status_code
                 if status_code == 200:
@@ -150,9 +152,16 @@ class ApiRequest:
                     QgsMessageLog.logMessage(f"Server response {status_code}: Zip file uploaded and extracted successfully in upload_dir {upload_dir}.", TAG,
                                              level=Qgis.MessageLevel.Info)
                 else:
-                    msg_str = ERROR_MSG_400 if status_code == 400 else ERROR_MSG_500 if status_code == 500 else ERROR_MSG_403 if status_code == 403 else "Error: "+ str(
-                        status_code)
-                    msg_str = "Error: "+ str(response.text)
+                    if status_code == 400:
+                        msg_str = ERROR_MSG_400
+                    elif status_code == 500:
+                        msg_str = ERROR_MSG_500
+                    elif status_code == 403:
+                        msg_str = ERROR_MSG_403
+                    else:
+                        msg_str = f"Error: {status_code}"
+                    if response.text:
+                        msg_str += f" | Server response: {response.text}"
                     QgsMessageLog.logMessage(msg_str, TAG, level=Qgis.MessageLevel.Critical)
                     show_fail_box_ok("Failed",
                         f"Upload to QGIS server failed. {msg_str}")

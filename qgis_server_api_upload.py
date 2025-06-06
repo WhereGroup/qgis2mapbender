@@ -4,7 +4,7 @@ from typing import Optional
 
 from qgis.core import QgsMessageLog, Qgis
 
-from .helpers import waitCursor
+from .helpers import waitCursor, get_size_and_unit
 from .server_config import ServerConfig
 from .settings import TAG
 
@@ -70,24 +70,29 @@ class QgisServerApiUpload:
             bool: True if the ZIP file was created successfully, False otherwise.
         """
         try:
-            temp_dir = f'{self.source_project_dir_path}_copy_tmp'
-            if os.path.isdir(temp_dir):
-                shutil.rmtree(temp_dir)
-            os.makedirs(temp_dir)
+            temp_dir_path = f'{self.source_project_dir_path}_copy_tmp'
+            if os.path.isdir(temp_dir_path):
+                shutil.rmtree(temp_dir_path)
+            os.makedirs(temp_dir_path)
 
-            shutil.copytree(self.source_project_dir_path, temp_dir + "/" + self.source_project_file_name.split('.')[0])
-
-            for folder_name, subfolders, filenames in os.walk(temp_dir):
+            shutil.copytree(self.source_project_dir_path, temp_dir_path + "/" + self.source_project_file_name.split('.')[0])
+            for folder_name, subfolders, filenames in os.walk(temp_dir_path):
                 for filename in filenames:
                     file_path = os.path.join(folder_name, filename)
                     if filename.split(".")[-1] in ('gpkg-wal', 'gpkg-shm'):
                         os.remove(file_path)
-            self._create_archive_with_folder(temp_dir)
-            shutil.rmtree(temp_dir)
+            self._create_archive_with_folder(temp_dir_path)
+            shutil.rmtree(temp_dir_path)
 
             if os.path.isfile(self.source_project_zip_file_path):
-                QgsMessageLog.logMessage("Zip-project folder successfully created", TAG, level=Qgis.MessageLevel.Info)
-                return True
+                if os.access(self.source_project_zip_file_path, os.R_OK):
+                    file_size = os.path.getsize(self.source_project_zip_file_path)
+                    file_size_unit, unit = get_size_and_unit(file_size)
+                    QgsMessageLog.logMessage(f"Zip-project folder successfully created. File is readable. File size: {file_size_unit} {unit}", TAG, level=Qgis.MessageLevel.Info)
+                    return True
+                else:
+                    QgsMessageLog.logMessage(f"Zip-project folder successfully created, but file is not readable.", TAG, level=Qgis.MessageLevel.Warning)
+                    return False
             else:
                 return False
         except Exception as e:

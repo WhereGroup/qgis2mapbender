@@ -296,3 +296,20 @@ def error_logging_and_user_message(error: Exception, user_message: Optional[str]
         msg_box.setText(user_message)
         msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
         msg_box.exec()
+
+def get_size_and_unit(bytes_size):
+    units = ["B", "KB", "MB", "GB", "TB"]
+    size = float(bytes_size)
+    unit_index = 0
+
+    while size >= 1024 and unit_index < len(units) - 1:
+        size /= 1024
+        unit_index += 1
+
+    # Round to two decimals for units KB and above, no decimals for bytes
+    if unit_index == 0:
+        size = int(size)
+    else:
+        size = round(size, 2)
+
+    return size, units[unit_index]
