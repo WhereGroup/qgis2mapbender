@@ -31,7 +31,6 @@ class Qgis2Mapbender:
             self.dlg = None
 
     def run(self):
-
         self.dlg = MainDialog()
         self.dlg.show()
         # sys.exit(dlg.exec_())
