@@ -1,24 +1,26 @@
 # QGIS2Mapbender
 
 ## Description
-QGIS plugin to transfer your QGIS Server project on your server and publish your QGIS Server WMS in Mapbender.
+The QGIS2Mapbender plugin transfers your your local QGIS project on a server and publishs the QGIS Server WMS in a Mapbender application.
 
 ## Installation and Requirements
+
 ### Installing the plugin
-Installation is possible directly from the QGIS plugin repository.
-Alternatively, a release can be downloaded here and the zipped folder can be installed manually as a QGIS extension. There are no further dependencies.
+QGIS2Mapbender is publied in the QGIS plugin repository. The installation is possible directly from the QGIS plugin repository via the QGIS Plugin Manager. Click on the menu item **Plugins ► Manage and Install Plugins**.
+Alternatively, a release can be downloaded here. The zipped folder can be installed manually. Click on the menu item **Plugins  ► Manage and Install Plugins**. Select the **Not Installed option** in the Plugin Manager dialog and upload the zip.
 
 ### Requirements on your local system
 - The QGIS project must be saved in the same folder as the data.
 
 ### Requirements on your server
-- QGIS Server is installed on your server.
-- Mapbender is installed on your server.
+- QGIS Server is installed on your server
+- Mapbender is installed and configured on your server 
 
-### Requirements on your Mapbender instance
+### Requirements for your Mapbender installation
 
 **Apache**
 - Configure Apache authorisation and upload directory (see https://doc.mapbender.org/en/customization/api.html)
+
 
 **PHP**
 - Configure the following parameters in php.ini to match the characteristics of the projects you plan to upload to the server. Remember that the folder containing your project and data will be zipped for uploading to the server.
@@ -40,8 +42,8 @@ Alternatively, a release can be downloaded here and the zipped folder can be ins
 
   - User/group needs to have the global permission **access_api** and **upload_files** in order to perform any operation on the API and to be able to upload files.
   - User/group needs the global permission **create_applications** 
-  - User/group needs the global permission **sources_view**  
-  - User/group need to have **read** rights on the template application 
+  - User/group needs the global permission **view_sources**  
+  - User/group need to have **view** rights on the template application 
 
 
 ### Configuring the connection to the server 
