@@ -94,12 +94,12 @@ class ServerConfigDialog(BASE, WIDGET):
                 f"<b>Failed Tests:</b><ul>{''.join(f'<li>{test}</li>' for test in errorMsg.splitlines())}</ul>"
                 f"<b>Successful Tests:</b><ul>{''.join(f'<li>{test}</li>' for test in successMsg.splitlines())}</ul>"
             )
-        if errorMsg and not successMsg:
+        elif errorMsg:
             show_fail_box_ok(
                 "Test Results",
                 f"<b>Failed Tests:</b><ul>{''.join(f'<li>{test}</li>' for test in errorMsg.splitlines())}</ul>"
             )
-        else:
+        elif successMsg:
             self.testButton.setIcon(self.checkedIcon)
             show_succes_box_ok(
                 "Test Results",
