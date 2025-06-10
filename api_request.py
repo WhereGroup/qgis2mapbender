@@ -229,7 +229,7 @@ class ApiRequest:
         self._ensure_token()
 
         response = self._sendRequest(endpoint, "get", params=params)
-        if response:
+        if response.status_code == 200:
             try:
                 response_json = response.json()
                 # extract id:
@@ -251,6 +251,8 @@ class ApiRequest:
                                          TAG, level=Qgis.MessageLevel.Critical)
                 return response.status_code, None
         else:
+            QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: {response.json().get('error', 'Unknown error')}",
+                                     TAG, level=Qgis.MessageLevel.Critical)
             return response.status_code, None
 
 
