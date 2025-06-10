@@ -138,7 +138,7 @@ class MapbenderApiUpload:
         #     show_fail_box_ok("Failed",msg)
         #     return exit_status
         if exit_status == 200:
-            QgsMessageLog.logMessage(f"WMS with source id {source_id} successfully assigned to application '{slug}'.", TAG, level=Qgis.MessageLevel.Info)
+            QgsMessageLog.logMessage(f"WMS with source id #{source_id} successfully assigned to application '{slug}'.", TAG, level=Qgis.MessageLevel.Info)
         # elif exit_status == 500:
         #     QgsMessageLog.logMessage(f"Failed to assign WMS with source id {source_id} to application '{slug}'. Please "
         #                              f"check if the application has at least one layerset.", TAG, level=Qgis.MessageLevel.Critical)
@@ -150,8 +150,8 @@ class MapbenderApiUpload:
         #                      f"defaults to 'main' (if exists) or the first layerset in the application")
         else:
             error_assign_wms = response_wms_assign.json().get("error", "Unknown error")
-            QgsMessageLog.logMessage(f"Failed to assign WMS with source id {source_id} to application '{slug}'. Error: {error_assign_wms}", TAG, level=Qgis.MessageLevel.Critical)
+            QgsMessageLog.logMessage(f"Failed to assign WMS with source id #{source_id} to application '{slug}'. Error: {error_assign_wms}", TAG, level=Qgis.MessageLevel.Critical)
             show_fail_box_ok("Failed",
                              f"WMS successfully created/updated and uploaded/reloaded to Mapbender but failed to "
-                             f"assign WMS with source id {source_id} to application '{slug}'. Error: {error_assign_wms}.\n\nWMS GetCapabilities URL: \n{self.wms_url}")
+                             f"assign WMS with source id #{source_id} to application '{slug}'. Error: {error_assign_wms}.\n\nWMS GetCapabilities URL: \n{self.wms_url}")
         return exit_status
