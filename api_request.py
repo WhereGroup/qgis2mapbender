@@ -135,6 +135,7 @@ class ApiRequest:
         endpoint = "/upload/zip"
         status_code = None
         upload_dir = None
+        error_upload_zip = None
         self._ensure_token()
 
         # ERROR_MSG_400 = ("Error 400 Invalid request: No file uploaded or wrong file type. Please check the variables "
@@ -152,17 +153,18 @@ class ApiRequest:
                 response = self._sendRequest(endpoint, "post", files=files)
                 try:
                     response_json = response.json()
-                    if response.status_code == 200:
+                    status_code = response.status_code
+                    if status_code == 200:
                         upload_dir = response.json().get("upload_dir", None)
                         QgsMessageLog.logMessage(f"Server response {status_code}: Zip file uploaded and extracted "
                                                  f"successfully in upload_dir {upload_dir}.", TAG,
                                                  level=Qgis.MessageLevel.Info)
                     else:
                         error_upload_zip = response_json.get('error', None)
-                        QgsMessageLog.logMessage(f"Error: {response.status_code}:  {error_upload_zip}", TAG,
+                        QgsMessageLog.logMessage(f"Error: {status_code}:  {error_upload_zip}", TAG,
                                                  level=Qgis.MessageLevel.Critical)
                         show_fail_box_ok("Failed",
-                                         f"Upload to QGIS server failed. \n\nError {response.status_code}: {error_upload_zip}")
+                                         f"Upload to QGIS server failed. \n\nError {status_code}: {error_upload_zip}")
                 except ValueError as e:
                     QgsMessageLog.logMessage(f"Error while processing the response from endpoint upload/zip:  {e}", TAG,
                                              level=Qgis.MessageLevel.Critical)
@@ -189,7 +191,7 @@ class ApiRequest:
                     #     f"Upload to QGIS server failed. {msg_str}")
         except FileNotFoundError:
             QgsMessageLog.logMessage(f"Zip file with qgis project created but not found: {file_path}", TAG, level=Qgis.MessageLevel.Critical)
-        return status_code, upload_dir
+        return status_code, upload_dir, error_upload_zip
 
 
     def wms_show(self, wms_url: str) -> tuple[int, Optional[list]]:

@@ -44,6 +44,7 @@ class QgisServerApiUpload:
             Optional[str]: status code
         """
         status_code = None
+        upload_dir = None
         # Step 1: Create a ZIP of the local project directory
         if not self._zip_local_project_dir():
             QgsMessageLog.logMessage(f"Failed to create ZIP file for the project.", TAG,
@@ -55,7 +56,7 @@ class QgisServerApiUpload:
                                      level=Qgis.MessageLevel.Critical)
 
         elif self.api_request.token:
-            status_code, upload_dir = self.api_request.uploadZip(self.source_project_zip_file_path)
+            status_code, upload_dir, error_upload_dir = self.api_request.uploadZip(self.source_project_zip_file_path)
 
             # Step 3: Delete the local ZIP file
             self._delete_local_project_zip_file()

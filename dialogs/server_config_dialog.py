@@ -121,42 +121,42 @@ class ServerConfigDialog(BASE, WIDGET):
         failed_tests = []
         successful_tests = []
 
-        # Test 1: Token generation
-        try:
-            api_request = ApiRequest(configFromForm)
-            if not api_request._token_is_available():
-                failed_tests.append("Token generation failed. Please check your credentials.")
-            else:
-                successful_tests.extend(["Credentials are valid.","Token generation was successful."])
-                # Test 2: ZIP upload
-                test_zip_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../resources/test_upload/test_upload.zip'))
-                status_code, upload_dir = api_request.uploadZip(test_zip_path)
-                if status_code != 200:
-                    failed_tests.append(
-                        f"Server upload is not validated (status code {status_code}).")
-                else:
-                    successful_tests.append(f"Server upload is validated. Upload directory on server: {upload_dir}.")
-        except Exception as e:
-            show_fail_box_ok("Error", f"An error occurred during API initialization: {str(e)}.\nAPI tests "
-                                      f"(token generation, upload to server, etc.) could not be executed")
-
-        # Test 3: QGIS server connection
+        # Test 1: QGIS-Server-URL
         wmsServiceRequest = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities"
         qgisServerUrl = (f'{configFromForm.qgis_server_path}{wmsServiceRequest}')
-        #qgisServerUrl = configFromForm.qgis_server_path
         errorStr = self.testHttpConn(qgisServerUrl, 'Qgis Server')
         if errorStr:
             failed_tests.append(errorStr)
         else:
             successful_tests.append("Connection to QGIS Server was successful.")
 
-        # Test 4: Mapbender connection
+        # Test 2: Mapbender-URL
         mapbenderUrl = configFromForm.mb_basis_url
         errorStr = self.testHttpConn(mapbenderUrl, 'Mapbender')
         if errorStr:
             failed_tests.append(errorStr)
         else:
             successful_tests.append("Connection to Mapbender was successful.")
+
+        # Test 3: Token generation
+            try:
+                api_request = ApiRequest(configFromForm)
+                if not api_request._token_is_available():
+                    failed_tests.append("Token generation failed. Please check your credentials.")
+                else:
+                    successful_tests.extend(["Credentials are valid.","Token generation was successful."])
+                    # Test 4: ZIP upload
+                    test_zip_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../resources/test_upload/test_upload.zip'))
+                    status_code, upload_dir, error_zip_upload = api_request.uploadZip(test_zip_path)
+                    if status_code != 200:
+                        failed_tests.append(
+                            f"Server upload is not validated (status code {status_code}: {error_zip_upload}).")
+                    else:
+                        successful_tests.append(f"Server upload is validated. Upload directory on server: {upload_dir}.")
+            except Exception as e:
+                show_fail_box_ok("Error", f"An error occurred during API initialization: {str(e)}.\nAPI tests "
+                                          f"(token generation, upload to server, etc.) could not be executed")
+
         return "\n".join(failed_tests) if failed_tests else None, "\n".join(
             successful_tests) if successful_tests else None
 
