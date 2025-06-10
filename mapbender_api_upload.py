@@ -110,21 +110,29 @@ class MapbenderApiUpload:
         """
         exit_status, response_json =  self.api_request.app_clone(template_slug)
         slug = None
-        if response_json and "message" in response_json:
-            message = response_json["message"]
-            try:
-                slug = (message.split("slug", 1)[1]).split(",")[0].strip()
-            except IndexError:
-                QgsMessageLog.logMessage("Failed to parse slug from message.", TAG, level=Qgis.MessageLevel.Warning)
-        else:
-            QgsMessageLog.logMessage("No valid message in response_json.", TAG, level=Qgis.MessageLevel.Warning)
-        return exit_status, slug, response_json
+        if exit_status == 200 and response_json:
+            if "message" in response_json:
+                message = response_json["message"]
+                try:
+                    slug = (message.split("slug", 1)[1]).split(",")[0].strip()
+                except IndexError:
+                    QgsMessageLog.logMessage("Failed to parse slug from message.", TAG, level=Qgis.MessageLevel.Warning)
+            else:
+                QgsMessageLog.logMessage("No valid message in response_json.", TAG, level=Qgis.MessageLevel.Warning)
+        if exit_status != 200:
+            error_message_wms_clone = response_json.get("error", "Unknown error")
+            QgsMessageLog.logMessage(f"Failed to clone app template '{template_slug}'. Error: {error_message_wms_clone}", TAG, level=Qgis.MessageLevel.Critical)
+            show_fail_box_ok("Failed",
+                             f"WMS was successfully created/updated but Mapbender publish failed:\n\nFailed to clone "
+                             f"app template '{template_slug}'. Error: {error_message_wms_clone}.\n\nWMS GetCapabilities "
+                             f"URL: \n{self.wms_url}")
+        return exit_status, slug
 
     def assign_wms_to_source(self, slug: str, source_id: int, layer_set: str) -> int:
         exit_status = self.api_request.wms_assign(slug, source_id, layer_set)
         if exit_status == 404:
-            msg = (f"WMS {self.wms_url} was successfully created and uploaded to Mapbender, but not assigned to an "
-                   f"application. \n\nApplication '{slug}' does not exist. Please choose a different application.")
+            msg = (f"WMS was successfully created and uploaded to Mapbender, but not assigned to an "
+                   f"application: \n\nApplication '{slug}' does not exist. Please choose a different application.\n\nGetCapabilities URL: \n{self.wms_url}")
             QgsMessageLog.logMessage(msg, TAG, level=Qgis.MessageLevel.Warning)
             show_fail_box_ok("Failed",msg)
             return exit_status
