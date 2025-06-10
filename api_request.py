@@ -214,7 +214,7 @@ class ApiRequest:
             return response.status_code, None, None
 
 
-    def wms_add(self, wms_url: str) -> tuple[int, Optional[str]]:
+    def wms_add(self, wms_url: str) -> Tuple[int, Optional[str], Optional[str]]:
         """
         Adds a WMS layer using the provided WMS URL.
 
@@ -222,38 +222,39 @@ class ApiRequest:
             wms_url (str): The WMS URL to add.
 
         Returns:
-            tuple[int, Optional[dict]]: Status code and id of added source.
+            tuple[int, Optional[dict]]: Status code and id of added source, if added.
         """
         endpoint = "/wms/add"
         params = {"serviceUrl": wms_url}
         self._ensure_token()
+        error_wms_add = None
+        added_source_id = None
 
         response = self._sendRequest(endpoint, "get", params=params)
-        if response.status_code == 200:
-            try:
-                response_json = response.json()
-                # extract id:
-                message = response_json.get("message", "")
-                match = re.search(r"#(\d+)", message)
-                added_source_id = match.group(1) if match else None
-            except ValueError as e:
-                error_message = f"Response from the server cannot be processed. Details: {e}"
-                QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: {error_message}", TAG,
-                                         level=Qgis.MessageLevel.Critical)
-                return response.status_code, None
+        status_code = response.status_code
 
-            if added_source_id:
-                QgsMessageLog.logMessage(f"New source added with ID: {added_source_id}", TAG, level=Qgis.MessageLevel.Info)
-                return response.status_code, added_source_id
+
+        def log_error(msg):
+            QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: {msg}", TAG, level=Qgis.MessageLevel.Critical)
+
+        if status_code == 200:
+            response_json = response.json()
+            match = re.search(r"#(\d+)", response_json.get("message", ""))
+            if match:
+                added_source_id = match.group(1)
+                QgsMessageLog.logMessage(f"New source added with ID: {added_source_id}", TAG,
+                                         level=Qgis.MessageLevel.Info)
             else:
-                error_message = f"Status code: {response.status_code}. But added source ID not readable from API-answer. Full API response as JSON: {response_json}"
-                QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: {error_message}",
-                                         TAG, level=Qgis.MessageLevel.Critical)
-                return response.status_code, None
+                log_error(
+                    f"Status code: {status_code}. But added source ID not readable from API-answer. Full API response as JSON: {response_json}")
         else:
-            QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: {response.json().get('error', 'Unknown error')}",
-                                     TAG, level=Qgis.MessageLevel.Critical)
-            return response.status_code, None
+            try:
+                error_wms_add = response.json().get("error", "Unknown error")
+                log_error(error_wms_add)
+            except ValueError as e:
+                log_error(f"Error parsing the response: {e}")
+        return status_code, added_source_id, error_wms_add
+
 
 
     def wms_reload(self, source_id: str, wms_url: str) -> tuple[int, Optional[dict]]:

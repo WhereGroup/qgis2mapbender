@@ -30,9 +30,12 @@ class MapbenderApiUpload:
                 return 1, reloaded_source_ids, is_reloaded
             return 0, reloaded_source_ids, is_reloaded
         else: #wms does not exist as a source and will be added to mapbender as a source
-            status_code_add_wms, new_source_id = self.api_request.wms_add(self.wms_url)
+            status_code_add_wms, new_source_id, error_wms_add = self.api_request.wms_add(self.wms_url)
             if status_code_add_wms == 200:
                 return 0, [new_source_id], is_reloaded
+            show_fail_box_ok("Failed",
+                             f"WMS was successfully created but Mapbender upload will be interrupted:\n\n"
+                             f"Failed to add WMS source. Error: {error_wms_add}.\n\nWMS GetCapabilities URL: \n{self.wms_url}")
             return 1, [new_source_id], is_reloaded
 
 
