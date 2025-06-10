@@ -15,17 +15,6 @@ from qgis.core import QgsApplication, QgsProject, QgsSettings
 from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
 
 
-def get_os():
-    os = platform.system()
-    if os == "Windows":
-        return "Windows"
-    elif os == "Linux":
-        return "Linux"
-    return "Unknown OS"
-def get_plugin_dir() -> str:
-    return os.path.dirname(__file__)
-
-
 def get_project_layer_names() -> list:
     return [layer.name() for layer in QgsProject.instance().mapLayers().values()]
 
@@ -98,24 +87,6 @@ def show_fail_box_ok(title: str, text: str) -> int:
     failBox.setStandardButtons(QMessageBox.StandardButton.Ok)
     return failBox.exec()
 
-
-# def show_fail_box_yes_no(title: str, text: str) -> int:
-#     """
-#     Displays a failure message box with Yes and No buttons.
-#
-#     Args:
-#         title (str): The title of the message box.
-#         text (str): The text to display in the message box.
-#
-#     Returns:
-#         int: The button clicked by the user.
-#     """
-#     QApplication.restoreOverrideCursor()
-#     failBox = create_fail_box(title, text)
-#     failBox.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-#     return failBox.exec()
-
-
 def show_succes_box_ok(title: str, text: str) -> int:
     """
     Displays a success message box with an OK button.
@@ -185,23 +156,6 @@ def waitCursor():
     finally:
         QgsApplication.restoreOverrideCursor()
 
-
-def validate_no_spaces(*variables: str) -> bool:
-    """
-    Validates that none of the provided variables contain spaces.
-
-    Args:
-        *variables (str): The variables to validate.
-
-    Returns:
-        bool: True if none of the variables contain spaces, False otherwise.
-    """
-    for var in variables:
-        if " " in var:
-            return False
-    return True
-
-
 def update_mb_slug_in_settings(mb_slug: str, is_mb_slug: bool) -> None:
     """
     Updates the Mapbender slug in QGIS settings.
@@ -251,33 +205,6 @@ def uri_validator(url: str) -> bool:
     except AttributeError:
         return False
 
-
-def starts_with_single_slash_or_colon(s: str) -> bool:
-    """
-    Checks if a string starts with a single slash or a colon.
-
-    Args:
-        s (str): The string to check.
-
-    Returns:
-        bool: True if the string starts with a single slash or a colon, False otherwise.
-    """
-    pattern = r"^(/[^/]|:)"
-    return bool(re.match(pattern, s))
-
-
-def ends_with_single_slash(s: str) -> bool:
-    """
-    Checks if a string ends with a single slash.
-
-    Args:
-        s (str): The string to check.
-
-    Returns:
-        bool: True if the string ends with a single slash, False otherwise.
-    """
-    pattern = r"[^/]/$"
-    return bool(re.search(pattern, s))
 
 def get_size_and_unit(bytes_size):
     units = ["B", "KB", "MB", "GB", "TB"]
