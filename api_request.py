@@ -1,5 +1,5 @@
 import requests
-from typing import Optional
+from typing import Optional, Tuple
 import re
 
 from qgis.core import QgsMessageLog, Qgis
@@ -106,6 +106,10 @@ class ApiRequest:
             QgsMessageLog.logMessage(f"Sending request to endpoint {endpoint} with kwargs: {kwargs}", TAG, level=Qgis.MessageLevel.Info)
         try:
             response = self.session.request(method=method.upper(), url=url, headers= self.headers, **kwargs)
+            if endpoint != "/login_check":
+                print("response.text: ", response.text)
+                print("response.json: ", response.json())
+                print("response.status_code: ", response.status_code)
             return response
         except requests.HTTPError as http_err:
             QgsMessageLog.logMessage(str(http_err), TAG, level=Qgis.MessageLevel.Critical)
@@ -133,10 +137,10 @@ class ApiRequest:
         upload_dir = None
         self._ensure_token()
 
-        ERROR_MSG_400 = ("Error 400 Invalid request: No file uploaded or wrong file type. Please check the variables "
-                         "upload_max_filesize, post_max_size and max_file_uploads in the apache configuration")
-        ERROR_MSG_403 = "Error 403: user has unsufficient rights."
-        ERROR_MSG_500 = "Error 500, Server error: Failed to move or extract the file."
+        # ERROR_MSG_400 = ("Error 400 Invalid request: No file uploaded or wrong file type. Please check the variables "
+        #                  "upload_max_filesize, post_max_size and max_file_uploads in the apache configuration")
+        # ERROR_MSG_403 = "Error 403: user has unsufficient rights."
+        # ERROR_MSG_500 = "Error 500, Server error: Failed to move or extract the file."
 
         try:
             with open(file_path, "rb") as file:
@@ -146,35 +150,45 @@ class ApiRequest:
                 QgsMessageLog.logMessage(
                     f"Sending request to endpoint {endpoint} with file: {file_log}", TAG, level=Qgis.MessageLevel.Info)
                 response = self._sendRequest(endpoint, "post", files=files)
-                if response is None:
-                    msg_str = "No response from server."
-                    status_code = None
-                    QgsMessageLog.logMessage(f"Upload failed: {msg_str}", TAG, level=Qgis.MessageLevel.Critical)
-                    show_fail_box_ok("Failed", f"Upload to QGIS server failed. {msg_str}")
-                    return status_code, upload_dir
-
-                status_code  = response.status_code
-                if status_code == 200:
-                    upload_dir = response.json().get("upload_dir", None)
-                    QgsMessageLog.logMessage(f"Server response {status_code}: Zip file uploaded and extracted "
-                                             f"successfully in upload_dir {upload_dir}.", TAG,
-                                             level=Qgis.MessageLevel.Info)
-                else:
-                    if status_code == 400:
-                        msg_str = ERROR_MSG_400
-                    elif status_code == 500:
-                        msg_str = ERROR_MSG_500
-                    elif status_code == 403:
-                        msg_str = ERROR_MSG_403
+                try:
+                    response_json = response.json()
+                    if response.status_code == 200:
+                        upload_dir = response.json().get("upload_dir", None)
+                        QgsMessageLog.logMessage(f"Server response {status_code}: Zip file uploaded and extracted "
+                                                 f"successfully in upload_dir {upload_dir}.", TAG,
+                                                 level=Qgis.MessageLevel.Info)
                     else:
-                        msg_str = f"Error: {status_code}"
+                        error_upload_zip = response_json.get('error', None)
+                        QgsMessageLog.logMessage(f"Error: {response.status_code}:  {error_upload_zip}", TAG,
+                                                 level=Qgis.MessageLevel.Critical)
+                        show_fail_box_ok("Failed",
+                                         f"Upload to QGIS server failed. \n\nError {response.status_code}: {error_upload_zip}")
+                except ValueError as e:
+                    QgsMessageLog.logMessage(f"Error while processing the response from endpoint upload/zip:  {e}", TAG,
+                                             level=Qgis.MessageLevel.Critical)
+                # if response is None:
+                #     msg_str = "No response from server."
+                #     status_code = None
+                #     QgsMessageLog.logMessage(f"Upload failed: {msg_str}", TAG, level=Qgis.MessageLevel.Critical)
+                #     show_fail_box_ok("Failed", f"Upload to QGIS server failed. {msg_str}")
+                #     return status_code, upload_dir
 
-                    msg_str_response = f" | Server response: {response.text}" if response.text else ""
-                    QgsMessageLog.logMessage(msg_str + msg_str_response, TAG, level=Qgis.MessageLevel.Critical)
-                    show_fail_box_ok("Failed",
-                        f"Upload to QGIS server failed. {msg_str}")
+                # else:
+                #     if status_code == 400:
+                #         msg_str = ERROR_MSG_400
+                #     elif status_code == 500:
+                #         msg_str = ERROR_MSG_500
+                #     elif status_code == 403:
+                #         msg_str = ERROR_MSG_403
+                #     else:
+                #         msg_str = f"Error: {status_code}"
+
+                    # msg_str_response = f" | Server response: {response.text}" if response.text else ""
+                    # QgsMessageLog.logMessage(msg_str + msg_str_response, TAG, level=Qgis.MessageLevel.Critical)
+                    # show_fail_box_ok("Failed",
+                    #     f"Upload to QGIS server failed. {msg_str}")
         except FileNotFoundError:
-            QgsMessageLog.logMessage(f"File not found: {file_path}", TAG, level=Qgis.MessageLevel.Warning)
+            QgsMessageLog.logMessage(f"Zip file with qgis project created but not found: {file_path}", TAG, level=Qgis.MessageLevel.Critical)
         return status_code, upload_dir
 
 
