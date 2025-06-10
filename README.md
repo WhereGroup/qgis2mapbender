@@ -1,44 +1,69 @@
 # QGIS2Mapbender
 
 ## Description
-QGIS plugin to transfer your QGIS Server project on your server and publish your QGIS Server WMS in Mapbender.
+The QGIS2Mapbender plugin transfers your local QGIS project on a server and publishes the QGIS Server WMS in a Mapbender application.
 
 ## Installation and Requirements
+
 ### Installing the plugin
-Installation is possible directly from the QGIS plugin repository.
-Alternatively, a release can be downloaded here and the zipped folder can be installed manually as a QGIS extension. There are no further dependencies.
+QGIS2Mapbender is published in the QGIS plugin repository. The installation is possible directly from the QGIS plugin repository via the QGIS Plugin Manager. Click on the menu item **Plugins ► Manage and Install Plugins**.
+Alternatively, a release can be downloaded here. The zipped folder can be installed manually. Click on the menu item **Plugins  ► Manage and Install Plugins**. Select the **Not Installed option** in the Plugin Manager dialog and upload the zip.
 
 ### Requirements on your local system
-- The QGIS project must be saved in the same folder as the data.
+- The QGIS project must be saved in the same folder as the data. Please note that, along with the QGIS project, all the files in the folder containing the QGIS project will also be uploaded to the server.
 
 ### Requirements on your server
 - QGIS Server is installed on your server.
-- Mapbender is installed on your server.
+- Mapbender is installed and configured on your server.
 
-### Requirements on your Mapbender instance
-- Configure Apache authorisation and upload directory (see https://doc.mapbender.org/en/customization/api.html)
-- Configure the parameters "upload_max_filesize" and "post_max_size" (maximum size of all data sent via a POST request, its value should be equal to or greater than upload_max_filesize) in php.ini to match the characteristics of the projects you plan to upload to the server. Remember that the folder containing your project and data will be zipped for uploading to the server.
-- Create at least one template application in Mapbender (that will be cloned and used to publish a new WMS) or an application that will be used to publish a new WMS. 
+### Requirements for your Mapbender installation
 
-  These applications should have at least one instance of a map and one layerset: 
-  - layerset named "main" OR 
-  - layerset named with any other name.
+**Apache**
+- Configure Apache authorisation and the Mapbender upload directory **api_upload_dir** (see https://doc.mapbender.org/en/customization/api.html)
+
+
+**PHP**
+- Configure the following parameters in php.ini to match the characteristics of the projects you plan to upload to the server. Remember that the folder containing your project and data will be zipped for uploading to the server.
+
+  - **upload_max_filesize** - the maximum size of an uploaded file. 
+  - **post_max_size** - maximum size of all data sent via a POST request, its value should be equal to or greater than upload_max_filesize.
+  - **max_execution_tine** - this sets the maximum time in seconds a script is allowed to parse input data.
+
+
+**Mapbender**
+
+- Application: Create at least one template application in Mapbender (that can be copied and can be used to publish a new WMS) or an application that will be used directly to publish a new WMS. 
+
+- The applications should have at least one instance of a map and one layerset.
   
-  The field "layerset" in QGIS2Mapbender is the id or name of the layerset to clone or use. Defaults to "main" or the first layerset in the application.
+ Note: The field "layerset" in QGIS2Mapbender is the id or name of the layerset to use. Defaults are "main" or the first layerset in the application.
 
-- All users (except for the super user with the id 1, where this permission is automatically granted) need to have the global permission access_api in order to perform any operation on the API.
-Additionally, users need to have the specific permission required to upload files or perform an action, e.g. to duplicate an application, they need to have read rights on the existing application as well as the global permission create_applications.
+- User/Groups: All Mapbender users that should be authorized to use QGIS2Mapbender need special rights. There is only one exception and this is the Mapbender super user with the id 1, where this permission is automatically granted. 
+
+  - User/group needs to have the global permission **access_api** and **upload_files** in order to perform any operation on the API and to be able to upload files.
+  - User/group needs the global permission **create_applications**. 
+  - User/group needs the global permission **view_sources**.  
+  - User/group need to have **view** rights on the template application.
+
 
 ### Configuring the connection to the server 
+
 The figure below shows a typical configuration of the connection to the server.
-![img_1.png](resources/img_server_config_readme.png)
+
+![QGIS2Mapbender server configuration](resources/img_server_config_readme.png)
 
 A few comments on a standard configuration:
 
 | **Parameter**          | **Description**                                           | **Example**                          |
 |------------------------|-----------------------------------------------------------|-----------------------------------------------|
-| **Mapbender base URL** | The URL where all your Mapbender applications are listed. | https://example-server.lan/mapbender  |                                                                                                                                  |
-| **QGIS-Server URL:**   | The URL to access your QGIS Server services.              | https://example-server.lan/cgi-bin/qgis_mapserv.fcgi   |
+| **Mapbender base URL** | Link to your Mapbender landing page (application overview) | http://localhost/mapbender/  |                                                                                                                                  |
+| **QGIS Server URL**   | URL to access your QGIS Server              | http://localhost/cgi-bin/qgis_mapserv.fcgi   |
+
+
+### Docker
+
+- QGIS Server and Mapbender can be run as Docker containers. Please make sure, that the Mapbender upload directory **api_upload_dir** has the same path as the QGIS Server project directory, as it will be used in the QGIS Server Request as path in the MAP parameter.
+- A default QGIS project (environment: QGIS_PROJECT_FILE) should **not** be specified.
 
 
 ## Support
