@@ -363,7 +363,7 @@ class MainDialog(BASE, WIDGET):
                 show_succes_link_box(
                     "Success report",
                     f"""
-                    WMS already existed as a Mapbender source(s) and was successfully reloaded: {source_ids}
+                    WMS already existed as a Mapbender source(s) and was successfully reloaded: {', '.join(f'#{i}' for i in source_ids if i)}
                     <br><br>
                     Link to Capabilities:
                     <br><br>
@@ -371,7 +371,7 @@ class MainDialog(BASE, WIDGET):
                     <br><br>
                     Link to Mapbender application:
                     <br><br>
-                    <a href = "{server_config.mb_basis_url}/application/{input_slug}" style = "color: black; " > {server_config.mb_basis_url}/application/{input_slug}</a>
+                    <a href = "{server_config.mb_basis_url}/application/{slug}" style = "color: black; " > {server_config.mb_basis_url}/application/{slug}</a>
                     """
                 )
             else:
@@ -440,7 +440,7 @@ class MainDialog(BASE, WIDGET):
                 show_succes_link_box(
                     "Success report",
                     f"""
-                    WMS successfully updated in QGIS-Server and successfully updated in Mapbender source(s): {source_ids_msg}
+                    WMS successfully updated in QGIS-Server and successfully updated in Mapbender source(s): {', '.join(f'#{i}' for i in source_ids if i)}
                     <br><br>
                     Link to Capabilities:
                     <br><br>
