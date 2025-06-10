@@ -18,8 +18,9 @@ class MapbenderApiUpload:
 
         if status_code_wms_show != 200:
             show_fail_box_ok("Failed",
-                             f"WMS layer information could not be displayed. Error: {error_wms_show}.\n\n "
-                             f"Mapbender upload will be interrupted.")
+                             f"WMS layer information on Mapbender could not be displayed. Error: {error_wms_show}.\n\n"
+                             f"WMS was successfully created but Mapbender upload will be interrupted.\n\n"
+                             f"WMS GetCapabilities URL: \n{self.wms_url}")
             return 1, None, is_reloaded
 
         if source_ids: # wms already exists as a Mapbender source and will be reloaded
@@ -40,8 +41,9 @@ class MapbenderApiUpload:
             exit_status_wms_show, source_ids, error_wms_show = self.api_request.wms_show(self.wms_url)
             if exit_status_wms_show != 200:
                 show_fail_box_ok("Failed",
-                                 f"WMS layer information could not be displayed. Error: {error_wms_show}. "
-                                 f"Mapbender upload will be interrupted.")
+                                 f"WMS layer information on Mapbender could not be displayed. Error: {error_wms_show}.\n\n "
+                             f"WMS was successfully updated on the server but Mapbender upload will be interrupted.\n\n"
+                             f"WMS GetCapabilities URL: \n{self.wms_url}")
                 return 1, None
 
             if source_ids:
