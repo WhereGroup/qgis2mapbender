@@ -1,20 +1,20 @@
 # QGIS2Mapbender
 
 ## Description
-The QGIS2Mapbender plugin transfers your your local QGIS project on a server and publishs the QGIS Server WMS in a Mapbender application.
+The QGIS2Mapbender plugin transfers your local QGIS project on a server and publishes the QGIS Server WMS in a Mapbender application.
 
 ## Installation and Requirements
 
 ### Installing the plugin
-QGIS2Mapbender is publied in the QGIS plugin repository. The installation is possible directly from the QGIS plugin repository via the QGIS Plugin Manager. Click on the menu item **Plugins ► Manage and Install Plugins**.
+QGIS2Mapbender is published in the QGIS plugin repository. The installation is possible directly from the QGIS plugin repository via the QGIS Plugin Manager. Click on the menu item **Plugins ► Manage and Install Plugins**.
 Alternatively, a release can be downloaded here. The zipped folder can be installed manually. Click on the menu item **Plugins  ► Manage and Install Plugins**. Select the **Not Installed option** in the Plugin Manager dialog and upload the zip.
 
 ### Requirements on your local system
-- The QGIS project must be saved in the same folder as the data.
+- The QGIS project must be saved in the same folder as the data. Please note that, along with the QGIS project, all the files in the folder containing the QGIS project will also be uploaded to the server.
 
 ### Requirements on your server
-- QGIS Server is installed on your server
-- Mapbender is installed and configured on your server 
+- QGIS Server is installed on your server.
+- Mapbender is installed and configured on your server.
 
 ### Requirements for your Mapbender installation
 
@@ -26,7 +26,7 @@ Alternatively, a release can be downloaded here. The zipped folder can be instal
 - Configure the following parameters in php.ini to match the characteristics of the projects you plan to upload to the server. Remember that the folder containing your project and data will be zipped for uploading to the server.
 
   - **upload_max_filesize** - the maximum size of an uploaded file. 
-  - **post_max_size** - maximum size of all data sent via a POST request, its value should be equal to or greater than upload_max_filesize
+  - **post_max_size** - maximum size of all data sent via a POST request, its value should be equal to or greater than upload_max_filesize.
   - **max_execution_tine** - this sets the maximum time in seconds a script is allowed to parse input data.
 
 
@@ -41,9 +41,9 @@ Alternatively, a release can be downloaded here. The zipped folder can be instal
 - User/Groups: All Mapbender users that should be authorized to use QGIS2Mapbender need special rights. There is only one exception and this is the Mapbender super user with the id 1, where this permission is automatically granted. 
 
   - User/group needs to have the global permission **access_api** and **upload_files** in order to perform any operation on the API and to be able to upload files.
-  - User/group needs the global permission **create_applications** 
-  - User/group needs the global permission **view_sources**  
-  - User/group need to have **view** rights on the template application 
+  - User/group needs the global permission **create_applications**. 
+  - User/group needs the global permission **view_sources**.  
+  - User/group need to have **view** rights on the template application.
 
 
 ### Configuring the connection to the server 
