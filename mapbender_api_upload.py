@@ -41,8 +41,8 @@ class MapbenderApiUpload:
             exit_status_wms_show, source_ids, error_wms_show = self.api_request.wms_show(self.wms_url)
             if exit_status_wms_show != 200:
                 show_fail_box_ok("Failed",
+                                 f"WMS was successfully updated on the server but Mapbender upload will be interrupted:\n\n"
                                  f"WMS layer information on Mapbender could not be displayed. Error: {error_wms_show}.\n\n "
-                             f"WMS was successfully updated on the server but Mapbender upload will be interrupted.\n\n"
                              f"WMS GetCapabilities URL: \n{self.wms_url}")
                 return 1, None
 
@@ -58,7 +58,7 @@ class MapbenderApiUpload:
             return 1, []
 
 
-    def _reload_sources(self, source_ids: list[int], wms_url: str) -> tuple[int, list[int]]:
+    def _reload_sources(self, source_ids: list[int], wms_url: str) -> tuple[int, Optional[list[int]]]:
         """
             Reloads the specified WMS sources in Mapbender.
 
@@ -77,7 +77,13 @@ class MapbenderApiUpload:
         for source_id in source_ids:
             exit_status_reload_wms, response_json  = self.api_request.wms_reload(source_id, wms_url)
             status_code_list.append(exit_status_reload_wms)
-            if exit_status_reload_wms == 200:
+            if exit_status_reload_wms != 200:
+                error_wms_reload = response_json.get("error", "Unknown error")
+                QgsMessageLog.logMessage(f"WMS was succesfully upadted on the server.\nFailed to reload WMS with source id #{source_id} in Mapbender. Error: {error_wms_reload}", TAG, level=Qgis.MessageLevel.Critical)
+                show_fail_box_ok("Failed",
+                                 f"WMS was succesfully upadted on the server.\n\nFailed to reload WMS with source id #{source_id} in Mapbender. Error: {error_wms_reload}")
+                return 1, None
+            else:
                 reloaded_source_ids.append(source_id)
 
         if not all(status == 200 for status in status_code_list):
