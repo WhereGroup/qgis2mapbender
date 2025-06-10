@@ -16,7 +16,7 @@ from .qgis_server_api_upload import QgisServerApiUpload
 from .mapbender_api_upload import MapbenderApiUpload
 from .dialogs.server_config_dialog import ServerConfigDialog
 from .helpers import qgis_project_is_saved, check_if_qgis_project_is_dirty_and_save, \
-    show_fail_box_ok, show_succes_box_ok, \
+    show_fail_box_ok, show_succes_box_ok, show_succes_link_box, \
     list_qgs_settings_child_groups, show_question_box, \
     update_mb_slug_in_settings
 from .paths import Paths
@@ -351,19 +351,55 @@ class MainDialog(BASE, WIDGET):
                 QgsMessageLog.logMessage(
                     f"WMS {wms_url} already existed as a Mapbender source(s) and was successfully reloaded (source(s) {source_ids}) and added to Mapbender application : {slug}", TAG,
                     level=Qgis.MessageLevel.Info)
-                show_succes_box_ok(
+
+                # old without HTML formatting
+                #show_succes_box_ok(
+                #    "Success report",
+                #    f"WMS \n\n{wms_url}\n\nalready existed as a Mapbender source(s) and was successfully reloaded (source(s) {source_ids}) and added to Mapbender application:\n\n"
+                #    f"{slug}"
+                #)
+
+                # new with HTML formatting
+                show_succes_link_box(
                     "Success report",
-                    f"WMS \n\n{wms_url}\n\nalready existed as a Mapbender source(s) and was successfully reloaded (source(s) {source_ids}) and added to Mapbender application:\n\n"
-                    f"{slug}"
+                    f"""
+                    WMS already existed as a Mapbender source(s) and was successfully reloaded: {source_ids}
+                    <br><br>
+                    Link to Capabilities:
+                    <br><br>
+                    <a href = "{wms_url}" style = "color: black; " > {wms_url} </a>
+                    <br><br>
+                    Link to Mapbender application:
+                    <br><br>
+                    <a href = "{server_config.mb_basis_url}/application/{input_slug}" style = "color: black; " > {server_config.mb_basis_url}/application/{input_slug}</a>
+                    """
                 )
             else:
                 QgsMessageLog.logMessage(
                     f"WMS successfully created: {wms_url} and added to Mapbender application : {slug}", TAG,
                     level=Qgis.MessageLevel.Info)
-                show_succes_box_ok(
+
+                # old without HTML formatting
+                #show_succes_box_ok(
+                #    "Success report",
+                #    f"WMS successfully created:\n\n{wms_url}\n\nAnd added to Mapbender application:\n\n"
+                #    f"{slug}"
+                #)
+
+                # new with HTML formatting
+                show_succes_link_box(
                     "Success report",
-                    f"WMS successfully created:\n\n{wms_url}\n\nAnd added to Mapbender application:\n\n"
-                    f"{slug}"
+                    f"""
+                    WMS successfully created
+                    <br><br>
+                    Link to Capabilities:
+                    <br><br>
+                    <a href = "{wms_url}" style = "color: black; " > {wms_url} </a>
+                    <br><br>
+                    Link to Mapbender application:
+                    <br><br>
+                    <a href = "{server_config.mb_basis_url}/application/{slug}" style = "color: black; " > {server_config.mb_basis_url}/application/{slug}</a>
+                    """
                 )
             #self.close()
         except Exception as e:
@@ -398,9 +434,18 @@ class MainDialog(BASE, WIDGET):
                 return
             else:
                 source_ids_msg = ", ".join(map(str, source_ids))
-                show_succes_box_ok(
+                QgsMessageLog.logMessage(
+                    f"WMS successfully updated and successfully updated in Mapbender source(s): {source_ids_msg}!", TAG,
+                    level=Qgis.MessageLevel.Info)
+                show_succes_link_box(
                     "Success report",
-                    f"WMS successfully updated in QGIS-Server : \n\n{wms_url}\n\n And successfully updated in Mapbender source(s): {source_ids_msg}"
+                    f"""
+                    WMS successfully updated in QGIS-Server and successfully updated in Mapbender source(s): {source_ids_msg}
+                    <br><br>
+                    Link to Capabilities:
+                    <br><br>
+                    <a href = "{wms_url}" style = "color: black; " > {wms_url} </a>
+                    """
                 )
                 #self.close()
         except Exception as e:
