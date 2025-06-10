@@ -316,10 +316,10 @@ class ApiRequest:
         self._ensure_token()
 
         response = self._sendRequest(endpoint, "get", params=params)
-        if response.status_code == 404:
-            error_message = f"Error 404: Error by copying the given application. Application '{template_slug}' not found."
-            QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
-            return response.status_code, None
+        # if response.status_code == 404:
+        #     error_message = f"Error 404: Error by copying the given application. Application '{template_slug}' not found."
+        #     QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
+        #     return response.status_code, None
         try:
             response_json = response.json()
             return response.status_code, response_json
