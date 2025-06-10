@@ -19,7 +19,7 @@ Alternatively, a release can be downloaded here. The zipped folder can be instal
 ### Requirements for your Mapbender installation
 
 **Apache**
-- Configure Apache authorisation and upload directory (see https://doc.mapbender.org/en/customization/api.html)
+- Configure Apache authorisation and the Mapbender upload directory **api_upload_dir** (see https://doc.mapbender.org/en/customization/api.html)
 
 
 **PHP**
@@ -58,6 +58,11 @@ A few comments on a standard configuration:
 |------------------------|-----------------------------------------------------------|-----------------------------------------------|
 | **Mapbender base URL** | Link to your Mapbender landing page (application overview) | http://localhost/mapbender/  |                                                                                                                                  |
 | **QGIS Server URL**   | URL to access your QGIS Server              | http://localhost/cgi-bin/qgis_mapserv.fcgi   |
+
+
+### Docker
+
+QGIS Server and Mapbender can be run as Docker containers. Please make sure, that the Mapbender upload directory **api_upload_dir** has the same path as the QGIS Server project directory, as it will be used in the QGIS Server Request as path in the MAP parameter.
 
 
 ## Support
