@@ -276,7 +276,7 @@ class ApiRequest:
         except ValueError as e:
             return response.status_code, None
 
-    def wms_assign(self, application: str, source: int, layer_set: Optional[str]) -> int:
+    def wms_assign(self, application: str, source: int, layer_set: Optional[str]) -> str:
         """
         Assigns a WMS source to an application.
 
@@ -298,7 +298,7 @@ class ApiRequest:
         self._ensure_token()
 
         response = self._sendRequest(endpoint, "get", params=params)
-        return response.status_code
+        return response
 
 
     def app_clone(self, template_slug: str) -> tuple[int, Optional[dict]]:
