@@ -62,7 +62,8 @@ A few comments on a standard configuration:
 
 ### Docker
 
-QGIS Server and Mapbender can be run as Docker containers. Please make sure, that the Mapbender upload directory **api_upload_dir** has the same path as the QGIS Server project directory, as it will be used in the QGIS Server Request as path in the MAP parameter.
+- QGIS Server and Mapbender can be run as Docker containers. Please make sure, that the Mapbender upload directory **api_upload_dir** has the same path as the QGIS Server project directory, as it will be used in the QGIS Server Request as path in the MAP parameter.
+- A default QGIS project (environment: QGIS_PROJECT_FILE) should **not** be specified.
 
 
 ## Support
