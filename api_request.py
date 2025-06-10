@@ -195,17 +195,23 @@ class ApiRequest:
         response = self._sendRequest(endpoint, "get", params=params)
         try:
             response_json = response.json()
-            source_ids = [item['id'] for item in response_json.get('message', []) if isinstance(item, dict) and 'id' in item]
-            if source_ids:
-                QgsMessageLog.logMessage(f"WMS is already a source(s) in Mapbender with ID(s): {source_ids}", TAG,
+            if response.status_code == 200:
+                source_ids = [item['id'] for item in response_json.get('message', []) if isinstance(item, dict) and 'id' in item]
+                if source_ids:
+                    QgsMessageLog.logMessage(f"WMS is already a source(s) in Mapbender with ID(s): {source_ids}", TAG,
                                          level=Qgis.MessageLevel.Info)
+                else:
+                    QgsMessageLog.logMessage(f"WMS does not exist as a source in Mapbender yet.", TAG,
+                                         level=Qgis.MessageLevel.Info)
+                return response.status_code, source_ids, None
             else:
-                QgsMessageLog.logMessage(f"WMS does not exist as a source in Mapbender yet.", TAG,
-                                         level=Qgis.MessageLevel.Info)
-            return response.status_code, source_ids
+                error = response_json.get('error', None)
+                QgsMessageLog.logMessage(f"Error: {error}", TAG,
+                                         level=Qgis.MessageLevel.Warning)
+                return response.status_code, None, error
         except ValueError as e:
             QgsMessageLog.logMessage(f"Error while processing the response from endpoint wms/show:  {e}", TAG, level=Qgis.MessageLevel.Warning)
-            return response.status_code, None
+            return response.status_code, None, None
 
 
     def wms_add(self, wms_url: str) -> tuple[int, Optional[str]]:

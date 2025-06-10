@@ -14,11 +14,11 @@ class MapbenderApiUpload:
 
     def mb_upload(self) -> tuple[int, Optional[list[int]], bool]:
         is_reloaded = False
-        status_code_wms_show, source_ids = self.api_request.wms_show(self.wms_url)
+        status_code_wms_show, source_ids, error_wms_show = self.api_request.wms_show(self.wms_url)
 
         if status_code_wms_show != 200:
             show_fail_box_ok("Failed",
-                             f"WMS layer information could not be displayed. "
+                             f"WMS layer information could not be displayed. Error: {error_wms_show}.\n\n "
                              f"Mapbender upload will be interrupted.")
             return 1, None, is_reloaded
 
@@ -37,10 +37,10 @@ class MapbenderApiUpload:
 
     def mb_reload(self) -> tuple[int, Optional[list[int]]]:
         try:
-            exit_status_wms_show, source_ids = self.api_request.wms_show(self.wms_url)
+            exit_status_wms_show, source_ids, error_wms_show = self.api_request.wms_show(self.wms_url)
             if exit_status_wms_show != 200:
                 show_fail_box_ok("Failed",
-                                 f"WMS layer information could not be displayed. "
+                                 f"WMS layer information could not be displayed. Error: {error_wms_show}. "
                                  f"Mapbender upload will be interrupted.")
                 return 1, None
 
@@ -110,7 +110,7 @@ class MapbenderApiUpload:
                 QgsMessageLog.logMessage("Failed to parse slug from message.", TAG, level=Qgis.MessageLevel.Warning)
         else:
             QgsMessageLog.logMessage("No valid message in response_json.", TAG, level=Qgis.MessageLevel.Warning)
-        return exit_status, slug
+        return exit_status, slug, response_json
 
     def assign_wms_to_source(self, slug: str, source_id: int, layer_set: str) -> int:
         exit_status = self.api_request.wms_assign(slug, source_id, layer_set)
