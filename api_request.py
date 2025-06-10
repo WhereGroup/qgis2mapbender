@@ -117,7 +117,7 @@ class ApiRequest:
             QgsMessageLog.logMessage(str(req_err), TAG, level=Qgis.MessageLevel.Critical)
         return None
 
-    def uploadZip(self, file_path: str) -> tuple[Optional[int], Optional[str]]:
+    def uploadZip(self, file_path: str) -> Tuple[Optional[int], Optional[str], Optional[str]]:
         """
         Uploads a ZIP file to the server and handles the response.
         The endpoint api/upload/zip uploads a ZIP file to the server and extracts its contents into the upload
