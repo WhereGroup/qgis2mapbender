@@ -323,17 +323,18 @@ class ApiRequest:
         endpoint = "/application/clone"
         params = {"slug": template_slug}
         self._ensure_token()
+        response_json = None
 
         response = self._sendRequest(endpoint, "get", params=params)
         status_code = response.status_code
-        if status_code == 200:
-            try:
-                response_json = response.json()
-                return response.status_code, response_json
-            except ValueError as e:
-                error_message = f"Error parsing the response: {e}"
-                QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
-                return response.status_code, None
+        try:
+            response_json = response.json()
+        except ValueError as e:
+            error_message = f"Error parsing the response: {e}"
+            QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
+
+        if response_json:
+            return response.status_code, response_json
         else:
             error_message = f"Failed to clone application. Status code: {status_code}"
             QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)

@@ -152,7 +152,7 @@ class MapbenderApiUpload:
                     QgsMessageLog.logMessage("Failed to parse slug from message.", TAG, level=Qgis.MessageLevel.Warning)
             else:
                 QgsMessageLog.logMessage("No valid message in response_json.", TAG, level=Qgis.MessageLevel.Warning)
-        if exit_status != 200 and response_json:
+        elif exit_status != 200 and response_json:
             error_message_wms_clone = response_json.get("error", "Unknown error")
             show_fail_box("Failed",
                              f"{msg_error_box}{error_message_wms_clone}.\n\nWMS GetCapabilities "
@@ -181,7 +181,7 @@ class MapbenderApiUpload:
         if status_code == 200 and response_json:
             QgsMessageLog.logMessage(f"WMS with source #{source_id} successfully assigned to application '{slug}'.", TAG, level=Qgis.MessageLevel.Info)
         elif response_json:
-            error_assign_wms = response_json().get("error", "Unknown error")
+            error_assign_wms = response_json.get("error", "Unknown error")
             QgsMessageLog.logMessage(f"{msg_error_log}{error_assign_wms}", TAG, level=Qgis.MessageLevel.Critical)
             show_fail_box("Failed",
                              f"{msg_error_box} {error_assign_wms}.\n\nWMS GetCapabilities URL: \n{self.wms_url}")
