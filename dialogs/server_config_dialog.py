@@ -60,12 +60,12 @@ class ServerConfigDialog(BASE, WIDGET):
 
         # QLineEdit validators
         regex = QRegularExpression("[^\\s;]*")  # regex for blank spaces and semicolon
-        regex_username = QRegularExpression("^(?!\\s)[^;/\\\\]*$")
+        #regex_username = QRegularExpression("^(?!\\s)[^;/\\\\]*$")
 
         regex_validator = QRegularExpressionValidator(regex)
-        regex_username_validator = QRegularExpressionValidator(regex_username)
+        #regex_username_validator = QRegularExpressionValidator(regex_username)
         self.serverConfigNameLineEdit.setValidator(regex_validator)
-        self.userNameLineEdit.setValidator(regex_username_validator)
+        self.userNameLineEdit.setValidator(regex_validator)
         self.passwordLineEdit.setValidator(regex_validator)
         self.qgisServerPathLineEdit.setValidator(regex_validator)
         self.mbBasisUrlLineEdit.setValidator(regex_validator)
