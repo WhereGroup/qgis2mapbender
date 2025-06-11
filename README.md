@@ -7,6 +7,8 @@ You find the QGIS2Mapbender in the QGIS Python Plugins Repository https://plugin
 
 ## Installation and Requirements
 
+Please note that QGIS2Mapbender version >= 1.0.0 needs Mapbender version >= 4.1.2.
+
 ### Installing the plugin
 QGIS2Mapbender is published in the QGIS plugin repository. The installation is possible directly from the QGIS plugin repository via the QGIS Plugin Manager. Click on the menu item **Plugins ► Manage and Install Plugins**.
 Alternatively, a release can be downloaded here. The zipped folder can be installed manually. Click on the menu item **Plugins  ► Manage and Install Plugins**. Select the **Not Installed option** in the Plugin Manager dialog and upload the zip.
