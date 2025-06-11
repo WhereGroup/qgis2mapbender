@@ -14,7 +14,7 @@ from .qgis_server_api_upload import QgisServerApiUpload
 from .mapbender_api_upload import MapbenderApiUpload
 from .dialogs.server_config_dialog import ServerConfigDialog
 from .helpers import qgis_project_is_saved, check_if_qgis_project_is_dirty_and_save, \
-    show_fail_box_ok, show_success_box, show_success_link_box, \
+    show_fail_box, show_success_box, show_success_link_box, \
     list_qgs_settings_child_groups, show_question_box, \
     update_mb_slug_in_settings
 from .paths import Paths
@@ -268,7 +268,7 @@ class MainDialog(BASE, WIDGET):
         try:
             action = "publish" if self.publishRadioButton.isChecked() else "update"
             if action == "publish" and self.mbSlugComboBox.currentText() == '':
-                show_fail_box_ok("Please complete Mapbender parameters",
+                show_fail_box("Please complete Mapbender parameters",
                                  "Please enter a valid Mapbender URL title")
                 return
 
@@ -385,7 +385,7 @@ class MainDialog(BASE, WIDGET):
                 )
             #self.close()
         except Exception as e:
-            show_fail_box_ok("Failed", f"An error occurred during Mapbender publish: {e}")
+            show_fail_box("Failed", f"An error occurred during Mapbender publish: {e}")
             QgsMessageLog.logMessage(f"Error in mb_publish: {e}", TAG, level=Qgis.MessageLevel.Critical)
         return
 
@@ -411,7 +411,7 @@ class MainDialog(BASE, WIDGET):
             mb_reload = MapbenderApiUpload(server_config, api_request, wms_url)
             exit_status, source_ids = mb_reload.mb_reload()
             if exit_status != 0 or not source_ids:
-                show_fail_box_ok("Failed", f"No source to update. WMS {wms_url} is not an existing source in Mapbender.")
+                show_fail_box("Failed", f"No source to update. WMS {wms_url} is not an existing source in Mapbender.")
                 QgsMessageLog.logMessage(f"FAILED mb_update: No source to update. WMS {wms_url} is not an existing source in Mapbender.", TAG, level=Qgis.MessageLevel.Info)
                 return
             else:
@@ -431,6 +431,6 @@ class MainDialog(BASE, WIDGET):
                 )
                 #self.close()
         except Exception as e:
-            show_fail_box_ok("Failed", f"An error occurred during Mapbender update: {e}")
+            show_fail_box("Failed", f"An error occurred during Mapbender update: {e}")
             QgsMessageLog.logMessage(f"Error in mb_update: {e}", TAG, level=Qgis.MessageLevel.Critical)
         return

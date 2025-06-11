@@ -5,12 +5,12 @@ import re
 from qgis.core import QgsMessageLog, Qgis
 
 from .settings import TAG
-from .helpers import show_fail_box_ok
+from .helpers import show_fail_box
 
 
 class ApiRequest:
     """
-        Handles API requests, authentication, and interactions with the server.
+    Handles API requests, authentication, and server interactions for the QGIS2Mapbender plugin.
     """
 
     def __init__(self, server_config):
@@ -18,7 +18,7 @@ class ApiRequest:
         Initializes the ApiRequest instance with server configuration.
 
         Args:
-            server_config: Configuration object containing server details.
+            server_config: Configuration object containing server details (URLs, credentials, etc.).
         """
         self.server_config = server_config
         self.session = requests.Session()
@@ -32,7 +32,7 @@ class ApiRequest:
 
     def _initialize_authentication(self) -> None:
         """
-        Authenticates and sets the token in the headers if successful.
+        Authenticates and sets the token in the request headers if successful.
         """
         self.token = self._authenticate()
         if self.token:
@@ -51,23 +51,26 @@ class ApiRequest:
             "username": self.server_config.username,
             "password": self.server_config.password
         }
-        ERROR_MSG_404 = "Authentication failed: 404 invalid URL. Please check the server configuration (Is the URL valid?)"
-        ERROR_MSG_401 = "Authentication failed: 401. Please check user name and password"
         ERROR_MSG_OTHER = "Authentication failed. Please see logs under QGIS2Mapbender for more information."
         ERROR_MSG_TITLE = "Failed to obtain a valid token. Authentication failed"
 
         response = self._sendRequest(endpoint, "post", json=credentials)
         if response == None:
-            show_fail_box_ok(ERROR_MSG_TITLE, ERROR_MSG_OTHER)
+            show_fail_box(ERROR_MSG_TITLE, ERROR_MSG_OTHER)
             return self.token
         if response.status_code:
             if response.status_code == 200:
                 self.token = response.json().get("token")
             else:
-                msg_str = ERROR_MSG_404 if response.status_code == 404 else ERROR_MSG_401 if response.status_code == 401 else ERROR_MSG_OTHER
-                QgsMessageLog.logMessage(f"{ERROR_MSG_TITLE} with status code: {response.status_code}", TAG,
-                                         level=Qgis.MessageLevel.Critical)
-                show_fail_box_ok(ERROR_MSG_TITLE, msg_str)
+                try:
+                    response_json = response.json()
+                    error_message = response_json.get("error", "Unknown error")
+                    QgsMessageLog.logMessage(f"{ERROR_MSG_TITLE}: {error_message}", TAG, level=Qgis.MessageLevel.Critical)
+                    show_fail_box(ERROR_MSG_TITLE, error_message)
+                except ValueError as e:
+                    QgsMessageLog.logMessage(f"Error parsing the response from endpoint {endpoint}: {e}", TAG, level=Qgis.MessageLevel.Critical)
+                    show_fail_box(ERROR_MSG_TITLE, ERROR_MSG_OTHER)
+                    return None
         return self.token
 
     def _ensure_token(self) -> None:
@@ -138,11 +141,6 @@ class ApiRequest:
         error_upload_zip = None
         self._ensure_token()
 
-        # ERROR_MSG_400 = ("Error 400 Invalid request: No file uploaded or wrong file type. Please check the variables "
-        #                  "upload_max_filesize, post_max_size and max_file_uploads in the apache configuration")
-        # ERROR_MSG_403 = "Error 403: user has unsufficient rights."
-        # ERROR_MSG_500 = "Error 500, Server error: Failed to move or extract the file."
-
         try:
             with open(file_path, "rb") as file:
                 files = {
@@ -163,32 +161,11 @@ class ApiRequest:
                         error_upload_zip = response_json.get('error', None)
                         QgsMessageLog.logMessage(f"Error: {status_code}:  {error_upload_zip}", TAG,
                                                  level=Qgis.MessageLevel.Critical)
-                        show_fail_box_ok("Failed",
+                        show_fail_box("Failed",
                                          f"Upload to QGIS server failed. \n\nError {status_code}: {error_upload_zip}")
                 except ValueError as e:
                     QgsMessageLog.logMessage(f"Error while processing the response from endpoint upload/zip:  {e}", TAG,
                                              level=Qgis.MessageLevel.Critical)
-                # if response is None:
-                #     msg_str = "No response from server."
-                #     status_code = None
-                #     QgsMessageLog.logMessage(f"Upload failed: {msg_str}", TAG, level=Qgis.MessageLevel.Critical)
-                #     show_fail_box_ok("Failed", f"Upload to QGIS server failed. {msg_str}")
-                #     return status_code, upload_dir
-
-                # else:
-                #     if status_code == 400:
-                #         msg_str = ERROR_MSG_400
-                #     elif status_code == 500:
-                #         msg_str = ERROR_MSG_500
-                #     elif status_code == 403:
-                #         msg_str = ERROR_MSG_403
-                #     else:
-                #         msg_str = f"Error: {status_code}"
-
-                    # msg_str_response = f" | Server response: {response.text}" if response.text else ""
-                    # QgsMessageLog.logMessage(msg_str + msg_str_response, TAG, level=Qgis.MessageLevel.Critical)
-                    # show_fail_box_ok("Failed",
-                    #     f"Upload to QGIS server failed. {msg_str}")
         except FileNotFoundError:
             QgsMessageLog.logMessage(f"Zip file with qgis project created but not found: {file_path}", TAG, level=Qgis.MessageLevel.Critical)
         return status_code, upload_dir, error_upload_zip

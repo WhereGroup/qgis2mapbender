@@ -2,7 +2,7 @@ from typing import Optional
 
 from qgis.core import QgsMessageLog, Qgis
 
-from .helpers import show_fail_box_ok
+from .helpers import show_fail_box
 from .settings import TAG
 
 
@@ -17,7 +17,7 @@ class MapbenderApiUpload:
         status_code_wms_show, source_ids, error_wms_show = self.api_request.wms_show(self.wms_url)
 
         if status_code_wms_show != 200:
-            show_fail_box_ok("Failed",
+            show_fail_box("Failed",
                              f"WMS layer information on Mapbender could not be displayed. Error: {error_wms_show}.\n\n"
                              f"WMS was successfully created but Mapbender upload will be interrupted.\n\n"
                              f"WMS GetCapabilities URL: \n{self.wms_url}")
@@ -33,7 +33,7 @@ class MapbenderApiUpload:
             status_code_add_wms, new_source_id, error_wms_add = self.api_request.wms_add(self.wms_url)
             if status_code_add_wms == 200:
                 return 0, [new_source_id], is_reloaded
-            show_fail_box_ok("Failed",
+            show_fail_box("Failed",
                              f"WMS was successfully created but Mapbender upload will be interrupted:\n\n"
                              f"Failed to add WMS source. Error: {error_wms_add}.\n\nWMS GetCapabilities URL: \n{self.wms_url}")
             return 1, [new_source_id], is_reloaded
@@ -43,7 +43,7 @@ class MapbenderApiUpload:
         try:
             exit_status_wms_show, source_ids, error_wms_show = self.api_request.wms_show(self.wms_url)
             if exit_status_wms_show != 200:
-                show_fail_box_ok("Failed",
+                show_fail_box("Failed",
                                  f"WMS was successfully updated on the server but Mapbender upload will be interrupted:\n\n"
                                  f"WMS layer information on Mapbender could not be displayed. Error: {error_wms_show}.\n\n "
                              f"WMS GetCapabilities URL: \n{self.wms_url}")
@@ -83,7 +83,7 @@ class MapbenderApiUpload:
             if exit_status_reload_wms != 200:
                 error_wms_reload = response_json.get("error", "Unknown error")
                 QgsMessageLog.logMessage(f"WMS was succesfully upadted on the server.\nFailed to reload WMS with source id #{source_id} in Mapbender. Error: {error_wms_reload}", TAG, level=Qgis.MessageLevel.Critical)
-                show_fail_box_ok("Failed",
+                show_fail_box("Failed",
                                  f"WMS was succesfully upadted on the server.\n\nFailed to reload WMS with source id #{source_id} in Mapbender. Error: {error_wms_reload}")
                 return 1, None
             else:
@@ -91,7 +91,7 @@ class MapbenderApiUpload:
 
         if not all(status == 200 for status in status_code_list):
             QgsMessageLog.logMessage(f"Reloaded sources: {reloaded_source_ids}. WMS could not be reloaded in (all sources) in Mapbender.", TAG, level=Qgis.MessageLevel.Critical)
-            show_fail_box_ok("Failed",
+            show_fail_box("Failed",
                              f"Reloaded sources: {reloaded_source_ids}. WMS could not be reloaded in (all sources) in Mapbender.")
             return 1, reloaded_source_ids
 
@@ -125,7 +125,7 @@ class MapbenderApiUpload:
         if exit_status != 200:
             error_message_wms_clone = response_json.get("error", "Unknown error")
             QgsMessageLog.logMessage(f"Failed to clone app template '{template_slug}'. Error: {error_message_wms_clone}", TAG, level=Qgis.MessageLevel.Critical)
-            show_fail_box_ok("Failed",
+            show_fail_box("Failed",
                              f"WMS was successfully created/updated but Mapbender publish failed:\n\nFailed to clone "
                              f"app template '{template_slug}'. Error: {error_message_wms_clone}.\n\nWMS GetCapabilities "
                              f"URL: \n{self.wms_url}")
@@ -134,27 +134,12 @@ class MapbenderApiUpload:
     def assign_wms_to_source(self, slug: str, source_id: int, layer_set: str) -> int:
         response_wms_assign = self.api_request.wms_assign(slug, source_id, layer_set)
         exit_status = response_wms_assign.status_code
-        # if exit_status == 404:
-        #     msg = (f"WMS was successfully created and uploaded to Mapbender, but not assigned to an "
-        #            f"application: \n\nApplication '{slug}' does not exist. Please choose a different application.\n\nGetCapabilities URL: \n{self.wms_url}")
-        #     QgsMessageLog.logMessage(msg, TAG, level=Qgis.MessageLevel.Warning)
-        #     show_fail_box_ok("Failed",msg)
-        #     return exit_status
         if exit_status == 200:
             QgsMessageLog.logMessage(f"WMS with source id #{source_id} successfully assigned to application '{slug}'.", TAG, level=Qgis.MessageLevel.Info)
-        # elif exit_status == 500:
-        #     QgsMessageLog.logMessage(f"Failed to assign WMS with source id {source_id} to application '{slug}'. Please "
-        #                              f"check if the application has at least one layerset.", TAG, level=Qgis.MessageLevel.Critical)
-        #     show_fail_box_ok("Failed",
-        #                      f"WMS {self.wms_url} successfully created and uploaded to Mapbender. \n\nFailed to "
-        #                      f"assign WMS with source id {source_id} to application '{slug}'.\n\nPlease check if the application "
-        #                      f"has at least one layerset or if the given layerset exists. \n\nRequirements: \nThe Mapbender applications should "
-        #                      f"have at least one layerset named 'main' or any other name. \n\nThe input parameter layerset (optional) in QGSI2Mapbender "
-        #                      f"defaults to 'main' (if exists) or the first layerset in the application")
         else:
             error_assign_wms = response_wms_assign.json().get("error", "Unknown error")
             QgsMessageLog.logMessage(f"Failed to assign WMS with source id #{source_id} to application '{slug}'. Error: {error_assign_wms}", TAG, level=Qgis.MessageLevel.Critical)
-            show_fail_box_ok("Failed",
+            show_fail_box("Failed",
                              f"WMS successfully created/updated and uploaded/reloaded to Mapbender but failed to "
                              f"assign WMS with source id #{source_id} to application '{slug}'. Error: {error_assign_wms}.\n\nWMS GetCapabilities URL: \n{self.wms_url}")
         return exit_status

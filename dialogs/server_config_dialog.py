@@ -5,10 +5,10 @@ import requests
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import QRegularExpression, QSettings
 from qgis.PyQt.QtGui import QIntValidator, QRegularExpressionValidator, QIcon
-from qgis.PyQt.QtWidgets import QDialogButtonBox, QLineEdit, QRadioButton, QLabel, QComboBox, QPushButton
+from qgis.PyQt.QtWidgets import QDialogButtonBox, QLineEdit, QRadioButton, QLabel, QPushButton
 
 from ..api_request import ApiRequest
-from ..helpers import show_succes_box_ok, list_qgs_settings_child_groups, show_fail_box_ok, uri_validator, waitCursor
+from ..helpers import show_success_box, list_qgs_settings_child_groups, show_fail_box, uri_validator, waitCursor
 from ..server_config import ServerConfig
 from ..settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY
 
@@ -92,19 +92,19 @@ class ServerConfigDialog(BASE, WIDGET):
             errorMsg, successMsg  = self.execTestsImpl()
 
         if errorMsg and successMsg:
-            show_fail_box_ok(
+            show_fail_box(
                 "Test Results",
                 f"<b>Failed Tests:</b><ul>{''.join(f'<li>{test}</li>' for test in errorMsg.splitlines())}</ul>"
                 f"<b>Successful Tests:</b><ul>{''.join(f'<li>{test}</li>' for test in successMsg.splitlines())}</ul>"
             )
         elif errorMsg:
-            show_fail_box_ok(
+            show_fail_box(
                 "Test Results",
                 f"<b>Failed Tests:</b><ul>{''.join(f'<li>{test}</li>' for test in errorMsg.splitlines())}</ul>"
             )
         elif successMsg:
             self.testButton.setIcon(self.checkedIcon)
-            show_succes_box_ok(
+            show_succes_box(
                 "Test Results",
                 f"<b>All tests were successful:</b><ul>{''.join(f'<li>{test}</li>' for test in successMsg.splitlines())}</ul>"
             )
@@ -157,7 +157,7 @@ class ServerConfigDialog(BASE, WIDGET):
                     else:
                         successful_tests.append(f"Server upload is validated. Upload directory on server: {upload_dir}.")
             except Exception as e:
-                show_fail_box_ok("Error", f"An error occurred during API initialization: {str(e)}.\nAPI tests "
+                show_fail_box("Error", f"An error occurred during API initialization: {str(e)}.\nAPI tests "
                                           f"(token generation, upload to server, etc.) could not be executed")
 
         return "\n".join(failed_tests) if failed_tests else None, "\n".join(
@@ -228,7 +228,7 @@ class ServerConfigDialog(BASE, WIDGET):
             s.remove(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.selected_server_config_name}")
             return True
         if config_name_from_formular in saved_config_names and self.mode != 'edit':
-            show_fail_box_ok('Failed', 'Server configuration name already exists')
+            show_fail_box('Failed', 'Server configuration name already exists')
             return False
         return True
 
@@ -240,7 +240,7 @@ class ServerConfigDialog(BASE, WIDGET):
             serverConfigFromFormular.save(encrypted=False)
         else:
             serverConfigFromFormular.save(encrypted=True)
-        show_succes_box_ok('Success', 'Server configuration successfully saved')
+        show_success_box('Success', 'Server configuration successfully saved')
         self.close()
         return
 
