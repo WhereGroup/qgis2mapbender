@@ -302,11 +302,14 @@ class ApiRequest:
 
         response = self._sendRequest(endpoint, "get", params=params)
         try:
-            response_json= response.json()
-            return response.status_code, response_json
+            if response.text:
+                response_json = response.json()
+            else:
+                response_json = None
         except ValueError:
-            return response.status_code, None
+            response_json = None
 
+        return response.status_code, None
 
     def app_clone(self, template_slug: str) -> tuple[int, Optional[dict]]:
         """
