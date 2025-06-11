@@ -104,7 +104,7 @@ class ServerConfigDialog(BASE, WIDGET):
             )
         elif successMsg:
             self.testButton.setIcon(self.checkedIcon)
-            show_succes_box(
+            show_success_box(
                 "Test Results",
                 f"<b>All tests were successful:</b><ul>{''.join(f'<li>{test}</li>' for test in successMsg.splitlines())}</ul>"
             )
