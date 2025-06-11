@@ -105,7 +105,7 @@
           <item row="3" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
-             <widget class="QLineEdit" name="qgisServerPathLineEdit"/>
+             <widget class="QLineEdit" name="qgisServerUrlLineEdit"/>
             </item>
            </layout>
           </item>
