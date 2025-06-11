@@ -3,7 +3,11 @@
 ## Description
 The QGIS2Mapbender plugin transfers your local QGIS project on a server and publishes the QGIS Server WMS in a Mapbender application.
 
+You find the QGIS2Mapbender in the QGIS Python Plugins Repository https://plugins.qgis.org/plugins/QGIS2Mapbender.
+
 ## Installation and Requirements
+
+Please note that QGIS2Mapbender version >= 1.0.0 needs Mapbender version >= 4.1.2.
 
 ### Installing the plugin
 QGIS2Mapbender is published in the QGIS plugin repository. The installation is possible directly from the QGIS plugin repository via the QGIS Plugin Manager. Click on the menu item **Plugins ► Manage and Install Plugins**.
