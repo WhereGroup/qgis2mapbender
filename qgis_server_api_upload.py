@@ -10,7 +10,19 @@ from .settings import TAG
 
 
 class QgisServerApiUpload:
-    def __init__(self, api_request, paths):
+    """
+        Handles the process of zipping, uploading, and cleaning up QGIS project files for QGIS Server API integration.
+    """
+    def __init__(self, api_request, paths) -> None:
+        """
+            Initializes the QgisServerApiUpload object with necessary paths and API request handler.
+
+            Args:
+                api_request: The API request handler for uploading the project.
+                paths: An object containing paths related to the QGIS project.
+            Returns:
+                None
+        """
         self.source_project_dir_path = paths.source_project_dir_path
         self.source_project_dir_name = paths.source_project_dir_name
         self.source_project_file_name = paths.source_project_file_name
@@ -19,14 +31,14 @@ class QgisServerApiUpload:
 
     def get_wms_url(self, server_config: ServerConfig, upload_dir: str) -> str:
         """
-        Constructs the WMS URL for the uploaded project.
+            Constructs the WMS URL for the uploaded project.
 
-        Args:
-            server_config: The server configuration object.
-            upload_dir: The directory where the project is uploaded.
+            Args:
+                server_config: The server configuration object.
+                upload_dir: The directory where the project is uploaded.
 
-        Returns:
-            str: The WMS URL.
+            Returns:
+                str: The WMS URL.
         """
         wms_service_version_request = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities&map="
         server_project_dir = self.source_project_file_name.split('.')[0]
@@ -38,10 +50,10 @@ class QgisServerApiUpload:
 
     def process_and_upload_project(self) -> Optional[tuple[str, Optional[str]]]:
         """
-        Executes the steps to zip the project, upload it, and delete the ZIP file.
+            Executes the steps to zip the project, upload it, and delete the ZIP file.
 
-        Returns:
-            Optional[str]: status code
+            Returns:
+                Optional[str]: status code
         """
         status_code = None
         upload_dir = None
@@ -65,10 +77,10 @@ class QgisServerApiUpload:
 
     def _zip_local_project_dir(self) -> bool:
         """
-        Zips the local project directory, excluding unwanted files.
+            Zips the local project directory, excluding unwanted files.
 
-        Returns:
-            bool: True if the ZIP file was created successfully, False otherwise.
+            Returns:
+                bool: True if the ZIP file was created successfully, False otherwise.
         """
         try:
             temp_dir_path = f'{self.source_project_dir_path}_copy_tmp'
@@ -100,12 +112,15 @@ class QgisServerApiUpload:
             QgsMessageLog.logMessage(f"Error while zipping project directory: {e}", TAG, level=Qgis.MessageLevel.Critical)
             return False
 
-    def _create_archive_with_folder(self, source):
+    def _create_archive_with_folder(self, source) -> None:
         """
-        Creates an archive (zip) containing the specified folder.
+            Creates an archive (zip) containing the specified folder.
 
-        Args:
-            source (str): the folder you want to archive.
+            Args:
+                source (str): the folder you want to archive.
+
+            Returns:
+                None
         """
         try:
             base = os.path.basename(self.source_project_zip_file_path)
@@ -118,7 +133,10 @@ class QgisServerApiUpload:
 
     def _delete_local_project_zip_file(self) -> None:
         """
-        Deletes the local ZIP file of the project.
+            Deletes the local ZIP file of the project.
+
+            Returns:
+                    None
         """
         with waitCursor():
             try:
