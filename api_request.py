@@ -328,10 +328,12 @@ class ApiRequest:
         response = self._sendRequest(endpoint, "get", params=params)
         status_code = response.status_code
         try:
-            response_json = response.json()
-        except ValueError as e:
-            error_message = f"Error parsing the response: {e}"
-            QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
+            if response.text:
+                response_json = response.json()
+            else:
+                response_json = None
+        except ValueError:
+            pass
 
         if response_json:
             return response.status_code, response_json
