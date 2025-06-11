@@ -110,9 +110,9 @@ class MapbenderApiUpload:
             status_code_list.append(exit_status_reload_wms)
             if exit_status_reload_wms != 200:
                 error_wms_reload = response_json.get("error", "Unknown error")
-                QgsMessageLog.logMessage(f"WMS was succesfully upadted on the server.\nFailed to reload WMS with source id #{source_id} in Mapbender. Error: {error_wms_reload}", TAG, level=Qgis.MessageLevel.Critical)
-                show_fail_box("Failed",
-                                 f"WMS was succesfully upadted on the server.\n\nFailed to reload WMS with source id #{source_id} in Mapbender. Error: {error_wms_reload}")
+                msg = f"WMS was succesfully updated on the server.\n\nFailed to reload WMS with source id #{source_id} in Mapbender. Error: {error_wms_reload}"
+                QgsMessageLog.logMessage(msg, TAG, level=Qgis.MessageLevel.Critical)
+                show_fail_box("Failed", msg)
                 return 1, None
             else:
                 reloaded_source_ids.append(source_id)
