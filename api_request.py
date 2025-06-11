@@ -240,8 +240,8 @@ class ApiRequest:
                 QgsMessageLog.logMessage(f"New source added with ID: {added_source_id}", TAG,
                                          level=Qgis.MessageLevel.Info)
             else:
-                log_error(
-                    f"Status code: {status_code}. But added source ID not readable from API-answer. Full API response as JSON: {response_json}")
+                QgsMessageLog.logMessage(f"Status code: {status_code}. But added source ID not readable from API-answer."
+                                         f" Full API response as JSON: {response_json}")
         else:
             try:
                 error_wms_add = response.json().get("error", "Unknown error")
@@ -319,13 +319,19 @@ class ApiRequest:
         self._ensure_token()
 
         response = self._sendRequest(endpoint, "get", params=params)
-        try:
-            response_json = response.json()
-            return response.status_code, response_json
-        except ValueError as e:
-            error_message = f"Error parsing the response: {e}"
+        status_code = response.status_code
+        if status_code == 200:
+            try:
+                response_json = response.json()
+                return response.status_code, response_json
+            except ValueError as e:
+                error_message = f"Error parsing the response: {e}"
+                QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
+                return response.status_code, None
+        else:
+            error_message = f"Failed to clone application. Status code: {status_code}"
             QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
-            return response.status_code, None
+            return status_code, None
 
     def mark_api_requests_done(self) -> None:
         """
