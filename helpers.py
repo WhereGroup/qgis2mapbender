@@ -14,6 +14,11 @@ from qgis.core import QgsApplication, QgsProject, QgsSettings
 
 from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
 
+# new imports
+from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout, QLabel, QDialogButtonBox
+
+
+
 
 def get_project_layer_names() -> list:
     return [layer.name() for layer in QgsProject.instance().mapLayers().values()]
@@ -98,6 +103,7 @@ def show_succes_box_ok(title: str, text: str) -> int:
     Returns:
         int: The button clicked by the user.
     """
+
     QApplication.restoreOverrideCursor()
     successBox = QMessageBox()
     successBox.setIconPixmap(QPixmap(':/images/themes/default/mIconSuccess.svg'))
@@ -105,6 +111,42 @@ def show_succes_box_ok(title: str, text: str) -> int:
     successBox.setText(text)
     successBox.setStandardButtons(QMessageBox.StandardButton.Ok)
     return successBox.exec()
+
+def show_succes_link_box(title: str, text: str) -> int:
+    """
+    Displays a success message box with a clickable link and an OK button.
+
+    Args:
+        title (str): The title of the message box.
+        text (str): The text to display in the message box, which can include a link.
+
+    Returns:
+        int: The button clicked by the user.
+    """
+
+    QApplication.restoreOverrideCursor()
+
+    dialog = QDialog()
+    dialog.setWindowTitle(title)
+    layout = QVBoxLayout(dialog)
+
+    icon_label = QLabel()
+    icon_label.setPixmap(QPixmap(':/images/themes/default/mIconSuccess.svg'))
+    layout.addWidget(icon_label)
+
+    message_label = QLabel()
+    message_label.setTextFormat(Qt.TextFormat.RichText)
+    message_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
+    message_label.setOpenExternalLinks(True)
+    message_label.setWordWrap(True)
+    message_label.setText(text)
+    layout.addWidget(message_label)
+
+    button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+    button_box.accepted.connect(dialog.accept)
+    layout.addWidget(button_box)
+
+    return dialog.exec()
 
 
 def show_question_box(text: str) -> int:
