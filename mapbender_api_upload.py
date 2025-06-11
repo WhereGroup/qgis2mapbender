@@ -7,12 +7,32 @@ from .settings import TAG
 
 
 class MapbenderApiUpload:
+    """
+        Handles the upload, reload, and assignment of WMS sources to Mapbender applications via API.
+    """
     def __init__(self, server_config, api_request, wms_url):
+        """
+            Initializes the MapbenderApiUpload object.
+
+            Args:
+                server_config: The server configuration object.
+                api_request: The API request handler.
+                wms_url: The WMS GetCapabilities URL.
+        """
         self.server_config = server_config
         self.wms_url = wms_url
         self.api_request = api_request
 
     def mb_upload(self) -> tuple[int, Optional[list[int]], bool]:
+        """
+            Uploads a WMS to Mapbender or reloads it if it already exists.
+
+            Returns:
+                tuple[int, Optional[list[int]], bool]:
+                    - Exit status (0 = success, 1 = failure)
+                    - List of source IDs or None
+                    - True if reloaded, False otherwise
+        """
         is_reloaded = False
         status_code_wms_show, source_ids, error_wms_show = self.api_request.wms_show(self.wms_url)
 
@@ -40,6 +60,14 @@ class MapbenderApiUpload:
 
 
     def mb_reload(self) -> tuple[int, Optional[list[int]]]:
+        """
+            Reloads existing WMS sources in Mapbender.
+
+            Returns:
+                tuple[int, Optional[list[int]]]:
+                    - Exit status (0 = success, 1 = failure)
+                    - List of reloaded source IDs or None
+        """
         try:
             exit_status_wms_show, source_ids, error_wms_show = self.api_request.wms_show(self.wms_url)
             if exit_status_wms_show != 200:
@@ -73,7 +101,7 @@ class MapbenderApiUpload:
                 tuple[int, list[int]]: A tuple containing:
                     - An exit status (0 = success, 1 = failure).
                     - A list of successfully reloaded source IDs.
-            """
+        """
         status_code_list = []
         reloaded_source_ids = []
 
@@ -101,15 +129,15 @@ class MapbenderApiUpload:
 
     def clone_app_and_get_slug(self, template_slug: str) -> tuple[int, Optional[str]]:
         """
-        Clones a Mapbender app template and retrieves its slug.
+            Clones a Mapbender app template and retrieves its slug.
 
-        Args:
-            template_slug (str): The slug of the template to clone.
+            Args:
+                template_slug (str): The slug of the template to clone.
 
-        Returns:
-            tuple[int, Optional[str]]: A tuple containing:
-                - An exit status (0 = success, 1 = failure).
-                - The slug of the cloned app if successful, None otherwise.
+            Returns:
+                tuple[int, Optional[str]]: A tuple containing:
+                    - An exit status (0 = success, 1 = failure).
+                    - The slug of the cloned app if successful, None otherwise.
         """
         exit_status, response_json =  self.api_request.app_clone(template_slug)
         slug = None
@@ -132,6 +160,17 @@ class MapbenderApiUpload:
         return exit_status, slug
 
     def assign_wms_to_source(self, slug: str, source_id: int, layer_set: str) -> int:
+        """
+            Assigns a WMS source to a Mapbender application.
+
+            Args:
+                slug (str): The application slug.
+                source_id (int): The WMS source ID.
+                layer_set (str): The layer set name.
+
+            Returns:
+                int: HTTP status code (200 = success, otherwise failure)
+        """
         response_wms_assign = self.api_request.wms_assign(slug, source_id, layer_set)
         exit_status = response_wms_assign.status_code
         if exit_status == 200:
