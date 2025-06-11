@@ -26,7 +26,6 @@ class ServerConfigDialog(BASE, WIDGET):
     authLabel: QLabel
     qgisServerUrlLineEdit: QLineEdit
     mbBasisUrlLineEdit: QLineEdit
-    # buttons
     testButton: QPushButton
     dialogButtonBox: QDialogButtonBox
 
@@ -127,11 +126,11 @@ class ServerConfigDialog(BASE, WIDGET):
         # Test 1: QGIS-Server-URL
         wmsServiceRequest = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities"
         qgisServerUrl = (f'{configFromForm.qgis_server_path}{wmsServiceRequest}')
-        errorStr = self.testHttpConn(qgisServerUrl, 'Qgis Server')
+        errorStr = self.testHttpConn(qgisServerUrl, 'QGIS-Server')
         if errorStr:
             failed_tests.append(errorStr)
         else:
-            successful_tests.append("Connection to QGIS Server was successful.")
+            successful_tests.append("Connection to QGIS-Server was successful.")
 
         # Test 2: Mapbender-URL
         mapbenderUrl = configFromForm.mb_basis_url
