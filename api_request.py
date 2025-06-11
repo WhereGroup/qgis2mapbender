@@ -274,10 +274,10 @@ class ApiRequest:
         try:
             response_json= response.json()
             return response.status_code, response_json
-        except ValueError as e:
+        except ValueError:
             return response.status_code, None
 
-    def wms_assign(self, application: str, source: int, layer_set: Optional[str]) -> str:
+    def wms_assign(self, application: str, source: int, layer_set: Optional[str]) -> tuple[int, Optional[dict]]:
         """
         Assigns a WMS source to a Mapbender application.
 
@@ -287,7 +287,9 @@ class ApiRequest:
             layer_set (Optional[str]): Optional layerset to assign.
 
         Returns:
-            str: The API response.
+            Tuple[int, Optional[dict]]:
+                - status code
+                - JSON response from the API (if successful)
         """
         endpoint = "/wms/assign"
         format = "image/png"
@@ -299,7 +301,11 @@ class ApiRequest:
         self._ensure_token()
 
         response = self._sendRequest(endpoint, "get", params=params)
-        return response
+        try:
+            response_json= response.json()
+            return response.status_code, response_json
+        except ValueError:
+            return response.status_code, None
 
 
     def app_clone(self, template_slug: str) -> tuple[int, Optional[dict]]:

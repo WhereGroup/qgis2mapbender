@@ -180,14 +180,19 @@ class MapbenderApiUpload:
             Returns:
                 int: HTTP status code (200 = success, otherwise failure)
         """
-        response_wms_assign = self.api_request.wms_assign(slug, source_id, layer_set)
-        exit_status = response_wms_assign.status_code
-        if exit_status == 200:
-            QgsMessageLog.logMessage(f"WMS with source id #{source_id} successfully assigned to application '{slug}'.", TAG, level=Qgis.MessageLevel.Info)
-        else:
-            error_assign_wms = response_wms_assign.json().get("error", "Unknown error")
-            QgsMessageLog.logMessage(f"Failed to assign WMS with source id #{source_id} to application '{slug}'. Error: {error_assign_wms}", TAG, level=Qgis.MessageLevel.Critical)
+        status_code, response_json = self.api_request.wms_assign(slug, source_id, layer_set)
+        msg_error_log = f"Failed to assign source #{source_id} to application '{slug}'. Error: "
+        msg_error_box = (f"WMS successfully created/updated and uploaded/reloaded to Mapbender as source #{source_id}."
+                         f"\n\nFailed to assign source #{source_id}  to application '{slug}'. Error:")
+        if status_code == 200 and response_json:
+            QgsMessageLog.logMessage(f"WMS with source #{source_id} successfully assigned to application '{slug}'.", TAG, level=Qgis.MessageLevel.Info)
+        elif response_json:
+            error_assign_wms = response_json().get("error", "Unknown error")
+            QgsMessageLog.logMessage(f"{msg_error_log}{error_assign_wms}", TAG, level=Qgis.MessageLevel.Critical)
             show_fail_box("Failed",
-                             f"WMS successfully created/updated and uploaded/reloaded to Mapbender but failed to "
-                             f"assign WMS with source id #{source_id} to application '{slug}'. Error: {error_assign_wms}.\n\nWMS GetCapabilities URL: \n{self.wms_url}")
-        return exit_status
+                             f"{msg_error_box} {error_assign_wms}.\n\nWMS GetCapabilities URL: \n{self.wms_url}")
+        else:
+            QgsMessageLog.logMessage(f"{msg_error_log}{status_code}", TAG, level=Qgis.MessageLevel.Critical)
+            show_fail_box("Failed",
+                          f"{msg_error_box} {status_code}.\n\nWMS GetCapabilities URL: \n{self.wms_url}")
+        return status_code
