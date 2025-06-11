@@ -32,7 +32,10 @@ class ApiRequest:
 
     def _initialize_authentication(self) -> None:
         """
-        Authenticates and sets the token in the request headers if successful.
+            Authenticates and sets the token in the request headers if successful.
+
+            Returns:
+                None
         """
         self.token = self._authenticate()
         if self.token:
@@ -75,7 +78,10 @@ class ApiRequest:
 
     def _ensure_token(self) -> None:
         """
-        Ensures that a valid token is available. If the token is missing or invalid, it re-authenticates.
+            Ensures that a valid token is available. If the token is missing or invalid, it re-authenticates.
+
+            Returns:
+                None
         """
         if not self._token_is_available():
             self.token = self._authenticate()
@@ -321,16 +327,22 @@ class ApiRequest:
             QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
             return response.status_code, None
 
-    def mark_api_requests_done(self):
+    def mark_api_requests_done(self) -> None:
         """
             Marks API requests as done and close the session.
+
+            Returns:
+                None
         """
         self._api_requests_done = True
         self.close()
 
-    def close(self):
+    def close(self) -> None:
         """
-        Closes the requests session to free up resources.
+            Closes the requests session to free up resources.
+
+            Returns:
+                None
         """
         if self.session is not None:
             self.session.close()
@@ -339,9 +351,12 @@ class ApiRequest:
         else:
             QgsMessageLog.logMessage("API session already closed.", TAG, level=Qgis.MessageLevel.Info)
 
-    def __del__(self):
+    def __del__(self) -> None:
         """
             Destructor: Ensure the requests session is closed when the object is deleted.
+
+            Returns:
+                None
         """
         if self.session is not None:
             self.session.close()
