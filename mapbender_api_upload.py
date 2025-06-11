@@ -140,8 +140,10 @@ class MapbenderApiUpload:
                     - The slug of the cloned app if successful, None otherwise.
         """
         exit_status, response_json =  self.api_request.app_clone(template_slug)
-        print(exit_status)
         slug = None
+        msg_error_log = f"Failed to clone app template '{template_slug}'. Error: "
+        msg_error_box = (f"WMS was successfully created/updated but Mapbender publish failed:\n\nFailed to clone app "
+                         f"template '{template_slug}'. Error: ")
         if exit_status == 200 and response_json:
             if "message" in response_json:
                 message = response_json["message"]
@@ -153,18 +155,13 @@ class MapbenderApiUpload:
                 QgsMessageLog.logMessage("No valid message in response_json.", TAG, level=Qgis.MessageLevel.Warning)
         if exit_status != 200 and response_json:
             error_message_wms_clone = response_json.get("error", "Unknown error")
-            QgsMessageLog.logMessage(f"Failed to clone app template '{template_slug}'. Error: {error_message_wms_clone}", TAG, level=Qgis.MessageLevel.Critical)
+            QgsMessageLog.logMessage(f"{msg_error_log}{error_message_wms_clone}", TAG, level=Qgis.MessageLevel.Critical)
             show_fail_box("Failed",
-                             f"WMS was successfully created/updated but Mapbender publish failed:\n\nFailed to clone "
-                             f"app template '{template_slug}'. Error: {error_message_wms_clone}.\n\nWMS GetCapabilities "
+                             f"{msg_error_box}{error_message_wms_clone}.\n\nWMS GetCapabilities "
                              f"URL: \n{self.wms_url}")
         else:
-            QgsMessageLog.logMessage(
-                f"Failed to clone app template '{template_slug}'. Error: {exit_status}", TAG,
-                level=Qgis.MessageLevel.Critical)
-            show_fail_box("Failed",
-                          f"WMS was successfully created/updated but Mapbender publish failed:\n\nFailed to clone "
-                          f"app template '{template_slug}'. Error: {exit_status}.\n\nWMS GetCapabilities "
+            QgsMessageLog.logMessage(f"{msg_error_log}{exit_status}", TAG, level=Qgis.MessageLevel.Critical)
+            show_fail_box("Failed",f"{msg_error_box}{exit_status}.\n\nWMS GetCapabilities "
                           f"URL: \n{self.wms_url}")
         return exit_status, slug
 
