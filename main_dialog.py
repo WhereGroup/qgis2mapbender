@@ -27,6 +27,11 @@ WIDGET, BASE = uic.loadUiType(os.path.join(
 
 
 class MainDialog(BASE, WIDGET):
+    """
+        Main dialog window for the QGIS2Mapbender plugin.
+
+        Handles user interactions for server configuration, project publishing, and updating Mapbender applications.
+    """
     tabWidget: QTabWidget
     serverUploadTab: QWidget
     serverConfigTab: QWidget
@@ -46,11 +51,23 @@ class MainDialog(BASE, WIDGET):
     buttonBoxTab2: QDialogButtonBox
 
     def __init__(self, parent=None):
+        """
+            Initializes the main dialog and sets up the UI and signal connections.
+
+            Args:
+                parent: Optional parent widget.
+            """
         super().__init__(parent)
         self.setupUi(self)
         self.setupConnections()
 
     def setupUi(self, widget) -> None:
+        """
+        Sets up the user interface for the main dialog.
+
+        Args:
+            widget: The parent widget for the dialog.
+        """
         super().setupUi(widget)
         self.warningFirstServerLabel.setPixmap(QPixmap(':/images/themes/default/mIconWarning.svg'))
         # Tabs
@@ -98,6 +115,9 @@ class MainDialog(BASE, WIDGET):
         button_close_tab2.setText("Close")
 
     def setupConnections(self) -> None:
+        """
+            Connects UI signals to their respective slots for user interaction.
+        """
         self.tabWidget.currentChanged.connect(self.update_server_combo_box)
         self.publishRadioButton.clicked.connect(self.enable_publish_parameters)
         self.updateRadioButton.clicked.connect(self.disable_publish_parameters)
@@ -120,6 +140,9 @@ class MainDialog(BASE, WIDGET):
         button_close_tab1.setDefault(False)
 
     def update_server_table(self) -> None:
+        """
+            Updates the server configuration table with current settings.
+        """
         server_config_list = list_qgs_settings_child_groups(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection")
         self.serverTableWidget.setRowCount(len(server_config_list))
         for i, (name) in enumerate(server_config_list):
@@ -141,7 +164,9 @@ class MainDialog(BASE, WIDGET):
         self.update_server_combo_box()
 
     def update_server_combo_box(self) -> None:
-        """ Updates the server configuration dropdown menu """
+        """
+            Updates the server configuration dropdown menu
+        """
         # Read server configurations
         server_config_list = list_qgs_settings_child_groups(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection")
         if len(server_config_list) == 0:
@@ -157,6 +182,9 @@ class MainDialog(BASE, WIDGET):
         self.serverConfigComboBox.addItems(server_config_list)
 
     def update_slug_combo_box(self) -> None:
+        """
+            Updates the Mapbender slug combo box with available slugs from settings.
+        """
         s = QgsSettings()
         if not s.contains(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/mb_templates"):
             return
@@ -173,46 +201,76 @@ class MainDialog(BASE, WIDGET):
             self.mbSlugComboBox.setCurrentIndex(-1)
 
     def disable_publish_parameters(self) -> None:
+        """
+            Disables the Mapbender parameters input fields and toggles button states for update mode.
+        """
         self.mbParamsFrame.setEnabled(False)
         self.updateButton.setEnabled(True)
         self.publishButton.setEnabled(False)
 
     def enable_publish_parameters(self) -> None:
+        """
+            Enables the Mapbender parameters input fields and toggles button states for publish mode.
+        """
         self.mbParamsFrame.setEnabled(True)
         self.updateButton.setEnabled(False)
         self.publishButton.setEnabled(True)
 
     def validate_slug_not_empty(self) -> None:
         """
-        Enable the publish button only "URL Title" has a value
-        :return:
+            Enables the publish button only if the Mapbender slug field is not empty.
         """
         self.publishButton.setEnabled(self.mbSlugComboBox.currentText() != '')
 
     def open_server_config_dialog(self, config_name: Optional[str] = None, mode: Optional[str] = None) -> None:
+        """
+        Opens the server configuration dialog for adding, editing, or duplicating a server config.
+
+        Args:
+            config_name (Optional[str]): The name of the server configuration to edit or duplicate.
+            mode (Optional[str]): The mode for the dialog ('edit', 'duplicate', or None for new).
+        """
         new_server_config_dialog = ServerConfigDialog(server_config_name=config_name, mode=mode) #, parent=iface.mainWindow())
         new_server_config_dialog.exec()
         self.update_server_table()
         self.update_server_combo_box()
 
     def on_add_server_config_clicked(self) -> None:
+        """
+            Slot for adding a new server configuration.
+        """
         self.open_server_config_dialog()
 
     def get_selected_server_config(self) -> Optional[str]:
+        """
+            Returns the name of the currently selected server configuration in the table.
+
+            Returns:
+                Optional[str]: The selected server configuration name, or None if none is selected.
+        """
         selected_row = self.serverTableWidget.currentRow()
         if selected_row == -1:
             return None
         return self.serverTableWidget.item(selected_row, 0).text()
 
     def on_duplicate_server_config_clicked(self) -> None:
+        """
+            Slot for duplicating the selected server configuration.
+        """
         selected_server_config = self.get_selected_server_config()
         self.open_server_config_dialog(selected_server_config, mode='duplicate')
 
     def on_edit_server_config_clicked(self) -> None:
+        """
+            Slot for editing the selected server configuration.
+        """
         selected_server_config = self.get_selected_server_config()
         self.open_server_config_dialog(selected_server_config, mode='edit')
 
     def on_remove_server_config_clicked(self) -> None:
+        """
+            Slot for removing the selected server configuration after user confirmation.
+        """
         selected_row = self.serverTableWidget.currentRow()
         if selected_row == -1:
             return
@@ -227,7 +285,12 @@ class MainDialog(BASE, WIDGET):
         self.update_server_combo_box()
 
     def initialize_api_request(self) -> tuple[ServerConfig, ApiRequest]:
-        """Initializes the ApiRequest instance."""
+        """
+        Initializes and returns the server configuration and ApiRequest instance.
+
+        Returns:
+            tuple[ServerConfig, ApiRequest]: The server configuration and API request objects.
+        """
         server_config = ServerConfig.getParamsFromSettings(self.serverConfigComboBox.currentText())
         api_request = ApiRequest(server_config)
         return server_config, api_request
@@ -236,20 +299,8 @@ class MainDialog(BASE, WIDGET):
         """
         Executes the publishing or updating process for the current QGIS project.
 
-        This method:
-        - Verifies the QGIS project is saved and prompts for saving if needed
-        - Sets the cursor to indicate an ongoing process
-        - Validates input parameters based on selected mode (Publish/Update)
-        - Initializes API connection using server configuration
-        - Uploads the project to QGIS-Server
-        - Performs either publication (mb_publish) or update (mb_update) on Mapbender
-
-        The method uses the current dialog state (selected radio buttons,
-        server configuration, and input fields) for processing.
-
-        Error handling occurs throughout the various steps with appropriate feedback
-        to the user. The cursor is restored at the end regardless of outcome.
-
+        Handles project validation, API initialization, upload, and Mapbender operations.
+        Provides user feedback and error handling.
         Returns:
             None
         """
@@ -301,12 +352,6 @@ class MainDialog(BASE, WIDGET):
     def mb_publish(self, server_config: ServerConfig, api_request: ApiRequest, wms_url: str) -> None:
         """
         Publishes a WMS to Mapbender and assigns it to an application.
-
-        This method performs the following steps:
-        - Initializes a MapbenderApiUpload instance with server configuration and API request.
-        - Uploads the WMS to Mapbender.
-        - Clones an application if requested, or assigns the WMS to an existing application.
-        - Handles success or failure scenarios with appropriate user feedback.
 
         Args:
             server_config (ServerConfig): The server configuration object.
@@ -394,11 +439,6 @@ class MainDialog(BASE, WIDGET):
         """
         Updates an existing WMS in Mapbender by reloading its source.
 
-        This method performs the following steps:
-        - Initializes a MapbenderApiUpload instance with server configuration and API request.
-        - Attempts to reload the WMS source.
-        - Handles success or failure scenarios with appropriate user feedback.
-
         Args:
             server_config (ServerConfig): The server configuration object.
             api_request (ApiRequest): The API request object.
@@ -429,7 +469,7 @@ class MainDialog(BASE, WIDGET):
                     <a href = "{wms_url}" style = "color: black; " > {wms_url} </a>
                     """
                 )
-                #self.close()
+                
         except Exception as e:
             show_fail_box("Failed", f"An error occurred during Mapbender update: {e}")
             QgsMessageLog.logMessage(f"Error in mb_update: {e}", TAG, level=Qgis.MessageLevel.Critical)
