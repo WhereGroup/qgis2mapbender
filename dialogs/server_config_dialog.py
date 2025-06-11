@@ -164,7 +164,7 @@ class ServerConfigDialog(BASE, WIDGET):
             successful_tests) if successful_tests else None
 
     def testHttpConn(self, url: str, serverName: str) -> Optional[str]:
-        errorStr = f"Unable to connect to the {serverName} {url}. Is the address correct?"
+        errorStr = f"Unable to connect to the {serverName}. Is the address correct?"
         if not uri_validator(url):
             return f"The {serverName}-URL seems not valid. Is the address correct and the schema supplied (http)?"
 
