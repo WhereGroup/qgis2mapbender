@@ -39,7 +39,7 @@ class MapbenderApiUpload:
         if status_code_wms_show != 200:
             show_fail_box("Failed",
                              f"WMS layer information on Mapbender could not be displayed. Error: {error_wms_show}.\n\n"
-                             f"WMS was successfully created but Mapbender upload will be interrupted.\n\n"
+                             f"WMS was successfully created/updated but Mapbender upload will be interrupted.\n\n"
                              f"WMS GetCapabilities URL: \n{self.wms_url}")
             return 1, None, is_reloaded
 
