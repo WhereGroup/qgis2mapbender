@@ -14,16 +14,27 @@ from qgis.core import QgsApplication, QgsProject, QgsSettings
 
 from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
 
-# new imports
 from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout, QLabel, QDialogButtonBox
 
 
 
 
 def get_project_layer_names() -> list:
+    """
+        Returns a list of all layer names in the current QGIS project.
+
+        Returns:
+            list: List of layer names.
+    """
     return [layer.name() for layer in QgsProject.instance().mapLayers().values()]
 
 def check_if_qgis_project_is_dirty_and_save() -> bool:
+    """
+        Checks if the current QGIS project has unsaved changes and prompts the user to save.
+
+        Returns:
+            bool: True if the project is saved or user chose to continue, False if cancelled.
+    """
     if QgsProject.instance().isDirty():
         msgBox = QMessageBox()
         msgBox.setWindowTitle("")
@@ -248,6 +259,15 @@ def uri_validator(url: str) -> bool:
 
 
 def get_size_and_unit(bytes_size):
+    """
+       Converts a byte size to a human-readable value and unit.
+
+       Args:
+           bytes_size (int or float): Size in bytes.
+
+       Returns:
+           tuple: (size, unit) where size is float/int and unit is str.
+    """
     units = ["B", "KB", "MB", "GB", "TB"]
     size = float(bytes_size)
     unit_index = 0
