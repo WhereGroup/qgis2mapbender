@@ -309,7 +309,7 @@ class ApiRequest:
         except ValueError:
             response_json = None
 
-        return response.status_code, None
+        return response.status_code, response_json
 
     def app_clone(self, template_slug: str) -> tuple[int, Optional[dict]]:
         """
