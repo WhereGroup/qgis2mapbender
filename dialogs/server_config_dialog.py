@@ -19,6 +19,11 @@ WIDGET, BASE = uic.loadUiType(os.path.join(
 
 
 class ServerConfigDialog(BASE, WIDGET):
+    """
+        Dialog for creating, editing, and testing QGIS server and Mapbender server configurations.
+
+        Allows users to input server URLs, credentials, and test connectivity and authentication.
+    """
     serverConfigNameLineEdit: QLineEdit
     credentialsPlainTextRadioButton: QRadioButton
     credentialsAuthDbRadioButton: QRadioButton
@@ -30,7 +35,17 @@ class ServerConfigDialog(BASE, WIDGET):
     testButton: QPushButton
     dialogButtonBox: QDialogButtonBox
 
-    def __init__(self, server_config_name: Optional[str] = None, mode: Optional[str] = None, parent=None):
+    def __init__(self, server_config_name: Optional[str] = None, mode: Optional[str] = None, parent=None) -> None:
+        """
+            Initializes the server configuration dialog and sets up the UI.
+
+            Args:
+                server_config_name (Optional[str]): Name of the server config to edit or duplicate.
+                mode (Optional[str]): Dialog mode ('edit', 'duplicate', or None for new).
+                parent: Optional parent widget.
+            Returns:
+                None
+        """
         super().__init__(parent)
         self.setupUi(self)
         self.mandatoryFields = [
@@ -71,7 +86,13 @@ class ServerConfigDialog(BASE, WIDGET):
         self.mbBasisUrlLineEdit.setValidator(regex_validator)
         self.checkedIcon = QIcon(":images/themes/default/mIconSuccess.svg")
 
-    def setupConnections(self):
+    def setupConnections(self) -> None:
+        """
+            Connects UI signals to their respective slots for user interaction.
+
+            Returns:
+                None
+        """
         self.dialogButtonBox.accepted.connect(self.saveServerConfig)
         self.dialogButtonBox.rejected.connect(self.reject)
         self.serverConfigNameLineEdit.textChanged.connect(self.validateFields)
@@ -85,7 +106,10 @@ class ServerConfigDialog(BASE, WIDGET):
 
     def execTests(self) -> None:
         """
-        Runs a series of tests (described in the method <execTestsImpl>). Displays a message if errors are found.
+            Runs a series of tests (described in the method <execTestsImpl>). Displays a message if errors are found.
+
+            Returns:
+                None
         """
         self.testButton.setIcon(QIcon())
         with waitCursor():
@@ -112,12 +136,12 @@ class ServerConfigDialog(BASE, WIDGET):
 
     def execTestsImpl(self) -> tuple[Optional[str], Optional[str]]:
         """
-        Runs a series of tests and returns a messages with:
-        -  failed tests.
-        -  successful tests.
+            Runs a series of tests and returns a messages with:
+            -  failed tests.
+            -  successful tests.
 
-        Returns:
-            tuple: (Error message, Success message)
+            Returns:
+                tuple: (Error message, Success message)
         """
 
         configFromForm = self.getServerConfigFromFormular()
@@ -164,6 +188,16 @@ class ServerConfigDialog(BASE, WIDGET):
             successful_tests) if successful_tests else None
 
     def testHttpConn(self, url: str, serverName: str) -> Optional[str]:
+        """
+            Tests HTTP connectivity to a given server URL.
+
+            Args:
+                url (str): The URL to test.
+                serverName (str): The name of the server (for error messages).
+
+            Returns:
+                Optional[str]: Error message if connection fails, otherwise None.
+        """
         errorStr = (f"Unable to connect to the {serverName}. Is the address correct and is the schema supplied (http)? "
                     f"Please see QGIS2Mapbender logs for more information.")
         if not uri_validator(url):
@@ -184,7 +218,16 @@ class ServerConfigDialog(BASE, WIDGET):
 
         return None
 
-    def getSavedServerConfig(self, server_config_name: str, mode: str):
+    def getSavedServerConfig(self, server_config_name: str, mode: str) -> None:
+        """
+            Loads a saved server configuration and populates the dialog fields.
+
+            Args:
+                server_config_name (str): The name of the saved configuration.
+                mode (str): The dialog mode ('edit' or 'duplicate').
+            Returns:
+                None
+        """
         server_config = ServerConfig.getParamsFromSettings(server_config_name)
         self.authcfg = server_config.authcfg
         if mode == 'edit':
@@ -201,6 +244,12 @@ class ServerConfigDialog(BASE, WIDGET):
         self.mbBasisUrlLineEdit.setText(server_config.mb_basis_url)
 
     def getServerConfigFromFormular(self) -> ServerConfig:
+        """
+            Collects the current form values and returns a ServerConfig object.
+
+            Returns:
+                ServerConfig: The server configuration from the form.
+        """
         return ServerConfig(
             name=self.serverConfigNameLineEdit.text(),
             username=self.userNameLineEdit.text(),
@@ -211,11 +260,26 @@ class ServerConfigDialog(BASE, WIDGET):
         )
 
     def onChangeServerName(self, newValue) -> None:
+        """
+            Updates placeholder texts for server URL fields based on the server name.
+
+            Args:
+                newValue: The new server name.
+
+            Returns:
+                None
+        """
         self.qgisServerUrlLineEdit.setPlaceholderText(newValue + '/cgi-bin/qgis_mapserv.fcgi')
         self.mbBasisUrlLineEdit.setPlaceholderText(newValue + '/mapbender/index.php/')
         self.validateFields()
 
     def validateFields(self) -> None:
+        """
+            Enables or disables the Save and Test buttons based on mandatory field completion.
+
+            Returns:
+                None
+        """
         self.dialogButtonBox.button(QDialogButtonBox.StandardButton.Save).setEnabled(
             all(field.text() for field in self.mandatoryFields))
 
@@ -223,6 +287,15 @@ class ServerConfigDialog(BASE, WIDGET):
             all(field.text() for field in self.mandatoryFields))
 
     def checkConfigName(self, config_name_from_formular) -> bool:
+        """
+        Checks if the server configuration name is unique or valid for editing.
+
+        Args:
+            config_name_from_formular: The configuration name from the form.
+
+        Returns:
+            bool: True if the name is valid, False otherwise.
+        """
         saved_config_names = list_qgs_settings_child_groups(f'{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection')
         if self.mode == 'edit' and config_name_from_formular not in saved_config_names:
             s = QSettings()
@@ -233,7 +306,13 @@ class ServerConfigDialog(BASE, WIDGET):
             return False
         return True
 
-    def saveServerConfig(self):
+    def saveServerConfig(self) -> None:
+        """
+            Saves the current server configuration, either encrypted or plain text, and closes the dialog.
+
+            Returns:
+                None
+        """
         serverConfigFromFormular = self.getServerConfigFromFormular()
         if not self.checkConfigName(serverConfigFromFormular.name):
             return
@@ -245,6 +324,13 @@ class ServerConfigDialog(BASE, WIDGET):
         self.close()
         return
 
-    def onToggleCredential(self, isChecked: bool):
-        """QLabel <authLabel> is visible only if credentials are NOT saved as plain text"""
+    def onToggleCredential(self, isChecked: bool) -> None:
+        """
+             Shows or hides the authentication label depending on credential storage mode.
+
+             Args:
+                 isChecked (bool): True if plain text credentials are selected.
+            Returns:
+                None
+         """
         self.authLabel.setVisible(not isChecked)
