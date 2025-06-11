@@ -57,7 +57,6 @@ def qgis_project_is_saved() -> bool:
         return False
     return True
 
-
 def create_fail_box(title: str, text: str) -> QMessageBox:
     """
     Creates a QMessageBox with a failure icon.

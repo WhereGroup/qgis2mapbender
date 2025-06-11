@@ -93,12 +93,12 @@ class ApiRequest:
 
     def _sendRequest(self, endpoint: str, method: str, **kwargs) -> Optional[requests.Response]:
         """
-        Sends a request to the API with the specified method and parameters.
+        Sends an HTTP request to the API with the specified method and parameters.
 
         Args:
             endpoint (str): The API endpoint (e.g., "/upload/zip").
             method (str): The HTTP method ("GET", "POST".).
-            kwargs: Additional arguments for the request (json,etc.).
+            **kwargs: Additional arguments for the request (json,etc.).
 
         Returns:
             Optional[requests.Response]: The response object, or None if an error occurs.
@@ -109,10 +109,6 @@ class ApiRequest:
             QgsMessageLog.logMessage(f"Sending request to endpoint {endpoint} with kwargs: {kwargs}", TAG, level=Qgis.MessageLevel.Info)
         try:
             response = self.session.request(method=method.upper(), url=url, headers= self.headers, **kwargs)
-            if endpoint != "/login_check":
-                print("response.text: ", response.text)
-                print("response.json: ", response.json())
-                print("response.status_code: ", response.status_code)
             return response
         except requests.HTTPError as http_err:
             QgsMessageLog.logMessage(str(http_err), TAG, level=Qgis.MessageLevel.Critical)
@@ -123,16 +119,15 @@ class ApiRequest:
     def uploadZip(self, file_path: str) -> Tuple[Optional[int], Optional[str], Optional[str]]:
         """
         Uploads a ZIP file to the server and handles the response.
-        The endpoint api/upload/zip uploads a ZIP file to the server and extracts its contents into the upload
-        directory, which is configured using the 'api_upload_dir' parameter. Users must have the 'access api' and
-        'upload files' permissions
 
         Args:
             file_path (str): Path to the ZIP file.
 
         Returns:
-            Optional[int]: status code
-            upload_dir (Optional[str]): The directory where the ZIP file was uploaded and extracted.
+            Tuple[Optional[int], Optional[str], Optional[str]]:
+                - status code
+                - upload directory on the server (if successful)
+                - error message (if any)
         """
 
         endpoint = "/upload/zip"
@@ -173,13 +168,15 @@ class ApiRequest:
 
     def wms_show(self, wms_url: str) -> tuple[int, Optional[list]]:
         """
-        Displays a WMS layer using the provided WMS URL.
+        Queries the API to check if a WMS source exists in Mapbender.
 
         Args:
             wms_url (str): The WMS URL to display.
 
         Returns:
-            tuple[int, Optional[dict]]: Status code and JSON response from the API.
+            Tuple[int, Optional[list]]:
+                - status code
+                - list of source IDs if found, else None
         """
         endpoint = "/wms/show"
         params = {"id": wms_url, "json": True}
@@ -215,7 +212,10 @@ class ApiRequest:
             wms_url (str): The WMS URL to add.
 
         Returns:
-            tuple[int, Optional[dict]]: Status code and id of added source, if added.
+            Tuple[int, Optional[str], Optional[str]]:
+                - status code
+                - ID of the added source (if successful)
+                - error message (if any)
         """
         endpoint = "/wms/add"
         params = {"serviceUrl": wms_url}
@@ -225,10 +225,6 @@ class ApiRequest:
 
         response = self._sendRequest(endpoint, "get", params=params)
         status_code = response.status_code
-
-
-        def log_error(msg):
-            QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: {msg}", TAG, level=Qgis.MessageLevel.Critical)
 
         if status_code == 200:
             response_json = response.json()
@@ -243,23 +239,26 @@ class ApiRequest:
         else:
             try:
                 error_wms_add = response.json().get("error", "Unknown error")
-                log_error(error_wms_add)
+                QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: {error_wms_add}", TAG,
+                                         level=Qgis.MessageLevel.Critical)
+
             except ValueError as e:
-                log_error(f"Error parsing the response: {e}")
+                QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: Error parsing the response: {e}", TAG,
+                                         level=Qgis.MessageLevel.Critical)
         return status_code, added_source_id, error_wms_add
-
-
 
     def wms_reload(self, source_id: str, wms_url: str) -> tuple[int, Optional[dict]]:
         """
-        Reloads a WMS layer using the provided source ID and WMS URL.
+         Reload a WMS source in Mapbender.
 
         Args:
             source_id (str): The source ID of the WMS layer.
             wms_url (str): The WMS URL to reload.
 
         Returns:
-            tuple[int, Optional[dict]]: Status code and JSON response from the API.
+            Tuple[int, Optional[dict]]:
+                - status code
+                - JSON response from the API (if successful)
         """
         endpoint = "/wms/reload"
         params = {"id": source_id, "serviceUrl": wms_url}
@@ -274,7 +273,7 @@ class ApiRequest:
 
     def wms_assign(self, application: str, source: int, layer_set: Optional[str]) -> str:
         """
-        Assigns a WMS source to an application.
+        Assigns a WMS source to a Mapbender application.
 
         Args:
             application (str): The slug of the application to assign the WMS source to.
@@ -282,7 +281,7 @@ class ApiRequest:
             layer_set (Optional[str]): Optional layerset to assign.
 
         Returns:
-            int: Status code of the request.
+            str: The API response.
         """
         endpoint = "/wms/assign"
         format = "image/png"
@@ -299,23 +298,21 @@ class ApiRequest:
 
     def app_clone(self, template_slug: str) -> tuple[int, Optional[dict]]:
         """
-        Clones an application using the provided template slug.
+        Clones a Mapbender application using the provided template slug.
 
         Args:
             template_slug (str): The slug of the template application to clone.
 
         Returns:
-            tuple[int, Optional[dict]]: Status code and JSON response from the API.
+            Tuple[int, Optional[dict]]:
+                - status code
+                - JSON response from the API (if successful)
         """
         endpoint = "/application/clone"
         params = {"slug": template_slug}
         self._ensure_token()
 
         response = self._sendRequest(endpoint, "get", params=params)
-        # if response.status_code == 404:
-        #     error_message = f"Error 404: Error by copying the given application. Application '{template_slug}' not found."
-        #     QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
-        #     return response.status_code, None
         try:
             response_json = response.json()
             return response.status_code, response_json
@@ -325,12 +322,15 @@ class ApiRequest:
             return response.status_code, None
 
     def mark_api_requests_done(self):
+        """
+            Marks API requests as done and close the session.
+        """
         self._api_requests_done = True
         self.close()
 
     def close(self):
         """
-        Close the requests session to free up resources.
+        Closes the requests session to free up resources.
         """
         if self.session is not None:
             self.session.close()
@@ -340,7 +340,9 @@ class ApiRequest:
             QgsMessageLog.logMessage("API session already closed.", TAG, level=Qgis.MessageLevel.Info)
 
     def __del__(self):
-        # As a safety net: close the session if it wasn't closed explicitly.
+        """
+            Destructor: Ensure the requests session is closed when the object is deleted.
+        """
         if self.session is not None:
             self.session.close()
             QgsMessageLog.logMessage("API session closed in __del__.", TAG, level=Qgis.MessageLevel.Info)
