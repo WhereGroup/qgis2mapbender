@@ -118,9 +118,9 @@ class MapbenderApiUpload:
                 reloaded_source_ids.append(source_id)
 
         if not all(status == 200 for status in status_code_list):
-            QgsMessageLog.logMessage(f"Reloaded sources: {reloaded_source_ids}. WMS could not be reloaded in (all sources) in Mapbender.", TAG, level=Qgis.MessageLevel.Critical)
-            show_fail_box("Failed",
-                             f"Reloaded sources: {reloaded_source_ids}. WMS could not be reloaded in (all sources) in Mapbender.")
+            msg = f"Reloaded sources: {reloaded_source_ids}. WMS could not be reloaded in (all sources) in Mapbender."
+            QgsMessageLog.logMessage(msg, TAG, level=Qgis.MessageLevel.Critical)
+            show_fail_box("Failed", msg)
             return 1, reloaded_source_ids
 
         QgsMessageLog.logMessage(f"All sources (with IDs : {reloaded_source_ids}) reloaded successfully.", TAG, level=Qgis.MessageLevel.Info)
