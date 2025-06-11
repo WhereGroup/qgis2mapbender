@@ -92,7 +92,7 @@ def show_fail_box_ok(title: str, text: str) -> int:
     failBox.setStandardButtons(QMessageBox.StandardButton.Ok)
     return failBox.exec()
 
-def show_succes_box_ok(title: str, text: str) -> int:
+def show_success_box(title: str, text: str) -> int:
     """
     Displays a success message box with an OK button.
 
@@ -112,7 +112,7 @@ def show_succes_box_ok(title: str, text: str) -> int:
     successBox.setStandardButtons(QMessageBox.StandardButton.Ok)
     return successBox.exec()
 
-def show_succes_link_box(title: str, text: str) -> int:
+def show_success_link_box(title: str, text: str) -> int:
     """
     Displays a success message box with a clickable link and an OK button.
 

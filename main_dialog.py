@@ -14,7 +14,7 @@ from .qgis_server_api_upload import QgisServerApiUpload
 from .mapbender_api_upload import MapbenderApiUpload
 from .dialogs.server_config_dialog import ServerConfigDialog
 from .helpers import qgis_project_is_saved, check_if_qgis_project_is_dirty_and_save, \
-    show_fail_box_ok, show_succes_box_ok, show_succes_link_box, \
+    show_fail_box_ok, show_success_box, show_success_link_box, \
     list_qgs_settings_child_groups, show_question_box, \
     update_mb_slug_in_settings
 from .paths import Paths
@@ -222,7 +222,7 @@ class MainDialog(BASE, WIDGET):
             return
         s = QSettings()
         s.remove(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{selected_server_config}")
-        show_succes_box_ok('Success', 'Server configuration successfully removed')
+        show_success_box('Success', 'Server configuration successfully removed')
         self.update_server_table()
         self.update_server_combo_box()
 
@@ -350,15 +350,7 @@ class MainDialog(BASE, WIDGET):
                     f"WMS {wms_url} already existed as a Mapbender source(s) and was successfully reloaded (source(s) {source_ids}) and added to Mapbender application : {slug}", TAG,
                     level=Qgis.MessageLevel.Info)
 
-                # old without HTML formatting
-                #show_succes_box_ok(
-                #    "Success report",
-                #    f"WMS \n\n{wms_url}\n\nalready existed as a Mapbender source(s) and was successfully reloaded (source(s) {source_ids}) and added to Mapbender application:\n\n"
-                #    f"{slug}"
-                #)
-
-                # new with HTML formatting
-                show_succes_link_box(
+                show_success_link_box(
                     "Success report",
                     f"""
                     WMS already existed as a Mapbender source(s) and was successfully reloaded: {', '.join(f'#{i}' for i in source_ids if i)}
@@ -377,15 +369,7 @@ class MainDialog(BASE, WIDGET):
                     f"WMS successfully created: {wms_url} and added to Mapbender application : {slug}", TAG,
                     level=Qgis.MessageLevel.Info)
 
-                # old without HTML formatting
-                #show_succes_box_ok(
-                #    "Success report",
-                #    f"WMS successfully created:\n\n{wms_url}\n\nAnd added to Mapbender application:\n\n"
-                #    f"{slug}"
-                #)
-
-                # new with HTML formatting
-                show_succes_link_box(
+                show_success_link_box(
                     "Success report",
                     f"""
                     WMS successfully created
@@ -435,7 +419,7 @@ class MainDialog(BASE, WIDGET):
                 QgsMessageLog.logMessage(
                     f"WMS successfully updated and successfully updated in Mapbender source(s): {source_ids_msg}!", TAG,
                     level=Qgis.MessageLevel.Info)
-                show_succes_link_box(
+                show_success_link_box(
                     "Success report",
                     f"""
                     WMS successfully updated in QGIS-Server and successfully updated in Mapbender source(s): {', '.join(f'#{i}' for i in source_ids if i)}
