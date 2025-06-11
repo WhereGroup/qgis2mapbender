@@ -196,9 +196,12 @@ def list_qgs_settings_child_groups(key: str) -> list:
 
 
 @contextmanager
-def waitCursor():
+def waitCursor() -> None:
     """
-    A context manager to set the cursor to a wait state during a long-running operation.
+        A context manager to set the cursor to a wait state during a long-running operation.
+
+        Returns:
+            None
     """
     try:
         QgsApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
@@ -210,11 +213,14 @@ def waitCursor():
 
 def update_mb_slug_in_settings(mb_slug: str, is_mb_slug: bool) -> None:
     """
-    Updates the Mapbender slug in QGIS settings.
+        Updates the Mapbender slug in QGIS settings.
 
-    Args:
-        mb_slug (str): The Mapbender slug to update.
-        is_mb_slug (bool): Whether to add or remove the slug.
+        Args:
+            mb_slug (str): The Mapbender slug to update.
+            is_mb_slug (bool): Whether to add or remove the slug.
+
+        Returns:
+            None
     """
     s = QgsSettings()
     if s.contains(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/mb_templates"):
@@ -258,7 +264,7 @@ def uri_validator(url: str) -> bool:
         return False
 
 
-def get_size_and_unit(bytes_size):
+def get_size_and_unit(bytes_size) -> tuple:
     """
        Converts a byte size to a human-readable value and unit.
 
