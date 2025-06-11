@@ -4,13 +4,14 @@ from typing import Optional
 import requests
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import QRegularExpression, QSettings
-from qgis.PyQt.QtGui import QIntValidator, QRegularExpressionValidator, QIcon
+from qgis.PyQt.QtGui import QRegularExpressionValidator, QIcon
 from qgis.PyQt.QtWidgets import QDialogButtonBox, QLineEdit, QRadioButton, QLabel, QPushButton
+from qgis.core import QgsMessageLog, Qgis
 
 from ..api_request import ApiRequest
 from ..helpers import show_success_box, list_qgs_settings_child_groups, show_fail_box, uri_validator, waitCursor
 from ..server_config import ServerConfig
-from ..settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY
+from ..settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
 
 # Dialog from .ui file
 WIDGET, BASE = uic.loadUiType(os.path.join(
@@ -163,10 +164,10 @@ class ServerConfigDialog(BASE, WIDGET):
             successful_tests) if successful_tests else None
 
     def testHttpConn(self, url: str, serverName: str) -> Optional[str]:
-        errorStr = f"Unable to connect to the {serverName}. Is the address correct?"
+        errorStr = (f"Unable to connect to the {serverName}. Is the address correct and is the schema supplied (http)? "
+                    f"Please see QGIS2Mapbender logs for more information.")
         if not uri_validator(url):
-            return f"The {serverName}-URL seems not valid. Is the address correct and the schema supplied (http)?"
-
+            return errorStr
         try:
             resp = requests.get(url)
             if serverName != "Mapbender":
@@ -178,7 +179,8 @@ class ServerConfigDialog(BASE, WIDGET):
                 if resp.status_code != 200:
                     return errorStr
         except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError) as error:
-            return f"{errorStr}\n {str(error)}"
+            QgsMessageLog.logMessage(f"Connection error: {error}", TAG, level=Qgis.MessageLevel.Critical)
+            return f"{errorStr}"
 
         return None
 
