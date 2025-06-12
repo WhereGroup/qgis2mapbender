@@ -40,7 +40,7 @@ class MapbenderApiUpload:
             show_fail_box("Failed",
                              f"WMS layer information on Mapbender could not be displayed. Error: {error_wms_show}.\n\n"
                              f"WMS was successfully created/updated but Mapbender upload will be interrupted.\n\n"
-                             f"Link to GetCapabilities-Document: \n{self.wms_url}")
+                             f"Link to Capabilities: \n{self.wms_url}")
             return 1, None, is_reloaded
 
         if source_ids: # wms already exists as a Mapbender source and will be reloaded
@@ -55,7 +55,7 @@ class MapbenderApiUpload:
                 return 0, [new_source_id], is_reloaded
             show_fail_box("Failed",
                              f"WMS was successfully created but Mapbender upload will be interrupted:\n\n"
-                             f"Failed to add WMS source. Error: {error_wms_add}.\n\nWMS Link to GetCapabilities-Document: \n{self.wms_url}")
+                             f"Failed to add WMS source. Error: {error_wms_add}.\n\nLink to Capabilities: \n{self.wms_url}")
             return 1, [new_source_id], is_reloaded
 
 
@@ -74,7 +74,7 @@ class MapbenderApiUpload:
                 show_fail_box("Failed",
                                  f"WMS was successfully updated on the server but Mapbender upload will be interrupted:\n\n"
                                  f"WMS layer information on Mapbender could not be displayed. Error: {error_wms_show}.\n\n "
-                             f"Link to GetCapabilities-Document: \n{self.wms_url}")
+                             f"Link to Capabilities: \n{self.wms_url}")
                 return 1, None
 
             if source_ids:
@@ -156,10 +156,10 @@ class MapbenderApiUpload:
             error_message_wms_clone = response_json.get("error", "Unknown error")
             show_fail_box("Failed",
                              f"{msg_error_box}{error_message_wms_clone}.\n\n"
-                             f"Link to GetCapabilities-Document: \n{self.wms_url}")
+                             f"Link to Capabilities: \n{self.wms_url}")
         else:
             show_fail_box("Failed",f"{msg_error_box}{exit_status}.\n\n"
-                          f"Link to GetCapabilities-Document: \n{self.wms_url}")
+                          f"Link to Capabilities: \n{self.wms_url}")
         return exit_status, slug
 
     def assign_wms_to_source(self, slug: str, source_id: int, layer_set: str) -> int:
@@ -184,9 +184,9 @@ class MapbenderApiUpload:
             error_assign_wms = response_json.get("error", "Unknown error")
             QgsMessageLog.logMessage(f"{msg_error_log}{error_assign_wms}", TAG, level=Qgis.MessageLevel.Critical)
             show_fail_box("Failed",
-                             f"{msg_error_box} {error_assign_wms}.\n\nLink to GetCapabilities-Document: \n{self.wms_url}")
+                             f"{msg_error_box} {error_assign_wms}.\n\nLink to Capabilities: \n{self.wms_url}")
         else:
             QgsMessageLog.logMessage(f"{msg_error_log}{status_code}", TAG, level=Qgis.MessageLevel.Critical)
             show_fail_box("Failed",
-                          f"{msg_error_box} {status_code}.\n\nLink to GetCapabilities-Document: \n{self.wms_url}")
+                          f"{msg_error_box} {status_code}.\n\nLink to Capabilities: \n{self.wms_url}")
         return status_code
