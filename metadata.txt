@@ -1,6 +1,6 @@
 [general]
 name=QGIS2Mapbender
-author=Carmen Viesca, Paolo Favero, Peter Gipper, Christoph Welker
+author=Carmen Viesca, Paolo Favero, Peter Gipper, Christoph Welker, Dennis Davidsohn
 email=info@wheregroup.com
 description=QGIS plugin to populate Mapbender with WMS services from QGIS Server.
 about=This QGIS plugin exports your project as a QGIS Server WMS (Web Map Service) and publishes it in a Mapbender application (https://mapbender.org). 
