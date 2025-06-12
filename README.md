@@ -5,6 +5,8 @@ The QGIS2Mapbender plugin transfers your local QGIS project on a server and publ
 
 You find the QGIS2Mapbender in the QGIS Python Plugins Repository https://plugins.qgis.org/plugins/QGIS2Mapbender.
 
+![QGIS2Mapbender](resources/img_qgis2mapbender_readme.png)
+
 ## Installation and Requirements
 
 Please note that QGIS2Mapbender version >= 1.0.0 needs Mapbender version >= 4.1.2.
