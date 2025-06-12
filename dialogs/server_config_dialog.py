@@ -148,14 +148,14 @@ class ServerConfigDialog(BASE, WIDGET):
         failed_tests = []
         successful_tests = []
 
-        # Test 1: QGIS-Server-URL
+        # Test 1: QGIS Servre-URL
         wmsServiceRequest = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities"
         qgisServerUrl = (f'{configFromForm.qgis_server_path}{wmsServiceRequest}')
-        errorStr = self.testHttpConn(qgisServerUrl, 'QGIS-Server')
+        errorStr = self.testHttpConn(qgisServerUrl, 'QGIS Servre')
         if errorStr:
             failed_tests.append(errorStr)
         else:
-            successful_tests.append("Connection to QGIS-Server was successful.")
+            successful_tests.append("Connection to QGIS Servre was successful.")
 
         # Test 2: Mapbender-URL
         mapbenderUrl = configFromForm.mb_basis_url

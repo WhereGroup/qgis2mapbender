@@ -99,7 +99,7 @@ class MainDialog(BASE, WIDGET):
         self.removeServerConfigButton.setIcon(QIcon(':/images/themes/default/mIconDelete.svg'))
         self.editServerConfigButton.setIcon(QIcon(':/images/themes/default/mActionAllEdits.svg'))
         server_table_headers = ["Name",
-                                "Mapbender URL"]  # "QGIS-Server path" ,
+                                "Mapbender URL"]  # "QGIS Servre path" ,
         self.serverTableWidget.setColumnCount(len(server_table_headers))
         self.serverTableWidget.setHorizontalHeaderLabels(server_table_headers)
         self.serverTableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
@@ -501,7 +501,7 @@ class MainDialog(BASE, WIDGET):
                 show_success_link_box(
                     "Success report",
                     f"""
-                    WMS successfully updated in QGIS-Server and successfully updated in Mapbender source(s): {', '.join(f'#{i}' for i in source_ids if i)}
+                    WMS successfully updated in QGIS Servre and successfully updated in Mapbender source(s): {', '.join(f'#{i}' for i in source_ids if i)}
                     <br><br>
                     Link to Capabilities:
                     <br><br>
