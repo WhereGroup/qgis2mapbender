@@ -47,9 +47,12 @@ Alternatively, a release can be downloaded here. The zipped folder can be instal
 - User/Groups: All Mapbender users that should be authorized to use QGIS2Mapbender need special rights. There is only one exception and this is the Mapbender super user with the id 1, where this permission is automatically granted. 
 
   - User/group needs to have the global permission **access_api** and **upload_files** in order to perform any operation on the API and to be able to upload files.
-  - User/group needs the global permission **create_applications**. 
-  - User/group needs the global permission **view_sources**.  
-  - User/group need to have **view** rights on the template application.
+  - User/group needs the global permission **view_sources**.
+  - User/group needs the global permission **create_applications** to copy an application.
+  - User/group need to have **view** rights on the template application to copy an application.
+  - User/group needs the global permission **edit_applications** to update an application with a new source.
+  - User/group needs the global permission **edit_soruces** to create a new source (publish).
+  - User/group needs the global permission **update_soruces** to reload a source.
 
 
 ### Configuring the connection to the server 
