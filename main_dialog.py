@@ -439,7 +439,7 @@ class MainDialog(BASE, WIDGET):
                     f"""
                     WMS already existed as a Mapbender source(s) and was successfully reloaded: {', '.join(f'#{i}' for i in source_ids if i)}
                     <br><br>
-                    Link to Capabilities:
+                    Link to GetCapabilities-Document:
                     <br><br>
                     <a href = "{wms_url}" style = "color: black; " > {wms_url} </a>
                     <br><br>
@@ -458,7 +458,7 @@ class MainDialog(BASE, WIDGET):
                     f"""
                     WMS successfully created
                     <br><br>
-                    Link to Capabilities:
+                    Link to GetCapabilities-Document:
                     <br><br>
                     <a href = "{wms_url}" style = "color: black; " > {wms_url} </a>
                     <br><br>
@@ -501,9 +501,9 @@ class MainDialog(BASE, WIDGET):
                 show_success_link_box(
                     "Success report",
                     f"""
-                    WMS successfully updated in QGIS Servre and successfully updated in Mapbender source(s): {', '.join(f'#{i}' for i in source_ids if i)}
+                    WMS successfully updated in QGIS Server and successfully updated in Mapbender source(s): {', '.join(f'#{i}' for i in source_ids if i)}
                     <br><br>
-                    Link to Capabilities:
+                    Link to GetCapabilities-Document:
                     <br><br>
                     <a href = "{wms_url}" style = "color: black; " > {wms_url} </a>
                     """
