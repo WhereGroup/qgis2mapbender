@@ -1,57 +1,84 @@
-import os
-import platform
+import logging
 import re
+from typing import Optional
 from urllib.parse import urlparse
-from fabric2 import Connection
-from PyQt5.QtCore import Qt
+
+from PyQt5.QtWidgets import QApplication
+from qgis.PyQt.QtCore import Qt
 from decorator import contextmanager
 
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QMessageBox
+from qgis.PyQt.QtGui import QPixmap
+from qgis.PyQt.QtWidgets import QMessageBox
+from qgis._core import QgsMessageLog, Qgis
 from qgis.core import QgsApplication, QgsProject, QgsSettings
 
-from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY
+from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
 
-def get_os():
-    os = platform.system()
-    if os == "Windows":
-        return "Windows"
-    elif os == "Linux":
-        return "Linux"
-    return "Unknown OS"
-def get_plugin_dir() -> str:
-    return os.path.dirname(__file__)
+from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout, QLabel, QDialogButtonBox
+
+
 
 
 def get_project_layer_names() -> list:
+    """
+        Returns a list of all layer names in the current QGIS project.
+
+        Returns:
+            list: List of layer names.
+    """
     return [layer.name() for layer in QgsProject.instance().mapLayers().values()]
 
-def check_if_qgis_project_is_dirty_and_save() -> None:
+def check_if_qgis_project_is_dirty_and_save() -> bool:
+    """
+        Checks if the current QGIS project has unsaved changes and prompts the user to save.
+
+        Returns:
+            bool: True if the project is saved or user chose to continue, False if cancelled.
+    """
     if QgsProject.instance().isDirty():
         msgBox = QMessageBox()
         msgBox.setWindowTitle("")
-        msgBox.setText("The project has been modified.")
-        msgBox.setInformativeText("Do you want to save your changes?")
-        msgBox.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
-        msgBox.setDefaultButton(QMessageBox.Save)
-        ret = msgBox.exec_()
-        if ret == QMessageBox.Save:
+        msgBox.setText("There are unsaved changes.")
+        msgBox.setInformativeText("Do you want to save your changes before continuing?")
+        msgBox.setStandardButtons(QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Cancel)
+        msgBox.button(QMessageBox.Save).setText("Save")
+        msgBox.button(QMessageBox.Cancel).setText("Cancel")
+        msgBox.setDefaultButton(QMessageBox.StandardButton.Save)
+        ret = msgBox.exec()
+        if ret == QMessageBox.StandardButton.Save:
             QgsProject.instance().write()
-        return ret
-
-def qgis_project_is_saved() -> bool:
-    # Get and check .qgz project path
-    #source_project_dir_path = QgsProject.instance().readPath("./")
-    source_project_file_path = QgsProject.instance().fileName()
-    #if source_project_dir_path == "./" or source_project_file_path == "":
-    if not source_project_file_path:
-        show_fail_box_ok('Failed',
-                         "Please use the QGIS2Mapbender from a saved QGIS-Project")
-        return False
+            return True
+        elif ret == QMessageBox.StandardButton.Cancel:
+            return False
     return True
 
 
-def create_fail_box(title, text):
+def qgis_project_is_saved() -> bool:
+    """
+    Checks if the current QGIS project is saved.
+
+    If the project is not saved, display a message box to inform the user.
+
+    Returns:
+        bool: True if the project is saved, False otherwise.
+    """
+    source_project_file_path = QgsProject.instance().fileName()
+    if not source_project_file_path:
+        show_fail_box('Failed', "Please use the QGIS2Mapbender from a saved QGIS-Project")
+        return False
+    return True
+
+def create_fail_box(title: str, text: str) -> QMessageBox:
+    """
+    Creates a QMessageBox with a failure icon.
+
+    Args:
+        title (str): The title of the message box.
+        text (str): The text to display in the message box.
+
+    Returns:
+        QMessageBox: The created message box.
+    """
     failBox = QMessageBox()
     failBox.setIconPixmap(QPixmap(':/images/themes/default/mIconWarning.svg'))
     failBox.setWindowTitle(title)
@@ -59,61 +86,142 @@ def create_fail_box(title, text):
     return failBox
 
 
-def show_fail_box_ok(title, text):
+def show_fail_box(title: str, text: str) -> int:
+    """
+    Displays a failure message box with an OK button.
+
+    Args:
+        title (str): The title of the message box.
+        text (str): The text to display in the message box.
+
+    Returns:
+        int: The button clicked by the user.
+    """
+    QApplication.restoreOverrideCursor()
     failBox = create_fail_box(title, text)
-    failBox.setStandardButtons(QMessageBox.Ok)
-    return failBox.exec_()
+    failBox.setStandardButtons(QMessageBox.StandardButton.Ok)
+    return failBox.exec()
 
+def show_success_box(title: str, text: str) -> int:
+    """
+    Displays a success message box with an OK button.
 
-def show_fail_box_yes_no(title, text):
-    failBox = create_fail_box(title, text)
-    failBox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-    return failBox.exec_()
+    Args:
+        title (str): The title of the message box.
+        text (str): The text to display in the message box.
 
+    Returns:
+        int: The button clicked by the user.
+    """
 
-def show_succes_box_ok(title, text):
+    QApplication.restoreOverrideCursor()
     successBox = QMessageBox()
     successBox.setIconPixmap(QPixmap(':/images/themes/default/mIconSuccess.svg'))
     successBox.setWindowTitle(title)
     successBox.setText(text)
-    successBox.setStandardButtons(QMessageBox.Ok)
-    return successBox.exec_()
+    successBox.setStandardButtons(QMessageBox.StandardButton.Ok)
+    return successBox.exec()
+
+def show_success_link_box(title: str, text: str) -> int:
+    """
+    Displays a success message box with a clickable link and an OK button.
+
+    Args:
+        title (str): The title of the message box.
+        text (str): The text to display in the message box, which can include a link.
+
+    Returns:
+        int: The button clicked by the user.
+    """
+
+    QApplication.restoreOverrideCursor()
+
+    dialog = QDialog()
+    dialog.setWindowTitle(title)
+    layout = QVBoxLayout(dialog)
+
+    icon_label = QLabel()
+    icon_label.setPixmap(QPixmap(':/images/themes/default/mIconSuccess.svg'))
+    layout.addWidget(icon_label)
+
+    message_label = QLabel()
+    message_label.setTextFormat(Qt.TextFormat.RichText)
+    message_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
+    message_label.setOpenExternalLinks(True)
+    message_label.setWordWrap(True)
+    message_label.setText(text)
+    layout.addWidget(message_label)
+
+    button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+    button_box.accepted.connect(dialog.accept)
+    layout.addWidget(button_box)
+
+    return dialog.exec()
 
 
-def show_question_box(text):
+def show_question_box(text: str) -> int:
+    """
+    Displays a question message box with Yes and No buttons.
+
+    Args:
+        text (str): The question to display in the message box.
+
+    Returns:
+        int: The button clicked by the user.
+    """
     questionBox = QMessageBox()
-    questionBox.setIcon(QMessageBox.Question)
+    questionBox.setIcon(QMessageBox.Icon.Question)
     questionBox.setText(text)
-    questionBox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-    return questionBox.exec_()
+    questionBox.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+    questionBox.button(QMessageBox.Yes).setText("Yes")
+    questionBox.button(QMessageBox.No).setText("No")
+    return questionBox.exec()
 
 
-def list_qgs_settings_child_groups(key):
+def list_qgs_settings_child_groups(key: str) -> list:
+    """
+    Lists the child groups of a given key in QGIS settings.
+
+    Args:
+        key (str): The key to search for child groups.
+
+    Returns:
+        list: A list of child group names.
+    """
     s = QgsSettings()
     s.beginGroup(key)
     subkeys = s.childGroups()
     s.endGroup
     return subkeys
 
+
 @contextmanager
-def waitCursor():
+def waitCursor() -> None:
+    """
+        A context manager to set the cursor to a wait state during a long-running operation.
+
+        Returns:
+            None
+    """
     try:
-        QgsApplication.setOverrideCursor(Qt.WaitCursor)
+        QgsApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         yield
     except Exception as ex:
         raise ex
     finally:
         QgsApplication.restoreOverrideCursor()
 
+def update_mb_slug_in_settings(mb_slug: str, is_mb_slug: bool) -> None:
+    """
+        Updates the Mapbender slug in QGIS settings.
 
-def validate_no_spaces(*variables):
-    for var in variables:
-        if " " in var:
-            return False
-    return True
+        Args:
+            mb_slug (str): The Mapbender slug to update.
+            is_mb_slug (bool): Whether to add or remove the slug.
 
-
-def update_mb_slug_in_settings(mb_slug, is_mb_slug) -> None:
+        Returns:
+            None
+    """
     s = QgsSettings()
     if s.contains(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/mb_templates"):
         s.beginGroup(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/")
@@ -140,8 +248,15 @@ def update_mb_slug_in_settings(mb_slug, is_mb_slug) -> None:
 
 
 def uri_validator(url: str) -> bool:
-    """Validating a URL in Python.
-    It only checks if the URL is malformed and does not check the response of the http request."""
+    """
+    Validates a URL to check if it is well-formed.
+
+    Args:
+        url (str): The URL to validate.
+
+    Returns:
+        bool: True if the URL is well-formed, False otherwise.
+    """
     try:
         result = urlparse(url)
         return all([result.scheme, result.netloc])
@@ -149,21 +264,28 @@ def uri_validator(url: str) -> bool:
         return False
 
 
-def starts_with_single_slash_or_colon(s) -> bool:
-    """To check if a string starts with only one '/' or with a column using regular expressions (regex)"""
-    # Regex pattern to check if string starts with exactly one "/"
-    pattern = r"^(/[^/]|:)"
-    return bool(re.match(pattern, s))
+def get_size_and_unit(bytes_size) -> tuple:
+    """
+       Converts a byte size to a human-readable value and unit.
 
+       Args:
+           bytes_size (int or float): Size in bytes.
 
-def ends_with_single_slash(s) -> bool:
-    """To check if a string ends with only one '/' using regular expressions (regex)"""
-    # Regex pattern to check if string starts with exactly one "/"
-    pattern = r"[^/]/$"
-    return bool(re.search(pattern, s))
+       Returns:
+           tuple: (size, unit) where size is float/int and unit is str.
+    """
+    units = ["B", "KB", "MB", "GB", "TB"]
+    size = float(bytes_size)
+    unit_index = 0
 
+    while size >= 1024 and unit_index < len(units) - 1:
+        size /= 1024
+        unit_index += 1
 
-def check_if_project_folder_exists_on_server(conn: Connection, path: str) -> bool:
-    if conn.run(f'test -d {path}', warn=True).failed:
-       return False
-    return True
+    # Round to two decimals for units KB and above, no decimals for bytes
+    if unit_index == 0:
+        size = int(size)
+    else:
+        size = round(size, 2)
+
+    return size, units[unit_index]

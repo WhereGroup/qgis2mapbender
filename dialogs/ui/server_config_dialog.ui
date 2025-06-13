@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>868</width>
-    <height>568</height>
+    <height>432</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,47 +35,6 @@
       </item>
       <item row="1" column="0" colspan="2">
        <layout class="QFormLayout" name="formLayout_3">
-        <item row="0" column="0" colspan="2">
-         <layout class="QFormLayout" name="formLayout_2">
-          <item row="0" column="0">
-           <widget class="QLabel" name="serviceNameLabel">
-            <property name="text">
-             <string>Server configuration name*                     </string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="serverConfigNameLineEdit"/>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="serverAddressLabel">
-            <property name="text">
-             <string>Server address*</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="serverAddressLineEdit"/>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="portLabel">
-            <property name="text">
-             <string>Port</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="serverPortLineEdit"/>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>Authentication</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
         <item row="1" column="0" colspan="2">
          <widget class="QFrame" name="frame">
           <property name="frameShape">
@@ -134,150 +93,78 @@
           </layout>
          </widget>
         </item>
-        <item row="2" column="0" colspan="2">
+        <item row="3" column="0" colspan="2">
          <layout class="QFormLayout" name="formLayout">
-          <item row="0" column="0">
-           <widget class="QLabel" name="binConsoleCommandLabel">
-            <property name="text">
-             <string>Mapbender bin/console command*</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="binConsoleCommandLineEdit"/>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="qgisProjectPathLabel">
-            <property name="text">
-             <string>QGIS-Projects path*</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="qgisProjectPathLineEdit"/>
-          </item>
-          <item row="2" column="0">
+          <item row="3" column="0">
            <widget class="QLabel" name="qgisServerPathLabel">
             <property name="text">
-             <string>QGIS-Server URL*</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout_4">
-            <item>
-             <widget class="QComboBox" name="protocolQgisServerCmbBox">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>65</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <item>
-               <property name="text">
-                <string>http://</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>https://</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="qgisServerPathLineEdit"/>
-            </item>
-           </layout>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="mbPathLabel">
-            <property name="text">
-             <string>Mapbender application path*</string>
+             <string>QGIS Servre URL*</string>
             </property>
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QLineEdit" name="mbPathLineEdit"/>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="mbBasisUrlLabel">
-            <property name="text">
-             <string>Mapbender basis URL*</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <layout class="QHBoxLayout" name="internHLayout">
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
-             <widget class="QComboBox" name="protocolMapbenderCmbBox">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>65</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <item>
-               <property name="text">
-                <string>http://</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>https://</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="mbBasisUrlLineEdit">
-              <property name="inputMethodHints">
-               <set>Qt::ImhUrlCharactersOnly</set>
-              </property>
-             </widget>
+             <widget class="QLineEdit" name="qgisServerUrlLineEdit"/>
             </item>
            </layout>
           </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="winPKPathLabel">
+          <item row="4" column="1">
+           <layout class="QHBoxLayout" name="internHLayout"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="mbBasisUrlLabel">
             <property name="text">
-             <string>[WINDOWS ONLY] SSH private key path</string>
+             <string>Mapbender base URL*</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
-           <widget class="QgsFileWidget" name="winPKFileWidget"/>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="mbBasisUrlLineEdit">
+            <property name="inputMethodHints">
+             <set>Qt::ImhUrlCharactersOnly</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item row="0" column="0" colspan="2">
+         <layout class="QFormLayout" name="formLayout_2">
+          <item row="0" column="0">
+           <widget class="QLabel" name="serviceNameLabel">
+            <property name="text">
+             <string>Server configuration name*                     </string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="serverConfigNameLineEdit"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Authentication</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
        </layout>
       </item>
-      <item row="3" column="1">
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>786</width>
-          <height>5</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="4" column="0" colspan="2">
+      <item row="3" column="0" colspan="2">
        <layout class="QHBoxLayout" name="hLayout3">
         <item>
          <spacer name="horizontalSpacer">
@@ -317,17 +204,25 @@
         </item>
        </layout>
       </item>
+      <item row="2" column="0">
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
      </layout>
     </widget>
    </item>
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>QgsFileWidget</class>
-   <extends>QWidget</extends>
-   <header>qgsfilewidget.h</header>
-  </customwidget>
   <customwidget>
    <class>QgsPasswordLineEdit</class>
    <extends>QLineEdit</extends>
@@ -336,13 +231,8 @@
  </customwidgets>
  <tabstops>
   <tabstop>serverConfigNameLineEdit</tabstop>
-  <tabstop>serverAddressLineEdit</tabstop>
-  <tabstop>serverPortLineEdit</tabstop>
   <tabstop>userNameLineEdit</tabstop>
   <tabstop>passwordLineEdit</tabstop>
-  <tabstop>qgisProjectPathLineEdit</tabstop>
-  <tabstop>mbPathLineEdit</tabstop>
-  <tabstop>winPKFileWidget</tabstop>
  </tabstops>
  <resources/>
  <connections/>

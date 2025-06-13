@@ -1,67 +1,78 @@
 # QGIS2Mapbender
 
 ## Description
-QGIS plugin to transfer your QGIS Server project on your server and publish your QGIS Server WMS in Mapbender.
+The QGIS2Mapbender plugin transfers your local QGIS project on a server and publishes the QGIS Server WMS in a Mapbender application.
+
+You find the QGIS2Mapbender in the QGIS Python Plugins Repository https://plugins.qgis.org/plugins/QGIS2Mapbender.
+
+![QGIS2Mapbender](resources/img_qgis2mapbender_readme.png)
 
 ## Installation and Requirements
+
+Please note that QGIS2Mapbender version >= 1.0.0 needs Mapbender version >= 4.1.2.
+
 ### Installing the plugin
-- To install the plugin, simply copy the folder with the plugin code into your QGIS profile folder:
-  - Windows: C:\Users{USER}\AppData\Roaming\QGIS\QGIS3\profiles\{PROFILE}\python\plugins\
-  - Linux: /home/{USER}/.local/share/QGIS/QGIS3/profiles/{PROFILE}/python/plugins
+QGIS2Mapbender is published in the QGIS plugin repository. The installation is possible directly from the QGIS plugin repository via the QGIS Plugin Manager. Click on the menu item **Plugins ► Manage and Install Plugins**.
+Alternatively, a release can be downloaded here. The zipped folder can be installed manually. Click on the menu item **Plugins  ► Manage and Install Plugins**. Select the **Not Installed option** in the Plugin Manager dialog and upload the zip.
 
 ### Requirements on your local system
-- The QGIS project must be saved in the same folder as the data.
-- Install fabric2 e.g. using the QGIS console if the library is not already installed:
-  ```
-  import pip
-  pip.main(['install', 'fabric2'])
-  ```
+- The QGIS project must be saved in the same folder as the data. Please note that, along with the QGIS project, all the files in the folder containing the QGIS project will also be uploaded to the server.
+
 ### Requirements on your server
 - QGIS Server is installed on your server.
-- Mapbender is installed on your server.
-- Create at least one template application in Mapbender (that will be cloned and used to publish a new WMS) or an application that will be used to publish a new WMS. These applications should have at least one layerset: 
-  - layerset named "main" (default layerset for adding a new WMS to the application) OR 
-  - layerset named with any other name (in this case, the name of the layerset should be specified when using the plugin)
+- Mapbender is installed and configured on your server.
 
-### Docker
-- QGIS Server and Mapbender can be run as Docker containers.
+### Requirements for your Mapbender installation
 
-Here is a sample docker-compose.yml file to set up a docker for Mapbender and QGIS Server.
-This configuration requires to have a folder `volumes/qgis/` that contains a QGIS project file called `/worldmap/worldmap.qgz`
+**Apache**
+- Configure Apache authorisation and the Mapbender upload directory **api_upload_dir** (see https://doc.mapbender.org/en/customization/api.html)
 
-```yaml
-services:
-  mapbender:
-    image: mapbender/mapbender
-    restart: always
-    ports:
-      - 8080:8080
-    volumes:
-      - ./volumes/mapbender/db:/var/mapbender/application/var/db:rw
-  qgis:
-    image: qgis/qgis-server:3.36.3-noble
-    restart: always
-    ports:
-      - 80:80
-    environment:
-      - QGIS_PROJECT_FILE=/qgis/projects/worldmap/worldmap.qgz
-    volumes:
-      - ./volumes/qgis:/qgis/projects:ro
-```
+
+**PHP**
+- Configure the following parameters in php.ini to match the characteristics of the projects you plan to upload to the server. Remember that the folder containing your project and data will be zipped for uploading to the server.
+
+  - **upload_max_filesize** - the maximum size of an uploaded file. 
+  - **post_max_size** - maximum size of all data sent via a POST request, its value should be equal to or greater than upload_max_filesize.
+  - **max_execution_tine** - this sets the maximum time in seconds a script is allowed to parse input data.
+
+
+**Mapbender**
+
+- Application: Create at least one template application in Mapbender (that can be copied and can be used to publish a new WMS) or an application that will be used directly to publish a new WMS. 
+
+- The applications should have at least one instance of a map and one layerset.
+  
+ Note: The field "layerset" in QGIS2Mapbender is the id or name of the layerset to use. Defaults are "main" or the first layerset in the application.
+
+- User/Groups: All Mapbender users that should be authorized to use QGIS2Mapbender need special rights. There is only one exception and this is the Mapbender super user with the id 1, where this permission is automatically granted. 
+
+  - User/group needs to have the global permission **access_api** and **upload_files** in order to perform any operation on the API and to be able to upload files.
+  - User/group needs the global permission **view_sources**.
+  - User/group needs the global permission **create_applications** to copy an application.
+  - User/group need to have **view** rights on the template application to copy an application.
+  - User/group needs the global permission **edit_applications** to update an application with a new source.
+  - User/group needs the global permission **edit_soruces** to create a new source (publish).
+  - User/group needs the global permission **update_soruces** to reload a source.
+
 
 ### Configuring the connection to the server 
-The figure below shows a typical configuration of the connection to the server and its adaptation to a Docker virtualisation.
-![](resources/config_qgis2mapbender_examples.png)
 
-A few comments on a standard configuration with and without Docker:
+The figure below shows a typical configuration of the connection to the server.
 
-|**Description**| **Without Docker**                                                                                                                                                                  |**With Docker**|
-| :--------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| :-------------------------- |
-|**QGIS-Projects Path:** This is the path on the server where QGIS projects are uploaded. For Docker, it is necessary to specify the mount volume of the running container for QGIS Server. | /data/qgis-projects                                                                                                                                                                 |{path_to_docker_compose.yml}/volumes/qgis/ for the example above|
-|<p>**QGIS-Server URL:** The relative path from the server address to access QGIS Server services.</p><p></p><p></p><p></p><p></p>| <p>cgi-bin/qgis\_mapserv.fcgi</p><p></p><p>example of getCapabilities:</p><p>http://mapbender-qgis.wheregroup.lan/cgi-bin/qgis\_mapserv.fcgi?SERVICE=WMS&REQUEST=GetCapabilities</p>|<p>/ows</p><p></p><p>example of getCapabilities:</p><p>http://mb-qgis-docker.wheregroup.lan/ows/?SERVICE=WMS&REQUEST=GetCapabilities </p>|
-|**Mapbender Application Path:** The path to the Mapbender application. | /data/mapbender/application                                                                                                                                                         |{path_to_docker_compose.yml}|
-|**Mapbender `bin/console` Command:** Mapbender's command-line tool for performing various operations (such as adding a new WMS or managing a Mapbender project). When using Docker, this command must be executed inside the running container. | bin/console                                                                                                                                                                         |docker compose exec mapbender bin/console|
-|**Mapbender Base URL:** The home page of Mapbender where all applications are listed. | mapbender/                                                                                                                                                           |:8080/ |
+![QGIS2Mapbender server configuration](resources/img_server_config_readme.png)
+
+A few comments on a standard configuration:
+
+| **Parameter**          | **Description**                                           | **Example**                          |
+|------------------------|-----------------------------------------------------------|-----------------------------------------------|
+| **Mapbender base URL** | Link to your Mapbender landing page (application overview) | http://localhost/mapbender/  |                                                                                                                                  |
+| **QGIS Server URL**   | URL to access your QGIS Server              | http://localhost/cgi-bin/qgis_mapserv.fcgi   |
+
+
+### Docker
+
+- QGIS Server and Mapbender can be run as Docker containers. Please make sure, that the Mapbender upload directory **api_upload_dir** has the same path as the QGIS Server project directory, as it will be used in the QGIS Server Request as path in the MAP parameter.
+- A default QGIS project (environment: QGIS_PROJECT_FILE) should **not** be specified.
 
 
 ## Support

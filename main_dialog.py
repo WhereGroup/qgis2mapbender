@@ -1,27 +1,25 @@
 import os
 from typing import Optional
 
-from fabric2 import Connection
-
-from PyQt5 import uic
-from PyQt5.QtCore import QSettings, QRegExp
-from PyQt5.QtGui import QRegExpValidator, QPixmap, QIcon
-from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView, QWidget, QTabWidget, QRadioButton, QPushButton, \
-    QTableWidget, QComboBox, QDialogButtonBox, QToolButton, QLabel
+from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QSettings, QRegularExpression, Qt
+from qgis.PyQt.QtGui import QRegularExpressionValidator, QPixmap, QIcon
+from qgis.PyQt.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView, QWidget, QTabWidget, QRadioButton, QPushButton, \
+    QTableWidget, QComboBox, QDialogButtonBox, QToolButton, QLabel, QApplication
 
 from qgis.core import Qgis, QgsSettings, QgsMessageLog
-from qgis.utils import iface
 
+from .api_request import ApiRequest
+from .qgis_server_api_upload import QgisServerApiUpload
+from .mapbender_api_upload import MapbenderApiUpload
 from .dialogs.server_config_dialog import ServerConfigDialog
-from .helpers import qgis_project_is_saved, \
-    show_fail_box_ok, show_fail_box_yes_no, show_succes_box_ok, \
+from .helpers import qgis_project_is_saved, check_if_qgis_project_is_dirty_and_save, \
+    show_fail_box, show_success_box, show_success_link_box, \
     list_qgs_settings_child_groups, show_question_box, \
     update_mb_slug_in_settings
-from .mapbender_upload import MapbenderUpload
 from .paths import Paths
 from .server_config import ServerConfig
 from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
-from .qgis_server_upload import QgisServerUpload
 
 # Dialog from .ui file
 WIDGET, BASE = uic.loadUiType(os.path.join(
@@ -29,6 +27,11 @@ WIDGET, BASE = uic.loadUiType(os.path.join(
 
 
 class MainDialog(BASE, WIDGET):
+    """
+        Main dialog window for the QGIS2Mapbender plugin.
+
+        Handles user interactions for server configuration, project publishing, and updating Mapbender applications.
+    """
     tabWidget: QTabWidget
     serverUploadTab: QWidget
     serverConfigTab: QWidget
@@ -48,11 +51,25 @@ class MainDialog(BASE, WIDGET):
     buttonBoxTab2: QDialogButtonBox
 
     def __init__(self, parent=None):
+        """
+            Initializes the main dialog and sets up the UI and signal connections.
+
+            Args:
+                parent: Optional parent widget.
+            """
         super().__init__(parent)
         self.setupUi(self)
         self.setupConnections()
 
     def setupUi(self, widget) -> None:
+        """
+            Sets up the user interface for the main dialog.
+
+            Args:
+                widget: The parent widget for the dialog.
+            Returns:
+                None
+        """
         super().setupUi(widget)
         self.warningFirstServerLabel.setPixmap(QPixmap(':/images/themes/default/mIconWarning.svg'))
         # Tabs
@@ -69,10 +86,12 @@ class MainDialog(BASE, WIDGET):
         self.publishButton.setEnabled(False)  # Enabled only if mbSlugComboBox has a value
         self.updateButton.setEnabled(False)
         # QLineValidator for slug:
-        regex_slug_layer_set = QRegExp("[^\\s;\\\\/]*")
-        regex_slug_layer_set_validator = QRegExpValidator(regex_slug_layer_set)
-        self.mbSlugComboBox.setValidator(regex_slug_layer_set_validator)
-        self.layerSetLineEdit.setValidator(regex_slug_layer_set_validator)
+        regex_slug_url = QRegularExpression("[^\\s;\\\\/]*")
+        regex_layer_set = QRegularExpression("^(?!\\s)[^;/\\\\]*$")
+        regex_slug_url_validator = QRegularExpressionValidator(regex_slug_url)
+        regex_layer_set_validator = QRegularExpressionValidator(regex_layer_set)
+        self.mbSlugComboBox.setValidator(regex_slug_url_validator)
+        self.layerSetLineEdit.setValidator(regex_layer_set_validator)
 
         # Tab2
         self.addServerConfigButton.setIcon(QIcon(':/images/themes/default/mActionAdd.svg'))
@@ -80,10 +99,10 @@ class MainDialog(BASE, WIDGET):
         self.removeServerConfigButton.setIcon(QIcon(':/images/themes/default/mIconDelete.svg'))
         self.editServerConfigButton.setIcon(QIcon(':/images/themes/default/mActionAllEdits.svg'))
         server_table_headers = ["Name",
-                                "URL"]  # , "QGIS-Projects path", "QGIS-Server path" , "Mapbender app path", "Mapbender basis URL"
+                                "Mapbender URL"]  # "QGIS Servre path" ,
         self.serverTableWidget.setColumnCount(len(server_table_headers))
         self.serverTableWidget.setHorizontalHeaderLabels(server_table_headers)
-        self.serverTableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.serverTableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.update_server_table()
 
         # Buttons
@@ -93,14 +112,24 @@ class MainDialog(BASE, WIDGET):
         self.removeServerConfigButton.setToolTip("Remove selected server configuration")
         self.buttonBoxTab2.rejected.connect(self.reject)
 
+        # Set Button Tab2 to english
+        button_close_tab2 = self.buttonBoxTab2.button(QDialogButtonBox.Close)
+        button_close_tab2.setText("Close")
+
     def setupConnections(self) -> None:
+        """
+            Connects UI signals to their respective slots for user interaction.
+
+            Returns:
+                None
+        """
         self.tabWidget.currentChanged.connect(self.update_server_combo_box)
         self.publishRadioButton.clicked.connect(self.enable_publish_parameters)
         self.updateRadioButton.clicked.connect(self.disable_publish_parameters)
         self.mbSlugComboBox.lineEdit().textChanged.connect(self.validate_slug_not_empty)
         self.mbSlugComboBox.currentIndexChanged.connect(self.validate_slug_not_empty)
-        self.publishButton.clicked.connect(self.publish_project)
-        self.updateButton.clicked.connect(self.update_project)
+        self.publishButton.clicked.connect(self.run)
+        self.updateButton.clicked.connect(self.run)
         self.buttonBoxTab1.rejected.connect(self.reject)
         self.addServerConfigButton.clicked.connect(self.on_add_server_config_clicked)
         self.duplicateServerConfigButton.clicked.connect(self.on_duplicate_server_config_clicked)
@@ -108,7 +137,20 @@ class MainDialog(BASE, WIDGET):
         self.removeServerConfigButton.clicked.connect(self.on_remove_server_config_clicked)
         self.serverTableWidget.doubleClicked.connect(self.on_edit_server_config_clicked)
 
+        # Set Button Tab1 to english
+        button_close_tab1 = self.buttonBoxTab1.button(QDialogButtonBox.Close)
+        button_close_tab1.setText("Close")
+        # Button had a blue background
+        button_close_tab1.setAutoDefault(False)
+        button_close_tab1.setDefault(False)
+
     def update_server_table(self) -> None:
+        """
+            Updates the server configuration table with current settings.
+
+            Returns:
+                None
+        """
         server_config_list = list_qgs_settings_child_groups(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection")
         self.serverTableWidget.setRowCount(len(server_config_list))
         for i, (name) in enumerate(server_config_list):
@@ -118,31 +160,24 @@ class MainDialog(BASE, WIDGET):
 
             server_config = ServerConfig.getParamsFromSettings(name)
 
-            item_url = QTableWidgetItem()
-            item_url.setText(server_config.url)
-            self.serverTableWidget.setItem(i, 1, item_url)
+            item_mb_basis_url = QTableWidgetItem()
+            item_mb_basis_url.setText(server_config.mb_basis_url)
+            self.serverTableWidget.setItem(i, 1, item_mb_basis_url)
 
-            # Further columns (see settings.py SERVER_TABLE_HEADERS)
-            # item_path_qgis_projects = QTableWidgetItem()
-            # item_path_qgis_projects.setText(server_config.projects_path)
-            # self.serverTableWidget.setItem(i, 2, item_path_qgis_projects)
-            #
+            # Further columns
             # item_qgis_server_path = QTableWidgetItem()
             # item_qgis_server_path.setText(server_config.qgis_server_path)
-            # self.serverTableWidget.setItem(i, 3, item_qgis_server_path)
-            #
-            # item_mb_app_path = QTableWidgetItem()
-            # item_mb_app_path.setText(server_config.mb_app_path)
-            # self.serverTableWidget.setItem(i, 4, item_mb_app_path)
-            #
-            # item_mb_basis_url = QTableWidgetItem()
-            # item_mb_basis_url.setText(server_config.mb_basis_url)
-            # self.serverTableWidget.setItem(i, 5, item_mb_basis_url)
+            # self.serverTableWidget.setItem(i, 2, item_qgis_server_path)
 
         self.update_server_combo_box()
 
     def update_server_combo_box(self) -> None:
-        """ Updates the server configuration dropdown menu """
+        """
+            Updates the server configuration dropdown menu
+
+            Returns:
+                None
+        """
         # Read server configurations
         server_config_list = list_qgs_settings_child_groups(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection")
         if len(server_config_list) == 0:
@@ -158,6 +193,12 @@ class MainDialog(BASE, WIDGET):
         self.serverConfigComboBox.addItems(server_config_list)
 
     def update_slug_combo_box(self) -> None:
+        """
+            Updates the Mapbender slug combo box with available slugs from settings.
+
+            Returns:
+                None
+        """
         s = QgsSettings()
         if not s.contains(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/mb_templates"):
             return
@@ -174,225 +215,301 @@ class MainDialog(BASE, WIDGET):
             self.mbSlugComboBox.setCurrentIndex(-1)
 
     def disable_publish_parameters(self) -> None:
+        """
+            Disables the Mapbender parameters input fields and toggles button states for update mode.
+
+            Returns:
+                None
+        """
         self.mbParamsFrame.setEnabled(False)
         self.updateButton.setEnabled(True)
         self.publishButton.setEnabled(False)
 
     def enable_publish_parameters(self) -> None:
+        """
+            Enables the Mapbender parameters input fields and toggles button states for publish mode.
+
+            Returns:
+                None
+        """
         self.mbParamsFrame.setEnabled(True)
         self.updateButton.setEnabled(False)
         self.publishButton.setEnabled(True)
 
     def validate_slug_not_empty(self) -> None:
         """
-        Enable the publish button only "URL Title" has a value
-        :return:
+            Enables the publish button only if the Mapbender slug field is not empty.
+
+            Returns:
+                None
         """
         self.publishButton.setEnabled(self.mbSlugComboBox.currentText() != '')
 
     def open_server_config_dialog(self, config_name: Optional[str] = None, mode: Optional[str] = None) -> None:
-        new_server_config_dialog = ServerConfigDialog(server_config_name=config_name, mode=mode, parent=iface.mainWindow())
+        """
+            Opens the server configuration dialog for adding, editing, or duplicating a server config.
+
+            Args:
+                config_name (Optional[str]): The name of the server configuration to edit or duplicate.
+                mode (Optional[str]): The mode for the dialog ('edit', 'duplicate', or None for new).
+
+            Returns:
+                None
+        """
+        new_server_config_dialog = ServerConfigDialog(server_config_name=config_name, mode=mode) #, parent=iface.mainWindow())
         new_server_config_dialog.exec()
         self.update_server_table()
         self.update_server_combo_box()
 
     def on_add_server_config_clicked(self) -> None:
+        """
+            Slot for adding a new server configuration.
+
+            Returns:
+                None
+        """
         self.open_server_config_dialog()
 
-    def get_selected_server_config(self) -> str:
+    def get_selected_server_config(self) -> Optional[str]:
+        """
+            Returns the name of the currently selected server configuration in the table.
+
+            Returns:
+                Optional[str]: The selected server configuration name, or None if none is selected.
+        """
         selected_row = self.serverTableWidget.currentRow()
         if selected_row == -1:
-            return
+            return None
         return self.serverTableWidget.item(selected_row, 0).text()
 
     def on_duplicate_server_config_clicked(self) -> None:
+        """
+            Slot for duplicating the selected server configuration.
+
+            Returns:
+                None
+        """
         selected_server_config = self.get_selected_server_config()
         self.open_server_config_dialog(selected_server_config, mode='duplicate')
 
     def on_edit_server_config_clicked(self) -> None:
+        """
+            Slot for editing the selected server configuration.
+
+            Returns:
+                None
+        """
         selected_server_config = self.get_selected_server_config()
         self.open_server_config_dialog(selected_server_config, mode='edit')
 
     def on_remove_server_config_clicked(self) -> None:
+        """
+            Slot for removing the selected server configuration after user confirmation.
+
+            Returns:
+                None
+        """
         selected_row = self.serverTableWidget.currentRow()
         if selected_row == -1:
             return
         selected_server_config = self.serverTableWidget.item(selected_row, 0).text()
         if show_question_box(
-                f"Are you sure you want to remove the server configuration '{selected_server_config}'?") != QMessageBox.Yes:
+                f"Are you sure you want to remove the server configuration '{selected_server_config}'?") != QMessageBox.StandardButton.Yes:
             return
         s = QSettings()
         s.remove(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{selected_server_config}")
-        show_succes_box_ok('Success', 'Server configuration successfully removed')
+        show_success_box('Success', 'Server configuration successfully removed')
         self.update_server_table()
         self.update_server_combo_box()
 
+    def initialize_api_request(self) -> tuple[ServerConfig, ApiRequest]:
+        """
+            Initializes and returns the server configuration and ApiRequest instance.
 
-    def publish_project(self) -> None:
-        if not qgis_project_is_saved():
-            return
-        # Check Mapbender params:
-        if self.mbSlugComboBox.currentText() == '':
-            show_fail_box_ok("Please complete Mapbender parameters",
-                             "Please enter a valid Mapbender URL title")
-            return
-        self.upload_project_qgis_server()
-
-    def update_project(self) -> None:
-        if not qgis_project_is_saved():
-            return
-        self.upload_project_qgis_server()
-
-    def upload_project_qgis_server(self) -> None:
-        # Get server config params and project paths
+            Returns:
+                tuple[ServerConfig, ApiRequest]: The server configuration and API request objects.
+        """
         server_config = ServerConfig.getParamsFromSettings(self.serverConfigComboBox.currentText())
-        paths = Paths.get_paths(server_config.projects_path)
+        api_request = ApiRequest(server_config)
+        return server_config, api_request
 
-        connect_kwargs = {"password": server_config.password}
-        if server_config.windows_pk_path:
-            connect_kwargs["key_filename"] = server_config.windows_pk_path
+    def run(self) -> None:
+        """
+            Executes the publishing or updating process for the current QGIS project.
 
-        with Connection(host=server_config.url, user=server_config.username, port=server_config.port,
-                        connect_kwargs=connect_kwargs) as connection:
-            try:
-                connection.open()
-            except Exception as e:
-                show_fail_box_ok("Connection failed", f"Connection failed. Reason: {e}")
+            Handles project validation, API initialization, upload, and Mapbender operations.
+            Provides user feedback and error handling.
+
+            Returns:
+                None
+        """
+
+        if not qgis_project_is_saved():
+            return
+
+        if not check_if_qgis_project_is_dirty_and_save():
+            QgsMessageLog.logMessage("Publish/Update cancelled by the user (unsaved changes).", TAG, level=Qgis.MessageLevel.Info)
+            return
+
+        # Set waiting cursor
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        wms_url = None
+        api_request = None
+        try:
+            action = "publish" if self.publishRadioButton.isChecked() else "update"
+            if action == "publish" and self.mbSlugComboBox.currentText() == '':
+                show_fail_box("Please complete Mapbender parameters",
+                                 "Please enter a valid Mapbender URL title")
                 return
 
-            upload = QgisServerUpload(connection, paths)
-            wms_url = upload.get_wms_url(server_config)
-            project_folder_exists_on_server = upload.check_if_project_folder_exists_on_server()
-            # User's input = publish
-            if project_folder_exists_on_server and self.publishRadioButton.isChecked():
-                if show_fail_box_yes_no("Failed",
-                                        f"Project directory already exists on the server. \n \nDo you want to"
-                                        f" overwrite the existing project directory '{paths.source_project_dir_name},' "
-                                        f"update the WMS as source in Mapbender and add it to the given "
-                                        f"application?") == QMessageBox.No:
-                    return
-                if not upload.remove_project_folder_from_server():
-                    return
-                if not upload.zip_upload_unzip_clean():
-                    return
-                QgsMessageLog.logMessage(f"WMS get capabilitites URL: {wms_url}", TAG,
-                                         level=Qgis.Info)
-                self.mb_publish(connection, server_config, wms_url)
-            # User's input = update
-            if project_folder_exists_on_server and self.updateRadioButton.isChecked():
-                if not upload.remove_project_folder_from_server():
-                    return
-                if not upload.zip_upload_unzip_clean():
-                    return
-                self.mb_update(connection, server_config, wms_url)
-            if not project_folder_exists_on_server and self.publishRadioButton.isChecked():
-                if not upload.zip_upload_unzip_clean():
-                    return
-                QgsMessageLog.logMessage(f"WMS get capabilitites URL: {wms_url}", TAG,
-                                         level=Qgis.Info)
-                self.mb_publish(connection, server_config, wms_url)
-            if not project_folder_exists_on_server and self.updateRadioButton.isChecked():
-                show_fail_box_ok("Failed",
-                                 "Project directory " + paths.source_project_dir_name + " does not exist on the server and therefore "
-                                                                                        "can not be updated. \n \nIf you want to upload a new"
-                                                                                        " QGIS-Project please select the option 'Publish "
-                                                                                        " in Mapbender app'")
+            server_config, api_request = self.initialize_api_request()
+            if not api_request.token:
+                return
 
-    def mb_publish(self, connection, server_config, wms_url):
-        # Get Mapbender params:
-        if self.cloneTemplateRadioButton.isChecked():
-            clone_app = True
-        if self.addToAppRadioButton.isChecked():
-            clone_app = False
-        # Template slug:
+            QgsMessageLog.logMessage("Preparing upload to QGIS server...", TAG, level=Qgis.MessageLevel.Info)
+            # Get server config: project paths
+            paths = Paths.get_paths()
+            qgis_server_upload = QgisServerApiUpload(api_request, paths)
+            status_code_server_upload, upload_dir = qgis_server_upload.process_and_upload_project()
+
+            if status_code_server_upload == 200:
+                wms_url = qgis_server_upload.get_wms_url(server_config, upload_dir)
+            if not wms_url:
+                return
+
+            if action == "publish":
+                self.mb_publish(server_config, api_request, wms_url)
+            else:
+                self.mb_update(server_config, api_request, wms_url)
+        finally:
+            # Restore default cursor
+            QApplication.restoreOverrideCursor()
+            if api_request is not None:
+                api_request.mark_api_requests_done()
+
+
+    def mb_publish(self, server_config: ServerConfig, api_request: ApiRequest, wms_url: str) -> None:
+        """
+        Publishes a WMS to Mapbender and assigns it to an application.
+
+        Args:
+            server_config (ServerConfig): The server configuration object.
+            api_request (ApiRequest): The API request object.
+            wms_url (str): The URL of the WMS to be published.
+
+        Returns:
+            None
+        """
+        # Parameters
+        is_clone_app = self.cloneTemplateRadioButton.isChecked()
         layer_set = self.layerSetLineEdit.text()
+        input_slug = self.mbSlugComboBox.currentText()
 
-        mapbender_uploader = MapbenderUpload(connection, server_config, wms_url)
-
-        exit_status_wms_show, sources_ids = mapbender_uploader.wms_show()
-        if exit_status_wms_show == 1:  ## Failed
-            show_fail_box_ok("Failed",
-                             f"WMS layer information could not be displayed. "
-                             f"Mapbender upload will be interrupted.")
-            return
-
-        if len(sources_ids) > 0:  # URL exists one or multiple times as Mapbender source: reload
-            exit_status_wms_reload_list = []
-            for source_id in sources_ids:
-                exit_status_wms_reload, output, error = mapbender_uploader.wms_reload(source_id)
-                exit_status_wms_reload_list.append(exit_status_wms_reload)
-            if not all(exit_status_wms_reload == 0 for exit_status_wms_reload in exit_status_wms_reload_list):
-                show_fail_box_ok("Failed",
-                                 f"QGIS-Project is successfuly uploaded to the server but WMS could not be reloaded in Mapbender.")
-                return
-            # Default: source (or source with higher ID, if multiple IDs) will be selected be added to the given Mapbender application
-            source_id = sources_ids[-1]
-        else:
-            # Source does not exist yet in Mapbender: add
-            exit_status_wms_add, source_id, error = mapbender_uploader.wms_add()
-            if exit_status_wms_add != 0:
-                show_fail_box_ok("Failed",
-                                 f"QGIS-Project is successfully uploaded to the server but WMS could not be added to "
-                                 f"Mapbender. Reason: {error}")
+        try:
+            mb_upload = MapbenderApiUpload(server_config, api_request, wms_url)
+            exit_status_mb_upload, source_ids, is_reloaded = mb_upload.mb_upload()
+            if exit_status_mb_upload != 0 or not source_ids:
+                QgsMessageLog.logMessage(f"FAILED mb_upload", TAG, level=Qgis.MessageLevel.Info)
                 return
 
-        if clone_app:  # The given Mapbender's template app will be cloned and the WMS will be assigned to the cloned
-            # app
-            template_slug = self.mbSlugComboBox.currentText()
-            exit_status_app_clone, output, slug, error = mapbender_uploader.app_clone(template_slug)
-            if exit_status_app_clone != 0:
-                show_fail_box_ok("Failed",
-                                 f"Application could not be cloned.\nError: {error}, Output: {output}")
-                update_mb_slug_in_settings(template_slug, is_mb_slug=False)
+            if is_clone_app:
+                exit_status_app_clone, slug = mb_upload.clone_app_and_get_slug(input_slug)
+                if exit_status_app_clone != 200:
+                    update_mb_slug_in_settings(input_slug, is_mb_slug=False)
+                    self.update_slug_combo_box()
+                    return
+                QgsMessageLog.logMessage(f"Application was cloned to {slug}", TAG,
+                                         level=Qgis.MessageLevel.Info)
+
+                update_mb_slug_in_settings(input_slug, is_mb_slug=True)
                 self.update_slug_combo_box()
+            else:
+                slug = input_slug
+
+            exit_status_wms_assign = mb_upload.assign_wms_to_source(slug, source_ids[0], layer_set)
+            if exit_status_wms_assign != 200:
                 return
-            update_mb_slug_in_settings(template_slug, is_mb_slug=True)
-            self.update_slug_combo_box()
+            if is_reloaded:
+                QgsMessageLog.logMessage(
+                    f"WMS {wms_url} already existed as a Mapbender source(s) and was successfully reloaded (source(s) {source_ids}) and added to Mapbender application : {slug}", TAG,
+                    level=Qgis.MessageLevel.Info)
 
-            exit_status_wms_assign, output_wms_assign, error_wms_assign = (
-                mapbender_uploader.wms_assign(slug, source_id, layer_set))
+                show_success_link_box(
+                    "Success report",
+                    f"""
+                    WMS already existed as a Mapbender source(s) and was successfully reloaded: {', '.join(f'#{i}' for i in source_ids if i)}
+                    <br><br>
+                    Link to Capabilities:
+                    <br><br>
+                    <a href = "{wms_url}" style = "color: black; " > {wms_url} </a>
+                    <br><br>
+                    Link to Mapbender application:
+                    <br><br>
+                    <a href = "{server_config.mb_basis_url}/application/{slug}" style = "color: black; " > {server_config.mb_basis_url}/application/{slug}</a>
+                    """
+                )
+            else:
+                QgsMessageLog.logMessage(
+                    f"WMS successfully created: {wms_url} and added to Mapbender application : {slug}", TAG,
+                    level=Qgis.MessageLevel.Info)
 
-        else:  # The WMS will be assigned to the given Mapbender app
-            slug = self.mbSlugComboBox.currentText()
-            exit_status_wms_assign, output_wms_assign, error_wms_assign = (
-                mapbender_uploader.wms_assign(slug, source_id, layer_set))
+                show_success_link_box(
+                    "Success report",
+                    f"""
+                    WMS successfully created
+                    <br><br>
+                    Link to Capabilities:
+                    <br><br>
+                    <a href = "{wms_url}" style = "color: black; " > {wms_url} </a>
+                    <br><br>
+                    Link to Mapbender application:
+                    <br><br>
+                    <a href = "{server_config.mb_basis_url}/application/{slug}" style = "color: black; " > {server_config.mb_basis_url}/application/{slug}</a>
+                    """
+                )
+            #self.close()
+        except Exception as e:
+            show_fail_box("Failed", f"An error occurred during Mapbender publish: {e}")
+            QgsMessageLog.logMessage(f"Error in mb_publish: {e}", TAG, level=Qgis.MessageLevel.Critical)
+        return
 
-        if exit_status_wms_assign != 0:
-            show_fail_box_ok("Failed",
-                             f"WMS could not be assigned to Mapbender application.\n{output_wms_assign}")
-            return
+    @staticmethod
+    def mb_update(server_config: ServerConfig, api_request: ApiRequest, wms_url: str)-> None:
+        """
+        Updates an existing WMS in Mapbender by reloading its source.
 
-        show_succes_box_ok("Success report",
-                           "WMS successfully created:\n \n" + wms_url +
-                           "\n \n And added to Mapbender application: \n \n" + server_config.mb_protocol +
-                           server_config.mb_basis_url + "/application/" + slug)
-        self.close()
+        Args:
+            server_config (ServerConfig): The server configuration object.
+            api_request (ApiRequest): The API request object.
+            wms_url (str): The URL of the WMS to be updated.
 
-    def mb_update(self, connection, server_config, wms_url):
-        mapbender_uploader = MapbenderUpload(connection, server_config, wms_url)
-        exit_status_wms_show, sources_ids = mapbender_uploader.wms_show()
-        QgsMessageLog.logMessage(f"Output wms_show: {exit_status_wms_show}, {sources_ids}", TAG,
-                                 level=Qgis.Info)
-        if exit_status_wms_show != 0:
-            show_fail_box_ok("Failed",
-                             f"WMS layer information could not be displayed. "
-                             f"Mapbender upload will be interrupted.")
-            return
-        if len(sources_ids) == 0:
-            show_fail_box_ok("Failed",
-                             f"WMS is not an existing source in Mapbender and could not be updated")
-        # URL exists one or multiple times as Mapbender source: reload
-        exit_status_wms_reload_list = []
-        for source_id in sources_ids:
-            exit_status_wms_reload, output, error = mapbender_uploader.wms_reload(source_id)
-            exit_status_wms_reload_list.append(exit_status_wms_reload)
-        if not all(exit_status_wms_reload == 0 for exit_status_wms_reload in exit_status_wms_reload_list):
-            show_fail_box_ok("Failed",
-                             f"QGIS-Project is successfuly uploaded to the server but WMS could not be reloaded in Mapbender. "
-                             f"Reason {output} and {error}. "
-                             f"Mapbender upload will be interrupted.")
-            return
-        show_succes_box_ok("Success report",
-                           "WMS successfully updated:\n \n" + wms_url +
-                           "\n \non Mapbender source(s): " + str(sources_ids))
-        self.close()
+        Returns:
+            None
+        """
+        try:
+            mb_reload = MapbenderApiUpload(server_config, api_request, wms_url)
+            exit_status, source_ids = mb_reload.mb_reload()
+            if exit_status != 0 or not source_ids:
+                show_fail_box("Failed", f"No source to update. WMS {wms_url} is not an existing source in Mapbender.")
+                QgsMessageLog.logMessage(f"FAILED mb_update: No source to update. WMS {wms_url} is not an existing source in Mapbender.", TAG, level=Qgis.MessageLevel.Info)
+                return
+            else:
+                source_ids_msg = ", ".join(map(str, source_ids))
+                QgsMessageLog.logMessage(
+                    f"WMS successfully updated and successfully updated in Mapbender source(s): {source_ids_msg}!", TAG,
+                    level=Qgis.MessageLevel.Info)
+                show_success_link_box(
+                    "Success report",
+                    f"""
+                    WMS successfully updated in QGIS Server and successfully updated in Mapbender source(s): {', '.join(f'#{i}' for i in source_ids if i)}
+                    <br><br>
+                    Link to Capabilities:
+                    <br><br>
+                    <a href = "{wms_url}" style = "color: black; " > {wms_url} </a>
+                    """
+                )
+
+        except Exception as e:
+            show_fail_box("Failed", f"An error occurred during Mapbender update: {e}")
+            QgsMessageLog.logMessage(f"Error in mb_update: {e}", TAG, level=Qgis.MessageLevel.Critical)
+        return

@@ -7,26 +7,29 @@ from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
 
 @dataclass
 class ServerConfig:
+    """
+        Stores the configuration for a QGIS Server and Mapbender connection.
+    """
     name: str
-    url: str
-    port: int
     username: str
     password: str
-    projects_path: str
-    qgis_server_protocol: str
     qgis_server_path: str
-    mb_app_path: str
-    mb_protocol: str
     mb_basis_url: str
     authcfg: str
-    windows_pk_path: str
-    bin_console_command: str
 
 
-    def save(self, encrypted: bool):
+    def save(self, encrypted: bool) -> None:
+        """
+            Saves the server configuration to QGIS settings.
+
+            Args:
+                encrypted (bool): If True, credentials are stored in the QGIS authentication database.
+                                  If False, credentials are stored in plain text in the settings.
+
+            Returns:
+                None
+        """
         s = QgsSettings()
-        s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/url", self.url)
-        s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/port", self.port)
         if encrypted:
             s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/username", '')
             s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/password", '')
@@ -37,29 +40,24 @@ class ServerConfig:
             s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/password", self.password)
             s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/authcfg", '')
 
-        s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/projects_path", self.projects_path)
-        s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/qgis_server_protocol",
-                   self.qgis_server_protocol)
         s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/qgis_server_path",
                    self.qgis_server_path)
-        s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/mb_app_path", self.mb_app_path)
-        s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/mb_protocol", self.mb_protocol)
         s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/mb_basis_url", self.mb_basis_url)
-        s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/windows_pk_path", self.windows_pk_path)
-        s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/bin_console_command",
-                   self.bin_console_command)
 
     @staticmethod
-    def saveBasicToAuthDb(server_name, username, password, authCfgId):
+    def saveBasicToAuthDb(server_name, username, password, authCfgId) -> str:
         """
-        Saves the password securely in the qgis-auth.db file.
+             Saves the username and password securely in the QGIS authentication database.
 
-        Args:
-            server_name (str): Name of the server or connection.
-            username (str): User's username.
-            password (str): User's password.
-            authCfgId (str): existing auth config ID saved in settings.
-        """
+             Args:
+                 server_name (str): Name of the server or connection.
+                 username (str): User's username.
+                 password (str): User's password.
+                 authCfgId (str): Existing authentication config ID.
+
+             Returns:
+                 str: The authentication config ID used or created.
+         """
         auth_manager = QgsApplication.authManager()
         conf = QgsAuthMethodConfig()
         # if authCfgId already available on the stored keys, it will only be updated. Otherwise, it will be created!
@@ -69,34 +67,43 @@ class ServerConfig:
         conf.setConfig("username", username)
         conf.setConfig("password", password)
 
-        # Register data in authdb returning the ``authcfg`` of the stored configuration
+        # Register test_upload in authdb returning the ``authcfg`` of the stored configuration
         auth_manager.storeAuthenticationConfig(conf, overwrite=True)
         return conf.id()
 
     @staticmethod
-    def getParamsFromSettings(name: str):
+    def getParamsFromSettings(name: str) -> 'ServerConfig':
+        """
+            Loads the server configuration from QGIS settings.
+
+            Args:
+                name (str): The name of the server configuration.
+
+            Returns:
+                ServerConfig: The loaded server configuration object.
+        """
         s = QgsSettings()
-        url = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/url")
-        port = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/port")
-        projects_path = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/projects_path")
         username = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/username")
         password = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/password")
         qgis_server_path = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/qgis_server_path")
-        qgis_server_protocol = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/qgis_server_protocol")
-        mb_app_path = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/mb_app_path")
-        mb_protocol = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/mb_protocol")
         mb_basis_url = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/mb_basis_url")
         authcfg = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/authcfg")
-        windows_pk_path = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/windows_pk_path")
-        bin_console_command = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/bin_console_command")
         if authcfg:
             username, password = ServerConfig.get_username_and_password_from_auth_db(authcfg)
-
-        return ServerConfig(name, url, port, username, password, projects_path, qgis_server_protocol, qgis_server_path,
-                            mb_app_path, mb_protocol, mb_basis_url, authcfg, windows_pk_path, bin_console_command)
+        return ServerConfig(name, username, password, qgis_server_path,
+                        mb_basis_url, authcfg)
 
     @staticmethod
-    def get_username_and_password_from_auth_db(authcfg):
+    def get_username_and_password_from_auth_db(authcfg) -> tuple[str, str]:
+        """
+            Retrieves the username and password from the QGIS authentication database using the provided authcfg.
+
+            Args:
+                authcfg (str): The authentication configuration ID.
+
+            Returns:
+                tuple[str, str]: A tuple containing the username and password.
+        """
         auth_manager = QgsApplication.authManager()
         conf = QgsAuthMethodConfig()
         auth_manager.loadAuthenticationConfig(authcfg, conf, True)
@@ -107,5 +114,5 @@ class ServerConfig:
         else:
             username = ''
             password = ''
-            QgsMessageLog.logMessage("No config id...", TAG, level=Qgis.Warning)
+            QgsMessageLog.logMessage("No config id...", TAG, level=Qgis.MessageLevel.Warning)
             return username, password

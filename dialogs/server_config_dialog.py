@@ -2,18 +2,16 @@ import os
 from typing import Optional
 
 import requests
-from PyQt5 import uic
-from PyQt5.QtCore import QRegExp, QSettings
-from PyQt5.QtGui import QIntValidator, QRegExpValidator, QIcon
-from PyQt5.QtWidgets import QDialogButtonBox, QLineEdit, QRadioButton, QLabel, QComboBox, QPushButton
-from fabric2 import Connection
-from qgis.gui import QgsFileWidget
+from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QRegularExpression, QSettings
+from qgis.PyQt.QtGui import QRegularExpressionValidator, QIcon
+from qgis.PyQt.QtWidgets import QDialogButtonBox, QLineEdit, QRadioButton, QLabel, QPushButton
+from qgis.core import QgsMessageLog, Qgis
 
-from ..helpers import show_succes_box_ok, list_qgs_settings_child_groups, show_fail_box_ok, get_os, \
-    uri_validator, starts_with_single_slash_or_colon, waitCursor, check_if_project_folder_exists_on_server, \
-    ends_with_single_slash
+from ..api_request import ApiRequest
+from ..helpers import show_success_box, list_qgs_settings_child_groups, show_fail_box, uri_validator, waitCursor
 from ..server_config import ServerConfig
-from ..settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY
+from ..settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
 
 # Dialog from .ui file
 WIDGET, BASE = uic.loadUiType(os.path.join(
@@ -21,196 +19,219 @@ WIDGET, BASE = uic.loadUiType(os.path.join(
 
 
 class ServerConfigDialog(BASE, WIDGET):
-    serverConfigNameLineEdit: QLineEdit
-    serverAddressLineEdit: QLineEdit
-    serverPortLineEdit: QLineEdit
+    """
+        Dialog for creating, editing, and testing QGIS server and Mapbender server configurations.
 
+        Allows users to input server URLs, credentials, and test connectivity and authentication.
+    """
+    serverConfigNameLineEdit: QLineEdit
     credentialsPlainTextRadioButton: QRadioButton
     credentialsAuthDbRadioButton: QRadioButton
     userNameLineEdit: QLineEdit
     passwordLineEdit: QLineEdit
     authLabel: QLabel
-
-    protocolQgisServerCmbBox: QComboBox
-    # serverConfigNameLabel1: QLabel
-    qgisServerPathLineEdit: QLineEdit     # TODO: better to rename qgisServerUrlLineEdit
-    qgisProjectPathLineEdit: QLineEdit
-
-    protocolMapbenderCmbBox: QComboBox
-    # serverConfigNameLabel2: QLabel
+    qgisServerUrlLineEdit: QLineEdit
     mbBasisUrlLineEdit: QLineEdit
-    mbPathLineEdit: QLineEdit
-
-    winPKFileWidget: QgsFileWidget
-
-    # buttons
     testButton: QPushButton
     dialogButtonBox: QDialogButtonBox
 
-    def __init__(self, server_config_name: Optional[str] = None, mode: Optional[str] = None, parent=None):
+    def __init__(self, server_config_name: Optional[str] = None, mode: Optional[str] = None, parent=None) -> None:
+        """
+            Initializes the server configuration dialog and sets up the UI.
+
+            Args:
+                server_config_name (Optional[str]): Name of the server config to edit or duplicate.
+                mode (Optional[str]): Dialog mode ('edit', 'duplicate', or None for new).
+                parent: Optional parent widget.
+            Returns:
+                None
+        """
         super().__init__(parent)
         self.setupUi(self)
         self.mandatoryFields = [
             self.serverConfigNameLineEdit,
-            self.serverAddressLineEdit,
-            self.qgisProjectPathLineEdit,
-            self.qgisServerPathLineEdit,
-            self.mbPathLineEdit,
+            self.qgisServerUrlLineEdit,
             self.mbBasisUrlLineEdit,
-            self.binConsoleCommandLineEdit
         ]
-        if get_os() == "Linux":
-            self.winPKFileWidget.setEnabled(False)
         self.setupConnections()
         self.authcfg = ''
         self.selected_server_config_name = server_config_name
         self.mode = mode
-        self.dialogButtonBox.button(QDialogButtonBox.Save).setEnabled(False)
+        self.credentialsPlainTextRadioButton.setChecked(True)
+        self.dialogButtonBox.button(QDialogButtonBox.StandardButton.Save).setEnabled(False)
         self.testButton.setEnabled(False)
         if server_config_name:
             self.getSavedServerConfig(server_config_name, mode)
         if self.mode == 'edit':
-            self.dialogButtonBox.button(QDialogButtonBox.Save).setEnabled(True)
+            self.dialogButtonBox.button(QDialogButtonBox.StandardButton.Save).setEnabled(True)
             self.testButton.setEnabled(True)
 
+        button_save = self.dialogButtonBox.button(QDialogButtonBox.StandardButton.Save)
+        button_save.setText('Save')
+
         self.serverConfigNameLineEdit.setToolTip('Custom server configuration name without blank spaces')
-        self.qgisProjectPathLineEdit.setToolTip('Example: /data/qgis-projects/')
-        self.qgisProjectPathLineEdit.setPlaceholderText('/data/qgis-projects/')
-        self.qgisServerPathLineEdit.setToolTip('Example: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi')
-        self.mbPathLineEdit.setToolTip('Example: /data/mapbender/application/')
-        self.mbPathLineEdit.setPlaceholderText('/mapbender/index_dev.php/')
+        self.qgisServerUrlLineEdit.setToolTip('Example: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi')
         self.mbBasisUrlLineEdit.setToolTip('Example: [SERVER_NAME]/mapbender/index_dev.php/')
-        self.winPKFileWidget.setToolTip('Example: C:/Users/user/Documents/ED25519-Key_private_key.ppk')
-        self.binConsoleCommandLineEdit.setToolTip('Example: bin/console')
-        self.binConsoleCommandLineEdit.setPlaceholderText('bin/console')
 
         # QLineEdit validators
-        regex = QRegExp("[^\\s;]*")  # regex for blank spaces and semicolon
-        regex_validator = QRegExpValidator(regex)
-        int_validator = QIntValidator()
+        regex = QRegularExpression("[^\\s;]*")  # regex for blank spaces and semicolon
+        #regex_username = QRegularExpression("^(?!\\s)[^;/\\\\]*$")
+
+        regex_validator = QRegularExpressionValidator(regex)
+        #regex_username_validator = QRegularExpressionValidator(regex_username)
         self.serverConfigNameLineEdit.setValidator(regex_validator)
-        self.serverPortLineEdit.setValidator(int_validator)
-        self.serverAddressLineEdit.setValidator(regex_validator)
         self.userNameLineEdit.setValidator(regex_validator)
         self.passwordLineEdit.setValidator(regex_validator)
-        self.qgisProjectPathLineEdit.setValidator(regex_validator)
-        self.qgisServerPathLineEdit.setValidator(regex_validator)
-        self.mbPathLineEdit.setValidator(regex_validator)
+        self.qgisServerUrlLineEdit.setValidator(regex_validator)
         self.mbBasisUrlLineEdit.setValidator(regex_validator)
-
         self.checkedIcon = QIcon(":images/themes/default/mIconSuccess.svg")
 
-    def setupConnections(self):
+    def setupConnections(self) -> None:
+        """
+            Connects UI signals to their respective slots for user interaction.
+
+            Returns:
+                None
+        """
         self.dialogButtonBox.accepted.connect(self.saveServerConfig)
         self.dialogButtonBox.rejected.connect(self.reject)
         self.serverConfigNameLineEdit.textChanged.connect(self.validateFields)
-        self.serverAddressLineEdit.textChanged.connect(self.onChangeServerName)
         self.credentialsPlainTextRadioButton.toggled.connect(self.onToggleCredential)
-        self.qgisProjectPathLineEdit.textChanged.connect(self.validateFields)
-        self.qgisServerPathLineEdit.textChanged.connect(self.validateFields)
-        self.mbPathLineEdit.textChanged.connect(self.validateFields)
+        self.qgisServerUrlLineEdit.textChanged.connect(self.validateFields)
         self.mbBasisUrlLineEdit.textChanged.connect(self.validateFields)
         self.testButton.clicked.connect(self.execTests)
 
+        button_cancel = self.dialogButtonBox.button(QDialogButtonBox.StandardButton.Cancel)
+        button_cancel.setText('Cancel')
+
     def execTests(self) -> None:
-        """Run a few tests (described in the method <testConnection> method). It displays a message if errors are found"""
-        errorMsg = None
+        """
+            Runs a series of tests (described in the method <execTestsImpl>). Displays a message if errors are found.
+
+            Returns:
+                None
+        """
         self.testButton.setIcon(QIcon())
         with waitCursor():
-            errorMsg = self.execTestsImpl()
+            errorMsg, successMsg  = self.execTestsImpl()
 
-        if errorMsg:
-            show_fail_box_ok("Failed", errorMsg)
-        else:
+        if errorMsg and successMsg:
+            show_fail_box(
+                "Test Results",
+                f"<b>Failed Tests:</b><ul>{''.join(f'<li>{test}</li>' for test in errorMsg.splitlines())}</ul>"
+                f"<b>Successful Tests:</b><ul>{''.join(f'<li>{test}</li>' for test in successMsg.splitlines())}</ul>"
+            )
+        elif errorMsg:
+            show_fail_box(
+                "Test Results",
+                f"<b>Failed Tests:</b><ul>{''.join(f'<li>{test}</li>' for test in errorMsg.splitlines())}</ul>"
+            )
+        elif successMsg:
             self.testButton.setIcon(self.checkedIcon)
-            show_succes_box_ok("Success", """Following tests are carried out:
-            1. SSH connection is successfully established
-            2. Successfully accessed the QGIS project path
-            3. Successfully accessed the Mapbender path
-            4. Mapbender's is validated and its response is 200
-            5. QGIS's URL is valid and its response is 200""")
+            show_success_box(
+                "Test Results",
+                f"<b>All tests were successful:</b><ul>{''.join(f'<li>{test}</li>' for test in successMsg.splitlines())}</ul>"
+            )
 
-    def execTestsImpl(self) -> Optional[str]:
+
+    def execTestsImpl(self) -> tuple[Optional[str], Optional[str]]:
         """
-        Tests the SSH connection and verifies access to IRLs of Mapbender and QGIS Server.
+            Runs a series of tests and returns a messages with:
+            -  failed tests.
+            -  successful tests.
 
-        This method performs the following steps:
-            1. Establishes an SSH connection using the provided SSH client.
-            2. Attempts to access a specified QGIS Project path.
-            3. Attempts to access a specified Mapbender's path.
-            4. Check the validity of the Mapbender URL and verify that the response is 200.
-            5. Check the validity of the QGIS URL and verify that the response is 200.
-
-        Return:
-            If found, error message
+            Returns:
+                tuple: (Error message, Success message)
         """
+
         configFromForm = self.getServerConfigFromFormular()
-        # print(configFromForm)
-        connect_kwargs = {"password": configFromForm.password}
+        failed_tests = []
+        successful_tests = []
 
-        if not ends_with_single_slash(configFromForm.projects_path):
-            return f"QGIS project path '{configFromForm.projects_path}' should end with one '/'"
-
-        if not ends_with_single_slash(configFromForm.mb_app_path):
-            return f"Mapbender application path '{configFromForm.mb_app_path}' should end with one '/'"
-
-        with Connection(host=configFromForm.url, user=configFromForm.username,
-                        port=configFromForm.port, connect_kwargs=connect_kwargs) as connection:
-            try:  # test SSH connection
-                connection.open()
-                # connection.run('cd /')
-                #  Tests 2 and 3:
-                if not check_if_project_folder_exists_on_server(connection, configFromForm.projects_path):
-                    return f"Unable to find folder {configFromForm.projects_path} on the server {configFromForm.url}."
-                if not check_if_project_folder_exists_on_server(connection, configFromForm.mb_app_path):
-                    return f"Unable to find folder {configFromForm.mb_app_path} on the server {configFromForm.url}."
-
-            except Exception as e:
-                return ("Unable to connect to the server via SSH, please check your details. "
-                        f"Login, password are correct? Server address is correct?\n {str(e)}")
-
-        # Test n. 4
+        # Test 1: QGIS Servre-URL
         wmsServiceRequest = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities"
-        qgiServerUrl = (f'{self.protocolQgisServerCmbBox.currentText()}'
-                        f'{configFromForm.qgis_server_path}'
-                        f'{wmsServiceRequest}')
-        errorStr = self.testHttpConn(qgiServerUrl, 'Qgis Server', configFromForm.qgis_server_path)
+        qgisServerUrl = (f'{configFromForm.qgis_server_path}{wmsServiceRequest}')
+        errorStr = self.testHttpConn(qgisServerUrl, 'QGIS Servre')
         if errorStr:
-            return errorStr
+            failed_tests.append(errorStr)
+        else:
+            successful_tests.append("Connection to QGIS Servre was successful.")
 
-        # Test n. 5
-        mapbenderUrl = (f'{configFromForm.mb_protocol}'
-                        f'{configFromForm.mb_basis_url}')
-        errorStr = self.testHttpConn(mapbenderUrl, 'Mapbender', configFromForm.mb_basis_url)
+        # Test 2: Mapbender-URL
+        mapbenderUrl = configFromForm.mb_basis_url
+        errorStr = self.testHttpConn(mapbenderUrl, 'Mapbender')
         if errorStr:
-            return errorStr
+            failed_tests.append(errorStr)
+        else:
+            successful_tests.append("Connection to Mapbender was successful.")
 
-        return None
+        # Test 3: Token generation
+            try:
+                api_request = ApiRequest(configFromForm)
+                if not api_request._token_is_available():
+                    failed_tests.append("Token generation failed. Please check your credentials.")
+                else:
+                    successful_tests.extend(["Credentials are valid.","Token generation was successful."])
+                    # Test 4: ZIP upload
+                    test_zip_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../resources/test_upload/test_upload.zip'))
+                    status_code, upload_dir, error_zip_upload = api_request.uploadZip(test_zip_path)
+                    if status_code != 200:
+                        failed_tests.append(
+                            f"Server upload is not validated (status code {status_code}: {error_zip_upload}).")
+                    else:
+                        successful_tests.append(f"Server upload is validated. Upload directory on server: {upload_dir}.")
+            except Exception as e:
+                show_fail_box("Error", f"An error occurred during API initialization: {str(e)}.\nAPI tests "
+                                          f"(token generation, upload to server, etc.) could not be executed")
 
-    def testHttpConn(self, url: str, serverName: str, lastPart: str) -> Optional[str]:
-        # if not starts_with_single_slash_or_colon(lastPart):
-        #     return f"Is the address {url} correct?"
+        return "\n".join(failed_tests) if failed_tests else None, "\n".join(
+            successful_tests) if successful_tests else None
 
-        errorStr = f"Unable to connect to the {serverName} {url}. Is the address correct?"
+    def testHttpConn(self, url: str, serverName: str) -> Optional[str]:
+        """
+            Tests HTTP connectivity to a given server URL.
+
+            Args:
+                url (str): The URL to test.
+                serverName (str): The name of the server (for error messages).
+
+            Returns:
+                Optional[str]: Error message if connection fails, otherwise None.
+        """
+        errorStr = (f"Unable to connect to the {serverName}. Is the address correct and is the schema supplied (http)? "
+                    f"Please see QGIS2Mapbender logs for more information.")
         if not uri_validator(url):
-            return f"The URL {url} seems not valid. Is the address correct?"
-
+            return errorStr
         try:
             resp = requests.get(url)
-            if resp.status_code != 200:
-                return errorStr
+            if serverName != "Mapbender":
+                if resp.status_code != 200:
+                    content_type = resp.headers.get('Content-Type', '')
+                    if 'text/xml' not in content_type:
+                        return errorStr
+            else:
+                if resp.status_code != 200:
+                    return errorStr
         except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError) as error:
-            return f"{errorStr}\n {str(error)}"
+            QgsMessageLog.logMessage(f"Connection error: {error}", TAG, level=Qgis.MessageLevel.Critical)
+            return f"{errorStr}"
 
         return None
 
-    def getSavedServerConfig(self, server_config_name: str, mode: str):
+    def getSavedServerConfig(self, server_config_name: str, mode: str) -> None:
+        """
+            Loads a saved server configuration and populates the dialog fields.
+
+            Args:
+                server_config_name (str): The name of the saved configuration.
+                mode (str): The dialog mode ('edit' or 'duplicate').
+            Returns:
+                None
+        """
         server_config = ServerConfig.getParamsFromSettings(server_config_name)
         self.authcfg = server_config.authcfg
         if mode == 'edit':
             self.serverConfigNameLineEdit.setText(server_config_name)
-        self.serverPortLineEdit.setText(server_config.port)
-        self.serverAddressLineEdit.setText(server_config.url)
         self.userNameLineEdit.setText(server_config.username)
         self.passwordLineEdit.setText(server_config.password)
         if server_config.authcfg:
@@ -219,58 +240,79 @@ class ServerConfigDialog(BASE, WIDGET):
         else:
             self.authLabel.setText('')
             self.credentialsPlainTextRadioButton.setChecked(True)
-        self.qgisProjectPathLineEdit.setText(server_config.projects_path)
-        self.protocolQgisServerCmbBox.setCurrentText(server_config.qgis_server_protocol)
-        self.qgisServerPathLineEdit.setText(server_config.qgis_server_path)
-        self.mbPathLineEdit.setText(server_config.mb_app_path)
-        self.protocolMapbenderCmbBox.setCurrentText(server_config.mb_protocol)
+        self.qgisServerUrlLineEdit.setText(server_config.qgis_server_path)
         self.mbBasisUrlLineEdit.setText(server_config.mb_basis_url)
-        self.winPKFileWidget.lineEdit().setText(server_config.windows_pk_path)
-        self.binConsoleCommandLineEdit.setText(server_config.bin_console_command)
 
     def getServerConfigFromFormular(self) -> ServerConfig:
+        """
+            Collects the current form values and returns a ServerConfig object.
+
+            Returns:
+                ServerConfig: The server configuration from the form.
+        """
         return ServerConfig(
             name=self.serverConfigNameLineEdit.text(),
-            url=self.serverAddressLineEdit.text(),
-            port=self.serverPortLineEdit.text(),
             username=self.userNameLineEdit.text(),
             password=self.passwordLineEdit.text(),
-            projects_path=self.qgisProjectPathLineEdit.text(),
-            qgis_server_protocol=self.protocolQgisServerCmbBox.currentText(),
-            qgis_server_path=self.qgisServerPathLineEdit.text(),
-            mb_app_path=self.mbPathLineEdit.text(),
-            mb_protocol=self.protocolMapbenderCmbBox.currentText(),
+            qgis_server_path=self.qgisServerUrlLineEdit.text(),
             mb_basis_url=self.mbBasisUrlLineEdit.text(),
             authcfg=self.authcfg,
-            windows_pk_path=self.winPKFileWidget.lineEdit().text(),
-            bin_console_command=self.binConsoleCommandLineEdit.text()
         )
 
     def onChangeServerName(self, newValue) -> None:
-        # print('newValue', newValue)
-        self.qgisServerPathLineEdit.setPlaceholderText(newValue + '/cgi-bin/qgis_mapserv.fcgi')
+        """
+            Updates placeholder texts for server URL fields based on the server name.
+
+            Args:
+                newValue: The new server name.
+
+            Returns:
+                None
+        """
+        self.qgisServerUrlLineEdit.setPlaceholderText(newValue + '/cgi-bin/qgis_mapserv.fcgi')
         self.mbBasisUrlLineEdit.setPlaceholderText(newValue + '/mapbender/index.php/')
         self.validateFields()
 
     def validateFields(self) -> None:
-        self.dialogButtonBox.button(QDialogButtonBox.Save).setEnabled(
+        """
+            Enables or disables the Save and Test buttons based on mandatory field completion.
+
+            Returns:
+                None
+        """
+        self.dialogButtonBox.button(QDialogButtonBox.StandardButton.Save).setEnabled(
             all(field.text() for field in self.mandatoryFields))
 
         self.testButton.setEnabled(
             all(field.text() for field in self.mandatoryFields))
 
     def checkConfigName(self, config_name_from_formular) -> bool:
+        """
+        Checks if the server configuration name is unique or valid for editing.
+
+        Args:
+            config_name_from_formular: The configuration name from the form.
+
+        Returns:
+            bool: True if the name is valid, False otherwise.
+        """
         saved_config_names = list_qgs_settings_child_groups(f'{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection')
         if self.mode == 'edit' and config_name_from_formular not in saved_config_names:
             s = QSettings()
             s.remove(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.selected_server_config_name}")
             return True
         if config_name_from_formular in saved_config_names and self.mode != 'edit':
-            show_fail_box_ok('Failed', 'Server configuration name already exists')
+            show_fail_box('Failed', 'Server configuration name already exists')
             return False
         return True
 
-    def saveServerConfig(self):
+    def saveServerConfig(self) -> None:
+        """
+            Saves the current server configuration, either encrypted or plain text, and closes the dialog.
+
+            Returns:
+                None
+        """
         serverConfigFromFormular = self.getServerConfigFromFormular()
         if not self.checkConfigName(serverConfigFromFormular.name):
             return
@@ -278,10 +320,17 @@ class ServerConfigDialog(BASE, WIDGET):
             serverConfigFromFormular.save(encrypted=False)
         else:
             serverConfigFromFormular.save(encrypted=True)
-        show_succes_box_ok('Success', 'Server configuration successfully saved')
+        show_success_box('Success', 'Server configuration successfully saved')
         self.close()
         return
 
-    def onToggleCredential(self, isChecked: bool):
-        """QLabel <authLabel> is visible only if credentials are NOT saved as plain text"""
+    def onToggleCredential(self, isChecked: bool) -> None:
+        """
+             Shows or hides the authentication label depending on credential storage mode.
+
+             Args:
+                 isChecked (bool): True if plain text credentials are selected.
+            Returns:
+                None
+         """
         self.authLabel.setVisible(not isChecked)

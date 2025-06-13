@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>687</width>
-    <height>402</height>
+    <height>430</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -39,7 +39,7 @@
       <string/>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="serverUploadTab">
       <property name="accessibleName">
@@ -52,30 +52,92 @@
        <item>
         <widget class="QWidget" name="widget" native="true">
          <layout class="QGridLayout" name="gridLayout">
-          <item row="10" column="0">
-           <spacer name="verticalSpacer_3">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
+          <item row="10" column="0" colspan="3">
+           <widget class="QFrame" name="mbParamsFrame">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
             </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
             </property>
-           </spacer>
+            <layout class="QFormLayout" name="formLayout">
+             <item row="0" column="0">
+              <widget class="QLabel" name="mapbenderConfigLabel">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Mapbender parameters</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QRadioButton" name="cloneTemplateRadioButton">
+               <property name="text">
+                <string>Copy application</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QRadioButton" name="addToAppRadioButton">
+               <property name="text">
+                <string>Add to an existing application</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="mapbenderAppSlugLabel">
+               <property name="text">
+                <string>URL title</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0">
+              <widget class="QLabel" name="layerSetLabel">
+               <property name="text">
+                <string>Layerset (optional)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="1">
+              <widget class="QLineEdit" name="layerSetLineEdit"/>
+             </item>
+             <item row="3" column="1">
+              <widget class="QComboBox" name="mbSlugComboBox">
+               <property name="editable">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
           </item>
-          <item row="4" column="2">
-           <widget class="QComboBox" name="serverConfigComboBox"/>
-          </item>
-          <item row="8" column="0">
-           <widget class="QRadioButton" name="publishRadioButton">
+          <item row="4" column="0">
+           <widget class="QLabel" name="serverComboBoxLabel">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
-             <string>Publish in Mapbender app</string>
+             <string>Server:</string>
             </property>
-            <attribute name="buttonGroup">
-             <string notr="true">buttonGroup</string>
-            </attribute>
+           </widget>
+          </item>
+          <item row="9" column="0" colspan="3">
+           <widget class="QLabel" name="label_3">
+            <property name="font">
+             <font>
+              <italic>true</italic>
+             </font>
+            </property>
+            <property name="text">
+             <string>If the QGIS project already exists on the server, it will be overwritten</string>
+            </property>
            </widget>
           </item>
           <item row="3" column="0">
@@ -94,7 +156,27 @@
             </property>
            </widget>
           </item>
-          <item row="13" column="0">
+          <item row="11" column="0">
+           <spacer name="verticalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="14" column="2">
+           <widget class="QDialogButtonBox" name="buttonBoxTab1">
+            <property name="standardButtons">
+             <set>QDialogButtonBox::Close</set>
+            </property>
+           </widget>
+          </item>
+          <item row="14" column="0">
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
              <widget class="QPushButton" name="publishButton">
@@ -105,6 +187,11 @@
             </item>
             <item>
              <widget class="QPushButton" name="updateButton">
+              <property name="font">
+               <font>
+                <strikeout>false</strikeout>
+               </font>
+              </property>
               <property name="text">
                <string>Update</string>
               </property>
@@ -112,68 +199,23 @@
             </item>
            </layout>
           </item>
-          <item row="9" column="0" colspan="3">
-           <widget class="QFrame" name="mbParamsFrame">
-            <property name="frameShape">
-             <enum>QFrame::StyledPanel</enum>
+          <item row="8" column="2">
+           <widget class="QRadioButton" name="updateRadioButton">
+            <property name="font">
+             <font>
+              <strikeout>false</strikeout>
+             </font>
             </property>
-            <property name="frameShadow">
-             <enum>QFrame::Raised</enum>
+            <property name="text">
+             <string>Update service in Mapbender</string>
             </property>
-            <layout class="QFormLayout" name="formLayout">
-             <item row="0" column="0">
-              <widget class="QLabel" name="mapbenderConfigLabel">
-               <property name="font">
-                <font>
-                 <weight>75</weight>
-                 <bold>true</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>Mapbender parameters:</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QRadioButton" name="cloneTemplateRadioButton">
-               <property name="text">
-                <string>Clone template</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QRadioButton" name="addToAppRadioButton">
-               <property name="text">
-                <string>Add to existing application</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="0">
-              <widget class="QLabel" name="mapbenderAppSlugLabel">
-               <property name="text">
-                <string>URL title*</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="0">
-              <widget class="QLabel" name="layerSetLabel">
-               <property name="text">
-                <string>Layer set (optional)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="1">
-              <widget class="QLineEdit" name="layerSetLineEdit"/>
-             </item>
-             <item row="3" column="1">
-              <widget class="QComboBox" name="mbSlugComboBox">
-               <property name="editable">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroup</string>
+            </attribute>
            </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="QComboBox" name="serverConfigComboBox"/>
           </item>
           <item row="4" column="1">
            <widget class="QLabel" name="warningFirstServerLabel">
@@ -182,34 +224,19 @@
             </property>
            </widget>
           </item>
-          <item row="13" column="2">
-           <widget class="QDialogButtonBox" name="buttonBoxTab1">
-            <property name="standardButtons">
-             <set>QDialogButtonBox::Close</set>
+          <item row="8" column="0" colspan="2">
+           <widget class="QRadioButton" name="publishRadioButton">
+            <property name="font">
+             <font>
+              <strikeout>false</strikeout>
+             </font>
             </property>
-           </widget>
-          </item>
-          <item row="8" column="2">
-           <widget class="QRadioButton" name="updateRadioButton">
             <property name="text">
-             <string>Update Mapbender source</string>
+             <string>Publish in Mapbender application</string>
             </property>
             <attribute name="buttonGroup">
              <string notr="true">buttonGroup</string>
             </attribute>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="serverComboBoxLabel">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Server:</string>
-            </property>
            </widget>
           </item>
          </layout>

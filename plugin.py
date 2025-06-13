@@ -1,56 +1,76 @@
-
 import os
 from typing import Optional
-
-from PyQt5.QtWidgets import QAction
-from PyQt5.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QDockWidget
-
+from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtGui import QIcon
+from qgis.core import QgsMessageLog, Qgis
 from .main_dialog import MainDialog
 
-
 class Qgis2Mapbender:
+    """
+        Main plugin class for QGIS2Mapbender, handling GUI integration and dialog management.
+    """
     dlg: Optional[MainDialog] = None
-    def __init__(self, iface):
-        """Constructor of the QGIS2Mapbender."""
-        self.dlg = None
+
+    def __init__(self, iface) -> None:
+        """
+            Initializes the QGIS2Mapbender plugin.
+
+            Args:
+                iface: The QGIS interface instance.
+
+            Returns:
+                None
+        """
         self.iface = iface
+        self.dlg = None
+        self.action = None
+        self.toolbar = None
+        self.plugin_name = "QGIS2Mapbender"
+        self.web_menu = "&QGIS2Mapbender"
 
-    def initGui(self):
-        """Create action that will start plugin configuration"""
-        icon_path = os.path.join(os.path.dirname(__file__), 'resources/icons/qgis2mapbender.png')
-        self.action = QAction(QIcon(icon_path), 'QGIS2Mapbender', self.iface.mainWindow())
-        self.iface.addPluginToMenu("&QGIS2Mapbender", self.action)
-        self.iface.addToolBarIcon(self.action)
+    def initGui(self) -> None:
+        """
+            Initializes the plugin GUI, adding an action to the QGIS interface.
 
-        # Connect the action to the run method
-        self.action.triggered.connect(self.run)
+            Returns:
+                None
+        """
 
-    def unload(self):
-        self.iface.removePluginMenu("&QGIS2Mapbender", self.action)
-        self.iface.removeToolBarIcon(self.action)
-        if self.dlg:
-            self.dlg.close()
-            self.dlg = None
+        try:
+            icon_path = os.path.join(os.path.dirname(__file__), 'resources/icons/qgis2mapbender.png')
+            self.action = QAction(QIcon(icon_path), self.plugin_name, self.iface.mainWindow())
+            self.action.triggered.connect(self.run)
 
-    def openPyConsole(self):
-        """In Windows, check that the Python console is open. If not, it is open and will close soon.
-        This is a workaround for a problem that only occurs on Windows: The factory2 library sometimes throws an error
-        when it tries to library sometimes throws an error when it tries to write to standard output (console).
-        This will definitely be fixed when the new Mapbender API is released."""
-        if os.name == 'nt':
-            pythonConsole: QDockWidget = self.iface.mainWindow().findChild(QDockWidget, 'PythonConsole')
-            isOpenAtStart = True if pythonConsole and pythonConsole.isVisible() else False
+            self.iface.addPluginToWebMenu(self.web_menu, self.action)
+            self.iface.addToolBarIcon(self.action)
+        except Exception as e:
+            QgsMessageLog.logMessage(f"{self.plugin_name}: Error in initGui: {e}", self.plugin_name, level=Qgis.Critical)
 
-            # Open and close the console again
-            if not isOpenAtStart:
-                self.iface.actionShowPythonDialog().trigger()
-                self.iface.actionShowPythonDialog().trigger()
+    def unload(self) -> None:
+        """
+            Unloads the plugin, removing the action from the menu and toolbar.
 
-    def run(self):
-        """Plugin run method : launch the GUI."""
-        self.openPyConsole()
+            Returns:
+                None
+        """
+        try:
+            self.iface.removePluginWebMenu(self.web_menu, self.action)
+            self.iface.removeToolBarIcon(self.action)
+        except Exception as e:
+            QgsMessageLog.logMessage(f"{self.plugin_name}: Error in unload: {e}", self.plugin_name, level=Qgis.Critical)
 
-        self.dlg = MainDialog()
-        self.dlg.show()
-        # sys.exit(dlg.exec_())
+    def run(self) -> None:
+        """
+            Runs the plugin, showing the main dialog.
+
+            Returns:
+                None
+        """
+        try:
+            if not self.dlg:
+                self.dlg = MainDialog()
+            self.dlg.show()
+            self.dlg.raise_()
+            self.dlg.activateWindow()
+        except Exception as e:
+            QgsMessageLog.logMessage(f"{self.plugin_name}: Error in run: {e}", self.plugin_name, level=Qgis.Critical)
