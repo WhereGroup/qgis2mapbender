@@ -1,16 +1,16 @@
-
 import os
 from typing import Optional
 from qgis.PyQt.QtWidgets import QAction
 from qgis.PyQt.QtGui import QIcon
+from qgis.core import QgsMessageLog, Qgis
 from .main_dialog import MainDialog
-
 
 class Qgis2Mapbender:
     """
         Main plugin class for QGIS2Mapbender, handling GUI integration and dialog management.
     """
     dlg: Optional[MainDialog] = None
+
     def __init__(self, iface) -> None:
         """
             Initializes the QGIS2Mapbender plugin.
@@ -21,8 +21,12 @@ class Qgis2Mapbender:
             Returns:
                 None
         """
-        self.dlg = None
         self.iface = iface
+        self.dlg = None
+        self.action = None
+        self.toolbar = None
+        self.plugin_name = "QGIS2Mapbender"
+        self.web_menu = "&QGIS2Mapbender"
 
     def initGui(self) -> None:
         """
@@ -31,13 +35,16 @@ class Qgis2Mapbender:
             Returns:
                 None
         """
-        icon_path = os.path.join(os.path.dirname(__file__), 'resources/icons/qgis2mapbender.png')
-        self.action = QAction(QIcon(icon_path), 'QGIS2Mapbender', self.iface.mainWindow())
-        self.iface.addPluginToMenu("&Web", self.action)
-        self.iface.addToolBarIcon(self.action)
 
-        # Connect the action to the run method
-        self.action.triggered.connect(self.run)
+        try:
+            icon_path = os.path.join(os.path.dirname(__file__), 'resources/icons/qgis2mapbender.png')
+            self.action = QAction(QIcon(icon_path), self.plugin_name, self.iface.mainWindow())
+            self.action.triggered.connect(self.run)
+
+            self.iface.addPluginToWebMenu(self.web_menu, self.action)
+            self.iface.addToolBarIcon(self.action)
+        except Exception as e:
+            QgsMessageLog.logMessage(f"{self.plugin_name}: Error in initGui: {e}", self.plugin_name, level=Qgis.Critical)
 
     def unload(self) -> None:
         """
@@ -46,11 +53,11 @@ class Qgis2Mapbender:
             Returns:
                 None
         """
-        self.iface.removePluginMenu("&Web", self.action)
-        self.iface.removeToolBarIcon(self.action)
-        if self.dlg:
-            self.dlg.close()
-            self.dlg = None
+        try:
+            self.iface.removePluginWebMenu(self.web_menu, self.action)
+            self.iface.removeToolBarIcon(self.action)
+        except Exception as e:
+            QgsMessageLog.logMessage(f"{self.plugin_name}: Error in unload: {e}", self.plugin_name, level=Qgis.Critical)
 
     def run(self) -> None:
         """
@@ -59,6 +66,11 @@ class Qgis2Mapbender:
             Returns:
                 None
         """
-        self.dlg = MainDialog()
-        self.dlg.show()
-        # sys.exit(dlg.exec_())
+        try:
+            if not self.dlg:
+                self.dlg = MainDialog()
+            self.dlg.show()
+            self.dlg.raise_()
+            self.dlg.activateWindow()
+        except Exception as e:
+            QgsMessageLog.logMessage(f"{self.plugin_name}: Error in run: {e}", self.plugin_name, level=Qgis.Critical)
