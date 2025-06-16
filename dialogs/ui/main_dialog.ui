@@ -70,7 +70,7 @@
                 </font>
                </property>
                <property name="text">
-                <string>Mapbender parameters:</string>
+                <string>Mapbender parameters</string>
                </property>
               </widget>
              </item>
@@ -91,7 +91,7 @@
              <item row="3" column="0">
               <widget class="QLabel" name="mapbenderAppSlugLabel">
                <property name="text">
-                <string>URL title*</string>
+                <string>URL title</string>
                </property>
               </widget>
              </item>
@@ -136,7 +136,7 @@
              </font>
             </property>
             <property name="text">
-             <string>If the project already exists on the server, it will be overwritten</string>
+             <string>If the QGIS project already exists on the server, it will be overwritten</string>
             </property>
            </widget>
           </item>

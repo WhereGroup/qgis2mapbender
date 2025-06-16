@@ -1,14 +1,32 @@
 [general]
 name=QGIS2Mapbender
-author=Carmen Viesca, Paolo Favero, Peter Gipper, Christoph Welker
+author=Carmen Viesca, Paolo Favero, Peter Gipper, Christoph Welker, Dennis Davidsohn
 email=info@wheregroup.com
 description=QGIS plugin to populate Mapbender with WMS services from QGIS Server.
-about=This QGIS plugin exports your project as a QGIS Server WMS (Web Map Service) and publishes it in a Mapbender application (https://mapbender.org). System Requirements: Local requirements - (1) The QGIS project must be saved in the same folder as the data. (2) Install fabric2, e.g., using the QGIS console, if not already installed. Server requirements - (1) QGIS Server and Mapbender must be installed on your server. (2) Create at least one template application in Mapbender for cloning and publishing a new WMS or an application for publishing a new WMS. These applications should include a layer set named "main" (default layer set for new WMS) or a custom-named layer set (name must be specified in the plugin). Docker: QGIS Server and Mapbender can be run as Docker containers.
+about=This QGIS plugin exports your project as a QGIS Server WMS (Web Map Service) and publishes it in a Mapbender application (https://mapbender.org). 
+ System Requirements: 
+ 
+ - Please note that QGIS2Mapbender version >= 1.0.0 needs Mapbender version >= 4.1.2.
+
+ Local requirements 
+ - (1) The QGIS project must be saved in the same folder as the data. 
+ 
+ Server requirements 
+ - (1) QGIS Server and Mapbender must be installed on your server. 
+ - (2) Check the Apache and PHP settings in the README file
+ - (3) Define the Mapbender upload directory api_upload_dir
+ - (4) Create at least one template application in Mapbender for cloning and publishing a new WMS or an application for publishing a new WMS. These applications should include a layerset named "main" (default layerset for new WMS) or a custom named layerset (name can be specified in the plugin). 
+ - (4) User/Groups: All Mapbender users that should be authorized to use QGIS2Mapbender need special rights. 
+ 
+ You find a detailed documentation at https://github.com/WhereGroup/QGIS2Mapbender/blob/main/README.md
+ 
+ Docker: QGIS Server and Mapbender can be run as Docker containers. 
+
 homepage=https://github.com/WhereGroup/QGIS2Mapbender
 repository=https://github.com/WhereGroup/QGIS2Mapbender
 tracker=https://github.com/WhereGroup/QGIS2Mapbender/issues
 
-tags=mapbender,web,webmap,webmaps,webgis,publish,export,QGIS Server
+tags=mapbender, web, webmap, webmaps, webgis, publish, export, qgis server, wms, ogc wms, qgis, services, sdi, geoportal
 
 version=1.0.0
 qgisMinimumVersion=3.0
