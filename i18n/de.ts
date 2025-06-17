@@ -134,7 +134,7 @@
     <message>
         <location filename="../main_dialog.py" line="323"/>
         <source>Success</source>
-        <translation>Erfolg</translation>
+        <translation>Erfolgreich</translation>
     </message>
     <message>
         <location filename="../main_dialog.py" line="323"/>
@@ -272,13 +272,13 @@
                         &lt;a href=&quot;{link}&quot; style=&quot;color:black;&quot;&gt;{link}&lt;/a&gt;
                     </source>
         <translation>
-                        WMS existiert bereits als Mapbenderquelle und wurde erfolgreich aktualisiert: {name}
+                        WMS existiert bereits als Mapbender-Datenquelle und wurde erfolgreich aktualisiert: {name}
                         &lt;br&gt;&lt;br&gt;
                         Link zu Capabilities:
                         &lt;br&gt;&lt;br&gt;
                         &lt;a href=&quot;{wms_url}&quot; style=&quot;color:black;&quot;&gt;{wms_url}&lt;/a&gt;
                         &lt;br&gt;&lt;br&gt;
-                        Link zur Mapbender Anwendung:
+                        Link zur Mapbender-Anwendung:
                         &lt;br&gt;&lt;br&gt;
                         &lt;a href=&quot;{link}&quot; style=&quot;color:black;&quot;&gt;{link}&lt;/a&gt;
                     </translation>
@@ -303,7 +303,7 @@
                     &lt;br&gt;&lt;br&gt;
                     &lt;a href=&quot;{wms_url}&quot; style=&quot;color:black;&quot;&gt;{wms_url}&lt;/a&gt;
                     &lt;br&gt;&lt;br&gt;
-                    Link zur Mapbender Anwendung:
+                    Link zur Mapbender-Anwendung:
                     &lt;br&gt;&lt;br&gt;
                     &lt;a href=&quot;{link}&quot; style=&quot;color:black;&quot;&gt;{link}&lt;/a&gt;
                     </translation>
@@ -318,7 +318,7 @@
                     &lt;a href=&quot;{wms_url}&quot; style=&quot;color:black;&quot;&gt;{wms_url}&lt;/a&gt;
                     </source>
         <translation>
-                    WMS wurde erfolgreich im QGIS Server und in Mapbender Quelle(n) {name_source} aktualisiert
+                    QGIS Server WMS und Mapbender Datenquelle(n) {name_source} wurden erfolgreich aktualisiert
                     &lt;br&gt;&lt;br&gt;
                     Linkt zur Capabilities:
                     &lt;br&gt;&lt;br&gt;
@@ -361,12 +361,12 @@
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="181"/>
         <source>Connection to Mapbender was successful.</source>
-        <translation>Verbindung zu Mapbender war erfolgreich.</translation>
+        <translation>Die Verbindung zu Mapbender war erfolgreich.</translation>
     </message>
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="187"/>
         <source>Token generation failed. Please check your credentials.</source>
-        <translation>Token-erstellung fehlgeschlagen. Bitte überprüfen Sie ihre Anmeldedaten.</translation>
+        <translation>Token-Erstellung fehlgeschlagen. Bitte überprüfen Sie ihre Anmeldedaten.</translation>
     </message>
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="189"/>
@@ -377,7 +377,7 @@
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="194"/>
         <source>Server upload is not validated (status code {status_code}: {error_zip_upload}).</source>
-        <translation>Server uplaod ist nicht gültig (status code {status_code}: {error_zip_upload}).</translation>
+        <translation>Server upload ist nicht gültig (status code {status_code}: {error_zip_upload}).</translation>
     </message>
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="200"/>
