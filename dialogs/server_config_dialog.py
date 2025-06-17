@@ -67,7 +67,7 @@ class ServerConfigDialog(BASE, WIDGET):
             self.testButton.setEnabled(True)
 
         button_save = self.dialogButtonBox.button(QDialogButtonBox.StandardButton.Save)
-        button_save.setText('Save')
+        button_save.setText(self.tr('Save'))
 
         self.serverConfigNameLineEdit.setToolTip('Custom server configuration name without blank spaces')
         self.qgisServerUrlLineEdit.setToolTip('Example: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi')
@@ -102,7 +102,7 @@ class ServerConfigDialog(BASE, WIDGET):
         self.testButton.clicked.connect(self.execTests)
 
         button_cancel = self.dialogButtonBox.button(QDialogButtonBox.StandardButton.Cancel)
-        button_cancel.setText('Cancel')
+        button_cancel.setText(self.tr('Cancel'))
 
     def execTests(self) -> None:
         """
@@ -116,21 +116,36 @@ class ServerConfigDialog(BASE, WIDGET):
             errorMsg, successMsg  = self.execTestsImpl()
 
         if errorMsg and successMsg:
+            errors = ''.join(f'<li>{test}</li>' for test in errorMsg.splitlines())
+            successes = ''.join(f'<li>{test}</li>' for test in successMsg.splitlines())
+
             show_fail_box(
-                "Test Results",
-                f"<b>Failed Tests:</b><ul>{''.join(f'<li>{test}</li>' for test in errorMsg.splitlines())}</ul>"
-                f"<b>Successful Tests:</b><ul>{''.join(f'<li>{test}</li>' for test in successMsg.splitlines())}</ul>"
+                self.tr("Test Results"),
+                self.tr("<b>Failed Tests:</b><ul>{errors}</ul>"
+                "<b>Successful Tests:</b><ul>{successes}</ul>").format(
+                    errors=errors,
+                    successes=successes
+                )
             )
         elif errorMsg:
+            errors = ''.join(f'<li>{test}</li>' for test in errorMsg.splitlines())
+
             show_fail_box(
-                "Test Results",
-                f"<b>Failed Tests:</b><ul>{''.join(f'<li>{test}</li>' for test in errorMsg.splitlines())}</ul>"
+                self.tr("Test Results"),
+                self.tr("<b>Failed Tests:</b><ul>{errors}</ul>").format(
+                    errors=errors
+                )
             )
+
         elif successMsg:
+            successes = ''.join(f'<li>{test}</li>' for test in successMsg.splitlines())
+
             self.testButton.setIcon(self.checkedIcon)
             show_success_box(
-                "Test Results",
-                f"<b>All tests were successful:</b><ul>{''.join(f'<li>{test}</li>' for test in successMsg.splitlines())}</ul>"
+                self.tr("Test Results"),
+                self.tr("<b>All tests were successful:</b><ul>{successes}</ul>").format(
+                    successes=successes
+                )
             )
 
 
@@ -155,7 +170,7 @@ class ServerConfigDialog(BASE, WIDGET):
         if errorStr:
             failed_tests.append(errorStr)
         else:
-            successful_tests.append("Connection to QGIS Servre was successful.")
+            successful_tests.append(self.tr("Connection to QGIS Servre was successful."))
 
         # Test 2: Mapbender-URL
         mapbenderUrl = configFromForm.mb_basis_url
@@ -163,26 +178,33 @@ class ServerConfigDialog(BASE, WIDGET):
         if errorStr:
             failed_tests.append(errorStr)
         else:
-            successful_tests.append("Connection to Mapbender was successful.")
+            successful_tests.append(self.tr("Connection to Mapbender was successful."))
 
         # Test 3: Token generation
             try:
                 api_request = ApiRequest(configFromForm)
                 if not api_request._token_is_available():
-                    failed_tests.append("Token generation failed. Please check your credentials.")
+                    failed_tests.append(self.tr("Token generation failed. Please check your credentials."))
                 else:
-                    successful_tests.extend(["Credentials are valid.","Token generation was successful."])
+                    successful_tests.extend([self.tr("Credentials are valid.","Token generation was successful.")])
                     # Test 4: ZIP upload
                     test_zip_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../resources/test_upload/test_upload.zip'))
                     status_code, upload_dir, error_zip_upload = api_request.uploadZip(test_zip_path)
                     if status_code != 200:
                         failed_tests.append(
-                            f"Server upload is not validated (status code {status_code}: {error_zip_upload}).")
+                            self.tr("Server upload is not validated (status code {status_code}: {error_zip_upload}).").format(
+                            status_code=status_code,
+                            error_zip_upload=error_zip_upload
+                        ))
                     else:
-                        successful_tests.append(f"Server upload is validated. Upload directory on server: {upload_dir}.")
+                        successful_tests.append(self.tr("Server upload is validated. Upload directory on server: {upload_dir}.").format(
+                            upload_dir=upload_dir
+                        ))
             except Exception as e:
-                show_fail_box("Error", f"An error occurred during API initialization: {str(e)}.\nAPI tests "
-                                          f"(token generation, upload to server, etc.) could not be executed")
+                show_fail_box(self.tr("Error"), self.tr("An error occurred during API initialization: {e}.\nAPI tests "
+                                          "(token generation, upload to server, etc.) could not be executed").format(
+                    e=str(e)
+                ))
 
         return "\n".join(failed_tests) if failed_tests else None, "\n".join(
             successful_tests) if successful_tests else None
@@ -198,8 +220,10 @@ class ServerConfigDialog(BASE, WIDGET):
             Returns:
                 Optional[str]: Error message if connection fails, otherwise None.
         """
-        errorStr = (f"Unable to connect to the {serverName}. Is the address correct and is the schema supplied (http)? "
-                    f"Please see QGIS2Mapbender logs for more information.")
+        errorStr = (self.tr("Unable to connect to the {serverName}. Is the address correct and is the schema supplied (http)? "
+                    "Please see QGIS2Mapbender logs for more information.")).format(
+            serverName=serverName
+        )
         if not uri_validator(url):
             return errorStr
         try:
