@@ -393,8 +393,8 @@
         <location filename="../dialogs/server_config_dialog.py" line="204"/>
         <source>An error occurred during API initialization: {e}.
 API tests (token generation, upload to server, etc.) could not be executed</source>
-        <translation>Ein Fehler kam in der API Initialisierung auf: {e}.
-API tests (Token-erstellung, zum Server hochladen, etc.) konnten nicht ausgeführt werden</translation>
+        <translation>Ein Fehler trat bei der API-Initialisierung auf: {e}.
+API-Tests (Token-Erstellung, zum Server hochladen, etc.) konnten nicht ausgeführt werden</translation>
     </message>
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="223"/>
@@ -404,6 +404,11 @@ API tests (Token-erstellung, zum Server hochladen, etc.) konnten nicht ausgefüh
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="173"/>
         <source>Connection to QGIS Servre was successful.</source>
+        <translation type="obsolete">Verbindungsaufbau zum QGIS Server war erfolgreich.</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="173"/>
+        <source>Connection to QGIS Server was successful.</source>
         <translation>Verbindungsaufbau zum QGIS Server war erfolgreich.</translation>
     </message>
 </context>
@@ -432,7 +437,7 @@ API tests (Token-erstellung, zum Server hochladen, etc.) konnten nicht ausgefüh
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="87"/>
         <source>Add to an existing application</source>
-        <translation>zu einer bestehenden Anwendung hinzufügen</translation>
+        <translation>Zu einer bestehenden Anwendung hinzufügen</translation>
     </message>
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="94"/>
@@ -457,7 +462,7 @@ API tests (Token-erstellung, zum Server hochladen, etc.) konnten nicht ausgefüh
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="184"/>
         <source>Publish </source>
-        <translation>Veröffentlichen </translation>
+        <translation type="obsolete">Veröffentlichen </translation>
     </message>
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="196"/>
@@ -477,7 +482,7 @@ API tests (Token-erstellung, zum Server hochladen, etc.) konnten nicht ausgefüh
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="249"/>
         <source>Server configuration management</source>
-        <translation>Verwaltung der Serverkonfigurationen</translation>
+        <translation>Serverkonfigurationen</translation>
     </message>
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="270"/>
@@ -502,7 +507,7 @@ API tests (Token-erstellung, zum Server hochladen, etc.) konnten nicht ausgefüh
     <message>
         <location filename="../dialogs/ui/server_config_dialog.ui" line="89"/>
         <source>Save credentials encrypted in authentication database</source>
-        <translation>verschlüsselt in der Authentifizierungsdatenbank speichern</translation>
+        <translation>Verschlüsselt in der Authentifizierungsdatenbank speichern</translation>
     </message>
     <message>
         <location filename="../dialogs/ui/server_config_dialog.ui" line="101"/>
@@ -528,6 +533,11 @@ API tests (Token-erstellung, zum Server hochladen, etc.) konnten nicht ausgefüh
         <location filename="../dialogs/ui/server_config_dialog.ui" line="185"/>
         <source>Test connection</source>
         <translation>Verbindung testen</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/ui/main_dialog.ui" line="184"/>
+        <source>Publish</source>
+        <translation type="unfinished">Veröffentlichen</translation>
     </message>
 </context>
 </TS>

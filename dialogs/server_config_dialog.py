@@ -170,7 +170,7 @@ class ServerConfigDialog(BASE, WIDGET):
         if errorStr:
             failed_tests.append(errorStr)
         else:
-            successful_tests.append(self.tr("Connection to QGIS Servre was successful."))
+            successful_tests.append(self.tr("Connection to QGIS Server was successful."))
 
         # Test 2: Mapbender-URL
         mapbenderUrl = configFromForm.mb_basis_url
