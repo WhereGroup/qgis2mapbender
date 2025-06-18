@@ -100,7 +100,7 @@ class MainDialog(BASE, WIDGET):
         self.removeServerConfigButton.setIcon(QIcon(':/images/themes/default/mIconDelete.svg'))
         self.editServerConfigButton.setIcon(QIcon(':/images/themes/default/mActionAllEdits.svg'))
         server_table_headers = [self.tr("Name"),
-                                self.tr("Mapbender URL")]  # "QGIS Servre path" ,
+                                self.tr("Mapbender URL")]  # "QGIS Server path" ,
         self.serverTableWidget.setColumnCount(len(server_table_headers))
         self.serverTableWidget.setHorizontalHeaderLabels(server_table_headers)
         self.serverTableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
