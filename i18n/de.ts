@@ -422,7 +422,7 @@ API-Tests (Token-Erstellung, zum Server hochladen, etc.) konnten nicht ausgefüh
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="49"/>
         <source>Publish / Update QGIS-Project in Mapbender</source>
-        <translation>Veröffentlichen / Aktualisieren eines QGIS Projektes in Mapbender</translation>
+        <translation>Veröffentlichen / Aktualisieren eines QGIS-Projektes in Mapbender</translation>
     </message>
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="73"/>
@@ -537,7 +537,7 @@ API-Tests (Token-Erstellung, zum Server hochladen, etc.) konnten nicht ausgefüh
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="184"/>
         <source>Publish</source>
-        <translation type="unfinished">Veröffentlichen</translation>
+        <translation>Veröffentlichen</translation>
     </message>
 </context>
 </TS>
