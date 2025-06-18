@@ -176,7 +176,6 @@
         <location filename="../dialogs/server_config_dialog.py" line="189"/>
         <source>Credentials are valid.</source>
         <comment>Token generation was successful.</comment>
-        <translatorcomment>La generazione del token è avvenuta con successo.</translatorcomment>
         <translation>Le credenziali sono valide.</translation>
     </message>
     <message>

@@ -512,12 +512,12 @@ API-Tests (Token-Erstellung, zum Server hochladen, etc.) konnten nicht ausgefüh
     <message>
         <location filename="../dialogs/ui/server_config_dialog.ui" line="101"/>
         <source>QGIS Servre URL*</source>
-        <translation>QGIS Server URL</translation>
+        <translation type="obsolete">QGIS Server URL</translation>
     </message>
     <message>
         <location filename="../dialogs/ui/server_config_dialog.ui" line="118"/>
         <source>Mapbender base URL*</source>
-        <translation>Basis Mapbender URL</translation>
+        <translation type="unfinished">Mapbender Basis-URL</translation>
     </message>
     <message>
         <location filename="../dialogs/ui/server_config_dialog.ui" line="149"/>
@@ -538,6 +538,11 @@ API-Tests (Token-Erstellung, zum Server hochladen, etc.) konnten nicht ausgefüh
         <location filename="../dialogs/ui/main_dialog.ui" line="184"/>
         <source>Publish</source>
         <translation>Veröffentlichen</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/ui/server_config_dialog.ui" line="101"/>
+        <source>QGIS Server URL*</source>
+        <translation>QGIS Server URL</translation>
     </message>
 </context>
 </TS>

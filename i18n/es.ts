@@ -171,7 +171,6 @@
         <location filename="../dialogs/server_config_dialog.py" line="189"/>
         <source>Credentials are valid.</source>
         <comment>Token generation was successful.</comment>
-        <translatorcomment>La generación del token fue exitosa.</translatorcomment>
         <translation>Las credenciales son válidas.</translation>
     </message>
     <message>
@@ -307,7 +306,7 @@ No se pudieron ejecutar las pruebas de la API (generación de tokens, subida al 
     <message>
         <location filename="../dialogs/ui/server_config_dialog.ui" line="101"/>
         <source>QGIS Servre URL*</source>
-        <translation>URL del servidor QGIS*</translation>
+        <translation type="obsolete">URL del servidor QGIS*</translation>
     </message>
     <message>
         <location filename="../dialogs/ui/server_config_dialog.ui" line="118"/>
@@ -333,6 +332,11 @@ No se pudieron ejecutar las pruebas de la API (generación de tokens, subida al 
         <location filename="../dialogs/ui/main_dialog.ui" line="184"/>
         <source>Publish</source>
         <translation>Publicar</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/ui/server_config_dialog.ui" line="101"/>
+        <source>QGIS Server URL*</source>
+        <translation type="unfinished">URL del servidor QGIS*</translation>
     </message>
 </context>
 </TS>
