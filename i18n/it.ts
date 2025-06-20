@@ -36,7 +36,7 @@
     <message>
         <location filename="../main_dialog.py" line="143"/>
         <source>Close</source>
-        <translation>Vicino</translation>
+        <translation>Chiudi</translation>
     </message>
     <message>
         <location filename="../main_dialog.py" line="186"/>
@@ -71,7 +71,7 @@
     <message>
         <location filename="../main_dialog.py" line="364"/>
         <source>Please enter a valid Mapbender URL title</source>
-        <translation>Inserisci un titolo URL Mapbender valido</translation>
+        <translation>Inserisci un titolo valido all&apos;URL di Mapbender</translation>
     </message>
     <message>
         <location filename="../main_dialog.py" line="515"/>
@@ -91,7 +91,17 @@
                         &lt;br&gt;&lt;br&gt;
                         &lt;a href=&quot;{link}&quot; style=&quot;color:black;&quot;&gt;{link}&lt;/a&gt;
                     </source>
-        <translation type="unfinished"></translation>
+        <translation>
+                        WMS esisteva già come sorgente per Mapbender ed è stato ricaricato con successo: {name}
+                        &lt;br&gt;&lt;br&gt;
+                        Link al file Capabilities:
+                        &lt;br&gt;&lt;br&gt;
+                        &lt;a href=&quot;{wms_url}&quot; style=&quot;color:black;&quot;&gt;{wms_url}&lt;/a&gt;
+                        &lt;br&gt;&lt;br&gt;
+                        Collegamento all&apos;applicazione Mapbender:
+                        &lt;br&gt;&lt;br&gt;
+                       &lt;a href=&quot;{link}&quot; style=&quot;color:black;&quot;&gt;{link}&lt;/a&gt;
+                    </translation>
     </message>
     <message>
         <location filename="../main_dialog.py" line="466"/>
@@ -106,7 +116,17 @@
                     &lt;br&gt;&lt;br&gt;
                     &lt;a href=&quot;{link}&quot; style=&quot;color:black;&quot;&gt;{link}&lt;/a&gt;
                     </source>
-        <translation type="unfinished"></translation>
+        <translation>
+                    WMS creato con successo
+                    &lt;br&gt;&lt;br&gt;
+                    Link al file Capabilities:
+                    &lt;br&gt;&lt;br&gt;
+                    &lt;a href=&quot;{wms_url}&quot; style=&quot;color:black;&quot;&gt;{wms_url}&lt;/a&gt;
+                    &lt;br&gt;&lt;br&gt;
+                    Collegamento all&apos;applicazione Mapbender:
+                    &lt;br&gt;&lt;br&gt;
+                    &lt;a href=&quot;{link}&quot; style=&quot;color:black;&quot;&gt;{link}&lt;/a&gt;
+                    </translation>
     </message>
     <message>
         <location filename="../main_dialog.py" line="530"/>
@@ -122,7 +142,13 @@
                     &lt;br&gt;&lt;br&gt;
                     &lt;a href=&quot;{wms_url}&quot; style=&quot;color:black;&quot;&gt;{wms_url}&lt;/a&gt;
                     </source>
-        <translation type="unfinished"></translation>
+        <translation>
+                    WMS aggiornato con successo in QGIS Server e in Mapbender source(s): {name_source}
+                    &lt;br&gt;&lt;br&gt;
+                    Collegamento al file di Capabilities:
+                    &lt;br&gt;&lt;br&gt;
+                    &lt;a href=&quot;{wms_url}&quot; style=&quot;color:black;&quot;&gt;{wms_url}&lt;/a&gt;
+                    </translation>
     </message>
 </context>
 <context>
@@ -135,7 +161,7 @@
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="105"/>
         <source>Cancel</source>
-        <translation>Cancellare</translation>
+        <translation>Cancella</translation>
     </message>
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="144"/>
@@ -203,7 +229,7 @@ Impossibile eseguire i test API (generazione di token, caricamento sul server, e
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="223"/>
         <source>Unable to connect to the {serverName}. Is the address correct and is the schema supplied (http)? Please see QGIS2Mapbender logs for more information.</source>
-        <translation>Impossibile connettersi a {serverName}. L&apos;indirizzo è corretto e lo schema fornito (http)? Consultare i log di QGIS2Mapbender per ulteriori informazioni.</translation>
+        <translation>Impossibile connettersi a {serverName}. L&apos;indirizzo è corretto e lo schema è stato fornito (http)? Consulta i log di QGIS2Mapbender per ulteriori informazioni.</translation>
     </message>
 </context>
 <context>
@@ -256,12 +282,12 @@ Impossibile eseguire i test API (generazione di token, caricamento sul server, e
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="184"/>
         <source>Publish</source>
-        <translation>Pubblicare</translation>
+        <translation>Pubblica</translation>
     </message>
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="196"/>
         <source>Update</source>
-        <translation>Aggiornamento</translation>
+        <translation>Aggiorna</translation>
     </message>
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="210"/>
@@ -281,7 +307,7 @@ Impossibile eseguire i test API (generazione di token, caricamento sul server, e
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="270"/>
         <source>Servers</source>
-        <translation>erver</translation>
+        <translation>Server</translation>
     </message>
     <message>
         <location filename="../dialogs/ui/server_config_dialog.ui" line="50"/>
@@ -326,7 +352,7 @@ Impossibile eseguire i test API (generazione di token, caricamento sul server, e
     <message>
         <location filename="../dialogs/ui/server_config_dialog.ui" line="185"/>
         <source>Test connection</source>
-        <translation>Testare la connessione</translation>
+        <translation>Testa la connessione</translation>
     </message>
 </context>
 </TS>
