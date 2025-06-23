@@ -331,75 +331,75 @@
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="70"/>
         <source>Save</source>
-        <translation type="obsolete">Speichern</translation>
+        <translation>Speichern</translation>
     </message>
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="105"/>
         <source>Cancel</source>
-        <translation type="obsolete">Abbrechen</translation>
+        <translation>Abbrechen</translation>
     </message>
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="144"/>
         <source>Test Results</source>
-        <translation type="obsolete">Testergebnisse</translation>
+        <translation>Testergebnisse</translation>
     </message>
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="122"/>
         <source>&lt;b&gt;Failed Tests:&lt;/b&gt;&lt;ul&gt;{errors}&lt;/ul&gt;&lt;b&gt;Successful Tests:&lt;/b&gt;&lt;ul&gt;{successes}&lt;/ul&gt;</source>
-        <translation type="obsolete">&lt;b&gt;Fehlgeschlagene Tests:&lt;/b&gt;&lt;ul&gt;{errors}&lt;/ul&gt;&lt;b&gt;Erfolgreiche Tests:&lt;/b&gt;&lt;ul&gt;{successes}&lt;/ul&gt;</translation>
+        <translation>&lt;b&gt;Fehlgeschlagene Tests:&lt;/b&gt;&lt;ul&gt;{errors}&lt;/ul&gt;&lt;b&gt;Erfolgreiche Tests:&lt;/b&gt;&lt;ul&gt;{successes}&lt;/ul&gt;</translation>
     </message>
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="133"/>
         <source>&lt;b&gt;Failed Tests:&lt;/b&gt;&lt;ul&gt;{errors}&lt;/ul&gt;</source>
-        <translation type="obsolete">&lt;b&gt;Fehlgeschlagene Tests:&lt;/b&gt;&lt;ul&gt;{errors}&lt;/ul&gt;</translation>
+        <translation>&lt;b&gt;Fehlgeschlagene Tests:&lt;/b&gt;&lt;ul&gt;{errors}&lt;/ul&gt;</translation>
     </message>
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="144"/>
         <source>&lt;b&gt;All tests were successful:&lt;/b&gt;&lt;ul&gt;{successes}&lt;/ul&gt;</source>
-        <translation type="obsolete">&lt;b&gt;Alle Tests waren erfolgreich:&lt;/b&gt;&lt;ul&gt;{successes}&lt;/ul&gt;</translation>
+        <translation>&lt;b&gt;Alle Tests waren erfolgreich:&lt;/b&gt;&lt;ul&gt;{successes}&lt;/ul&gt;</translation>
     </message>
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="181"/>
         <source>Connection to Mapbender was successful.</source>
-        <translation type="obsolete">Die Verbindung zu Mapbender war erfolgreich.</translation>
+        <translation>Die Verbindung zu Mapbender war erfolgreich.</translation>
     </message>
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="187"/>
         <source>Token generation failed. Please check your credentials.</source>
-        <translation type="obsolete">Token-Erstellung fehlgeschlagen. Bitte überprüfen Sie ihre Anmeldedaten.</translation>
+        <translation>Token-Erstellung fehlgeschlagen. Bitte überprüfen Sie ihre Anmeldedaten.</translation>
     </message>
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="189"/>
         <source>Credentials are valid.</source>
         <comment>Token generation was successful.</comment>
-        <translation type="obsolete">Anmeldedaten sind gültig.</translation>
+        <translation>Anmeldedaten sind gültig.</translation>
     </message>
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="194"/>
         <source>Server upload is not validated (status code {status_code}: {error_zip_upload}).</source>
-        <translation type="obsolete">Server upload ist nicht gültig (status code {status_code}: {error_zip_upload}).</translation>
+        <translation>Server upload ist nicht gültig (status code {status_code}: {error_zip_upload}).</translation>
     </message>
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="200"/>
         <source>Server upload is validated. Upload directory on server: {upload_dir}.</source>
-        <translation type="obsolete">Server upload ist gültig. Ordner wird auf Server hochgeladen: {upload_dir}.</translation>
+        <translation>Server upload ist gültig. Ordner wird auf Server hochgeladen: {upload_dir}.</translation>
     </message>
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="204"/>
         <source>Error</source>
-        <translation type="obsolete">Fehler</translation>
+        <translation>Fehler</translation>
     </message>
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="204"/>
         <source>An error occurred during API initialization: {e}.
 API tests (token generation, upload to server, etc.) could not be executed</source>
-        <translation type="obsolete">Ein Fehler trat bei der API-Initialisierung auf: {e}.
+        <translation>Ein Fehler trat bei der API-Initialisierung auf: {e}.
 API-Tests (Token-Erstellung, zum Server hochladen, etc.) konnten nicht ausgeführt werden</translation>
     </message>
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="223"/>
         <source>Unable to connect to the {serverName}. Is the address correct and is the schema supplied (http)? Please see QGIS2Mapbender logs for more information.</source>
-        <translation type="obsolete">Verbindung zum {serverName} konnte nicht hergestellt werden. Ist die Adresse korrekt und wurde das Schema (http) angegeben? Weitere Informationen finden Sie in den QGIS2Mapbender-Protokollen.</translation>
+        <translation>Verbindung zum {serverName} konnte nicht hergestellt werden. Ist die Adresse korrekt und wurde das Schema (http) angegeben? Weitere Informationen finden Sie in den QGIS2Mapbender-Protokollen.</translation>
     </message>
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="173"/>
@@ -409,7 +409,7 @@ API-Tests (Token-Erstellung, zum Server hochladen, etc.) konnten nicht ausgefüh
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="173"/>
         <source>Connection to QGIS Server was successful.</source>
-        <translation type="obsolete">Verbindungsaufbau zum QGIS Server war erfolgreich.</translation>
+        <translation>Verbindungsaufbau zum QGIS Server war erfolgreich.</translation>
     </message>
 </context>
 <context>
@@ -517,7 +517,7 @@ API-Tests (Token-Erstellung, zum Server hochladen, etc.) konnten nicht ausgefüh
     <message>
         <location filename="../dialogs/ui/server_config_dialog.ui" line="118"/>
         <source>Mapbender base URL*</source>
-        <translation type="unfinished">Mapbender Basis-URL</translation>
+        <translation>Mapbender Basis-URL</translation>
     </message>
     <message>
         <location filename="../dialogs/ui/server_config_dialog.ui" line="149"/>
