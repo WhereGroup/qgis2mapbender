@@ -1,5 +1,6 @@
 import os
 from typing import Optional
+from PyQt5.QtCore import QTranslator, QCoreApplication, QSettings
 from qgis.PyQt.QtWidgets import QAction
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsMessageLog, Qgis
@@ -21,6 +22,8 @@ class Qgis2Mapbender:
             Returns:
                 None
         """
+        self.translator = None
+        self.plugin_dir = None
         self.iface = iface
         self.dlg = None
         self.action = None
@@ -43,6 +46,18 @@ class Qgis2Mapbender:
 
             self.iface.addPluginToWebMenu(self.web_menu, self.action)
             self.iface.addToolBarIcon(self.action)
+
+            self.plugin_dir = os.path.dirname(__file__)
+            locale = QSettings().value("locale/userLocale")[0:2]
+            locale_path = os.path.join(self.plugin_dir,
+                                       'i18n',
+                                       f'{locale}.qm')
+
+            if os.path.exists(locale_path):
+                self.translator = QTranslator()
+                self.translator.load(locale_path)
+                QCoreApplication.installTranslator(self.translator)
+
         except Exception as e:
             QgsMessageLog.logMessage(f"{self.plugin_name}: Error in initGui: {e}", self.plugin_name, level=Qgis.Critical)
 

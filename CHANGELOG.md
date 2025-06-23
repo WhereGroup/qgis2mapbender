@@ -1,3 +1,8 @@
+## v1.1.0
+
+### Features:
+* Added german, spanish and italian translations.
+
 ## v1.0.0
 
 ### Features:
