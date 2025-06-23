@@ -16,17 +16,17 @@
     <message>
         <location filename="../main_dialog.py" line="110"/>
         <source>Add server configuration</source>
-        <translation>Añadir configuración del servidor</translation>
+        <translation>Añadir configuración de servidor</translation>
     </message>
     <message>
         <location filename="../main_dialog.py" line="111"/>
         <source>Duplicate selected server configuration</source>
-        <translation>Duplicar la configuración del servidor seleccionado</translation>
+        <translation>Duplicar la configuración de servidor seleccionado</translation>
     </message>
     <message>
         <location filename="../main_dialog.py" line="112"/>
         <source>Edit selected server configuration</source>
-        <translation>Editar la configuración del servidor seleccionado</translation>
+        <translation>Editar la configuración de servidor seleccionado</translation>
     </message>
     <message>
         <location filename="../main_dialog.py" line="113"/>
@@ -41,7 +41,7 @@
     <message>
         <location filename="../main_dialog.py" line="186"/>
         <source>Please add a server</source>
-        <translation>Añadir un servidor por favor</translation>
+        <translation>Por favor añada un servidor</translation>
     </message>
     <message>
         <location filename="../main_dialog.py" line="191"/>
@@ -51,12 +51,12 @@
     <message>
         <location filename="../main_dialog.py" line="317"/>
         <source>Are you sure you want to remove the server configuration &apos;{selected_server_config}&apos;?</source>
-        <translation>¿Está seguro de que desea eliminar la configuración del servidor &apos;{selected_server_config}&apos;?</translation>
+        <translation>¿Está seguro de que desea eliminar la configuración de servidor &apos;{selected_server_config}&apos;?</translation>
     </message>
     <message>
         <location filename="../main_dialog.py" line="323"/>
         <source>Success</source>
-        <translation>Éxito</translation>
+        <translation>Exitoso</translation>
     </message>
     <message>
         <location filename="../main_dialog.py" line="323"/>
@@ -91,7 +91,17 @@
                         &lt;br&gt;&lt;br&gt;
                         &lt;a href=&quot;{link}&quot; style=&quot;color:black;&quot;&gt;{link}&lt;/a&gt;
                     </source>
-        <translation type="unfinished"></translation>
+        <translation>
+                        El servicío WMS ya existía como fuente en Mapbender y ha sido acutalizado exitosamente: {name}
+                        &lt;br&gt;&lt;br&gt;
+                        Link a Capabilities:
+                        &lt;br&gt;&lt;br&gt;
+                        &lt;a href=&quot;{wms_url}&quot; style=&quot;color:black;&quot;&gt;{wms_url}&lt;/a&gt;
+                        &lt;br&gt;&lt;br&gt;
+                        Link a la aplicación de Mapbender:
+                        &lt;br&gt;&lt;br&gt;
+                        &lt;a href=&quot;{link}&quot; style=&quot;color:black;&quot;&gt;{link}&lt;/a&gt;
+                    </translation>
     </message>
     <message>
         <location filename="../main_dialog.py" line="466"/>
@@ -106,7 +116,17 @@
                     &lt;br&gt;&lt;br&gt;
                     &lt;a href=&quot;{link}&quot; style=&quot;color:black;&quot;&gt;{link}&lt;/a&gt;
                     </source>
-        <translation type="unfinished"></translation>
+        <translation>
+                    El servicio WMS creado exitosamente
+                    &lt;br&gt;&lt;br&gt;
+                    Link a Capabilities:
+                    &lt;br&gt;&lt;br&gt;
+                    &lt;a href=&quot;{wms_url}&quot; style=&quot;color:black;&quot;&gt;{wms_url}&lt;/a&gt;
+                    &lt;br&gt;&lt;br&gt;
+                    Link a la aplicación de Mapbender:
+                    &lt;br&gt;&lt;br&gt;
+                    &lt;a href=&quot;{link}&quot; style=&quot;color:black;&quot;&gt;{link}&lt;/a&gt;
+                    </translation>
     </message>
     <message>
         <location filename="../main_dialog.py" line="530"/>
@@ -122,7 +142,13 @@
                     &lt;br&gt;&lt;br&gt;
                     &lt;a href=&quot;{wms_url}&quot; style=&quot;color:black;&quot;&gt;{wms_url}&lt;/a&gt;
                     </source>
-        <translation type="unfinished"></translation>
+        <translation>
+                    WMS se actualizó correctamente en QGIS Server y se actualizó correctamente en Mapbender fuente(s): {name_source}
+                    &lt;br&gt;&lt;br&gt;
+                    Link a Capabilities:
+                    &lt;br&gt;&lt;br&gt;
+                    &lt;a href=&quot;{wms_url}&quot; style=&quot;color:black;&quot;&gt;{wms_url}&lt;/a&gt;
+                    </translation>
     </message>
 </context>
 <context>
@@ -221,12 +247,12 @@ No se pudieron ejecutar las pruebas de la API (generación de tokens, subida al 
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="73"/>
         <source>Mapbender parameters</source>
-        <translation>Parámetros del Mapbender</translation>
+        <translation>Parámetros de Mapbender</translation>
     </message>
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="80"/>
         <source>Copy application</source>
-        <translation>Copiar Aplicación</translation>
+        <translation>Copiar aplicación</translation>
     </message>
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="87"/>
@@ -261,7 +287,7 @@ No se pudieron ejecutar las pruebas de la API (generación de tokens, subida al 
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="196"/>
         <source>Update</source>
-        <translation>Acutalizar</translation>
+        <translation>Actualizar</translation>
     </message>
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="210"/>
@@ -271,7 +297,7 @@ No se pudieron ejecutar las pruebas de la API (generación de tokens, subida al 
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="235"/>
         <source>Publish in Mapbender application</source>
-        <translation>Publicar la aplicación de Mapbender</translation>
+        <translation>Publicar en aplicación de Mapbender</translation>
     </message>
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="249"/>
@@ -336,7 +362,7 @@ No se pudieron ejecutar las pruebas de la API (generación de tokens, subida al 
     <message>
         <location filename="../dialogs/ui/server_config_dialog.ui" line="101"/>
         <source>QGIS Server URL*</source>
-        <translation type="unfinished">URL del servidor QGIS*</translation>
+        <translation>URL del servidor QGIS*</translation>
     </message>
 </context>
 </TS>
