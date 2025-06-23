@@ -51,7 +51,7 @@
     <message>
         <location filename="../main_dialog.py" line="317"/>
         <source>Are you sure you want to remove the server configuration &apos;{selected_server_config}&apos;?</source>
-        <translation type="obsolete">Wollen Sie die Serverkonfiguration &apos;{selected_server_config}&apos; wirklich entfernen?</translation>
+        <translation type="obsolete">Wollen Sie die Serverkonfiguration '{selected_server_config}' wirklich entfernen?</translation>
     </message>
     <message>
         <location filename="../main_dialog.py" line="323"/>
@@ -164,7 +164,7 @@
     <message>
         <location filename="../main_dialog.py" line="317"/>
         <source>Are you sure you want to remove the server configuration &apos;{selected_server_config}&apos;?</source>
-        <translation>Wollen Sie die Serverkonfiguration &apos;{selected_server_config}&apos; wirklich entfernen?</translation>
+        <translation>Wollen Sie die Serverkonfiguration '{selected_server_config}' wirklich entfernen?</translation>
     </message>
     <message>
         <location filename="../main_dialog.py" line="440"/>
@@ -180,7 +180,7 @@
                     &lt;a href = &quot;{server_config.mb_basis_url}/application/{slug}&quot; style = &quot;color: black; &quot; &gt; {server_config.mb_basis_url}/application/{slug}&lt;/a&gt;
                     </source>
         <translation type="obsolete">
-                    WMS existierte bereits als Mapbenderquelle and wurde erfolgreich neu geladen: {&apos;, &apos;.join(f&apos;#{i}&apos; for i in source_ids if i)}
+                    WMS existierte bereits als Mapbenderquelle and wurde erfolgreich neu geladen: {', '.join(f'#{i}' for i in source_ids if i)}
                    &lt;br&gt;&lt;br&gt;
                    Link zur Capabilities:
                    &lt;br&gt;&lt;br&gt;
@@ -226,7 +226,7 @@
                     &lt;a href = &quot;{wms_url}&quot; style = &quot;color: black; &quot; &gt; {wms_url} &lt;/a&gt;
                     </source>
         <translation type="obsolete">
-                    WMS wurde erfolgreich in QGIS Server und in Mapbenderquelle(n) {&apos;, &apos;.join(f&apos;#{i}&apos; for i in source_ids if i)} aktualisiert
+                    WMS wurde erfolgreich in QGIS Server und in Mapbenderquelle(n) {', '.join(f'#{i}' for i in source_ids if i)} aktualisiert
                     &lt;br&gt;&lt;br&gt;
                     Link zu Capabilities:
                     &lt;br&gt;&lt;br&gt;
@@ -247,7 +247,7 @@
                     &lt;a href = &quot;{link}&quot; style = &quot;color: black; &quot; &gt; {link}&lt;/a&gt;
                     </source>
         <translation type="obsolete">
-                    WMS existierte bereits als Mapbenderquelle and wurde erfolgreich neu geladen: {&apos;, &apos;.join(f&apos;#{i}&apos; for i in source_ids if i)}
+                    WMS existierte bereits als Mapbenderquelle and wurde erfolgreich neu geladen: {', '.join(f'#{i}' for i in source_ids if i)}
                    &lt;br&gt;&lt;br&gt;
                    Link zur Capabilities:
                    &lt;br&gt;&lt;br&gt;
@@ -492,7 +492,7 @@ API-Tests (Token-Erstellung, zum Server hochladen, etc.) konnten nicht ausgefüh
     <message>
         <location filename="../dialogs/ui/server_config_dialog.ui" line="50"/>
         <source>Save credentials as plain text          </source>
-        <translation>als &apos;plain text&apos; speichern          </translation>
+        <translation>als 'plain text' speichern          </translation>
     </message>
     <message>
         <location filename="../dialogs/ui/server_config_dialog.ui" line="57"/>
