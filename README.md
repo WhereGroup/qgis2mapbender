@@ -33,7 +33,7 @@ Alternatively, a release can be downloaded here. The zipped folder can be instal
 
   - **upload_max_filesize** - the maximum size of an uploaded file. 
   - **post_max_size** - maximum size of all data sent via a POST request, its value should be equal to or greater than upload_max_filesize.
-  - **max_execution_tine** - this sets the maximum time in seconds a script is allowed to parse input data.
+  - **max_execution_time** - this sets the maximum time in seconds a script is allowed to parse input data.
 
 
 **Mapbender**
