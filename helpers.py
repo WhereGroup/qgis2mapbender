@@ -1,15 +1,11 @@
-import logging
-import re
-from typing import Optional
 from urllib.parse import urlparse
 
 from PyQt5.QtWidgets import QApplication
 from qgis.PyQt.QtCore import Qt
-from decorator import contextmanager
+from contextlib import contextmanager
 
 from qgis.PyQt.QtGui import QPixmap
 from qgis.PyQt.QtWidgets import QMessageBox
-from qgis._core import QgsMessageLog, Qgis
 from qgis.core import QgsApplication, QgsProject, QgsSettings
 
 from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
