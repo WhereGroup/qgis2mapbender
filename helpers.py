@@ -8,7 +8,7 @@ from qgis.PyQt.QtGui import QPixmap
 from qgis.PyQt.QtWidgets import QMessageBox
 from qgis.core import QgsApplication, QgsProject, QgsSettings
 
-from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
+from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY
 
 from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout, QLabel, QDialogButtonBox
 
