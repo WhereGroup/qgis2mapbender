@@ -153,9 +153,9 @@ class MainDialog(BASE, WIDGET):
         """
         server_config_list = list_qgs_settings_child_groups(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection")
         self.serverTableWidget.setRowCount(len(server_config_list))
-        for i, (name) in enumerate(server_config_list):
-            item_name = QTableWidgetItem(name)
-            item_name.setText(server_config_list[i])
+        for i, name in enumerate(server_config_list):
+            server_config = ServerConfig.getParamsFromSettings(name)
+            item_name = QTableWidgetItem(server_config.name)
             self.serverTableWidget.setItem(i, 0, item_name)
 
             server_config = ServerConfig.getParamsFromSettings(name)
@@ -186,11 +186,17 @@ class MainDialog(BASE, WIDGET):
             self.serverConfigComboBox.clear()
             return
 
+        # fetch the original names for each config
+        original_names = []
+        for key in server_config_list:
+            config = ServerConfig.getParamsFromSettings(key)
+            original_names.append(config.name)  # .name is original name
+
         # Update server configuration-combobox
         self.serverComboBoxLabel.setText("Server")
         self.warningFirstServerLabel.hide()
         self.serverConfigComboBox.clear()
-        self.serverConfigComboBox.addItems(server_config_list)
+        self.serverConfigComboBox.addItems(original_names)
 
     def update_slug_combo_box(self) -> None:
         """
