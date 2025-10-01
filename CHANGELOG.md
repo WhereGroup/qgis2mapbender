@@ -5,7 +5,7 @@
 
 ### Bugfixes:
 * Server configuration name with "/" in name deletes whole server configuration ([#PR27](https://github.com/WhereGroup/qgis2mapbender/pull/27))
-* Fix import contextmanager and clean imports (PyQt5, _core) [#PR26]((https://github.com/WhereGroup/qgis2mapbender/pull/26))
+* Fix import contextmanager and clean imports (PyQt5, _core) ([#PR26](https://github.com/WhereGroup/qgis2mapbender/pull/26))
 
 ## v1.0.0
 
