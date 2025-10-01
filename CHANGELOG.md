@@ -1,7 +1,7 @@
 ## v1.1.0
 
 ### Features:
-* Added german, spanish and italian translations.
+* Added german, spanish and italian translations ([#PR27](https://github.com/WhereGroup/qgis2mapbender/pull/27))
 
 ## v1.0.0
 
