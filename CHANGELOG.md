@@ -1,7 +1,7 @@
 ## v1.1.0
 
 ### Features:
-* Added german, spanish and italian translations ([#PR28]([https://github.com/WhereGroup/qgis2mapbender/pull/27](https://github.com/WhereGroup/qgis2mapbender/pull/28)))
+* Added german, spanish and italian translations ([#PR28](https://github.com/WhereGroup/qgis2mapbender/pull/28))
 
 ### Bugfixes:
 * Server configuration name with "/" in name deletes whole server configuration ([#PR27](https://github.com/WhereGroup/qgis2mapbender/pull/27))
