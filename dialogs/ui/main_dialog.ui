@@ -181,7 +181,7 @@
             <item>
              <widget class="QPushButton" name="publishButton">
               <property name="text">
-               <string>Publish </string>
+               <string>Publish</string>
               </property>
              </widget>
             </item>
