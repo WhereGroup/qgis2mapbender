@@ -181,7 +181,7 @@
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="144"/>
         <source>&lt;b&gt;All tests were successful:&lt;/b&gt;&lt;ul&gt;{successes}&lt;/ul&gt;</source>
-        <translation>&lt;b&gt;Todas las pruebas fueron exitosas:&lt;/b&gt;&lt;ul&gt;{éxitos}&lt;/ul&gt;</translation>
+        <translation>&lt;b&gt;Todas las pruebas fueron exitosas:&lt;/b&gt;&lt;ul&gt;{successes}&lt;/ul&gt;</translation>
     </message>
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="181"/>
