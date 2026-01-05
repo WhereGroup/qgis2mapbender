@@ -1,3 +1,9 @@
+## next version
+
+### Features:
+* Added ukrainian translations ([#PR34](https://github.com/WhereGroup/qgis2mapbender/pull/34))
+
+
 ## v1.1.0
 
 ### Features:
