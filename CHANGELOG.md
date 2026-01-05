@@ -1,3 +1,9 @@
+## next version
+
+### Features:
+* Added Portuguese translations ([#PR31](https://github.com/WhereGroup/qgis2mapbender/pull/31))
+
+
 ## v1.1.0
 
 ### Features:
