@@ -1,3 +1,9 @@
+## next version
+
+### Features:
+* Added Polish translations ([#PR32](https://github.com/WhereGroup/qgis2mapbender/pull/32))
+
+
 ## v1.1.0
 
 ### Features:
