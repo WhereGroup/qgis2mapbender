@@ -1,3 +1,9 @@
+## next version
+
+### Features:
+* Added Dutch translations ([#PR33](https://github.com/WhereGroup/qgis2mapbender/pull/33))
+
+
 ## v1.1.0
 
 ### Features:
