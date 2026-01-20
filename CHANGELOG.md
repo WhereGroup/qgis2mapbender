@@ -1,3 +1,9 @@
+## next version
+
+### Features:
+* Add Information about how to create translations to CONTRIBUTE.md ([#PR35](https://github.com/WhereGroup/qgis2mapbender/pull/35))
+
+
 ## v1.1.0
 
 ### Features:
