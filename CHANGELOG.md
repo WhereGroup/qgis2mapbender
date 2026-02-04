@@ -2,6 +2,7 @@
 
 ### Features:
 * Added Portuguese translations ([#PR31](https://github.com/WhereGroup/qgis2mapbender/pull/31))
+* Add Information about how to create translations to CONTRIBUTE.md ([#PR35](https://github.com/WhereGroup/qgis2mapbender/pull/35))
 
 
 ## v1.1.0
