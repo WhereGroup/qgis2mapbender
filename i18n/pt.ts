@@ -502,7 +502,7 @@ Os testes da API (geração de token, carregamento para o servidor, etc.) não p
     <message>
         <location filename="../dialogs/ui/server_config_dialog.ui" line="64"/>
         <source>Password</source>
-        <translation>Palavra-passe</translation>
+        <translation>Senha</translation>
     </message>
     <message>
         <location filename="../dialogs/ui/server_config_dialog.ui" line="89"/>
