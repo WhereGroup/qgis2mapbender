@@ -114,7 +114,7 @@ class MainDialog(BASE, WIDGET):
         self.buttonBoxTab2.rejected.connect(self.reject)
 
         # Set Button Tab2 to english
-        button_close_tab2 = self.buttonBoxTab2.button(QDialogButtonBox.Close)
+        button_close_tab2 = self.buttonBoxTab2.button(QDialogButtonBox.StandardButton.Close)
         button_close_tab2.setText(self.tr("Close"))
 
     def setupConnections(self) -> None:
@@ -139,7 +139,7 @@ class MainDialog(BASE, WIDGET):
         self.serverTableWidget.doubleClicked.connect(self.on_edit_server_config_clicked)
 
         # Set Button Tab1 to english
-        button_close_tab1 = self.buttonBoxTab1.button(QDialogButtonBox.Close)
+        button_close_tab1 = self.buttonBoxTab1.button(QDialogButtonBox.StandardButton.Close)
         button_close_tab1.setText(self.tr("Close"))
         # Button had a blue background
         button_close_tab1.setAutoDefault(False)
