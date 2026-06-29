@@ -4,7 +4,7 @@ import re
 
 from qgis.core import QgsMessageLog, Qgis
 
-from .settings import TAG
+from .settings import TAG, REQUEST_TIMEOUT_API
 from .helpers import show_fail_box
 
 
@@ -114,11 +114,13 @@ class ApiRequest:
         if endpoint != "/login_check" and endpoint != "/upload/zip":
             QgsMessageLog.logMessage(f"Sending request to endpoint {endpoint} with kwargs: {kwargs}", TAG, level=Qgis.MessageLevel.Info)
         try:
-            response = self.session.request(method=method.upper(), url=url, headers= self.headers, **kwargs)
+            response = self.session.request(method=method.upper(), url=url, headers= self.headers, timeout=REQUEST_TIMEOUT_API, **kwargs)
             return response
-        except requests.HTTPError as http_err:
+        except requests.exceptions.HTTPError as http_err:
             QgsMessageLog.logMessage(str(http_err), TAG, level=Qgis.MessageLevel.Critical)
-        except requests.RequestException as req_err:
+        except requests.exceptions.Timeout as timeout_err:
+            QgsMessageLog.logMessage(str(timeout_err), TAG, level=Qgis.MessageLevel.Critical)
+        except requests.exceptions.RequestException as req_err:
             QgsMessageLog.logMessage(str(req_err), TAG, level=Qgis.MessageLevel.Critical)
         return None
 

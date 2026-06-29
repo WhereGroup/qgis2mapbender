@@ -8,3 +8,6 @@ pb_tool.cfg
 *.iml
 *.ipr
 
+# VS Code
+.vscode
+.venv
