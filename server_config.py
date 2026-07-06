@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import re
 
 from qgis.core import QgsSettings, QgsApplication, QgsAuthMethodConfig, QgsMessageLog, Qgis
 
@@ -10,13 +11,21 @@ class ServerConfig:
     """
         Stores the configuration for a QGIS Server and Mapbender connection.
     """
-    name: str
+    name: str # original name, as entered by the user
     username: str
     password: str
     qgis_server_path: str
     mb_basis_url: str
     authcfg: str
+    cleaned_name: str = ""
 
+    @staticmethod
+    def clean_name_for_storage(name: str) -> str:
+        """
+        Removes "/" and "\" from the name before saving.
+        This ensures that the backend does not store problematic characters.
+        """
+        return re.sub(r'[\\/]', '', name)
 
     def save(self, encrypted: bool) -> None:
         """
@@ -30,19 +39,23 @@ class ServerConfig:
                 None
         """
         s = QgsSettings()
+        # Clean the name to remove "/" and "\" for storage purposes
+        clean_name = ServerConfig.clean_name_for_storage(self.name)
+        # Store the original name for UI/display purposes
+        s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{clean_name}/original_name", self.name)
         if encrypted:
-            s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/username", '')
-            s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/password", '')
-            authCfgId = ServerConfig.saveBasicToAuthDb(self.name, self.username, self.password, self.authcfg)
-            s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/authcfg", authCfgId)
+            s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{clean_name}/username", '')
+            s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{clean_name}/password", '')
+            authCfgId = ServerConfig.saveBasicToAuthDb(clean_name, self.username, self.password, self.authcfg)
+            s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{clean_name}/authcfg", authCfgId)
         else:
-            s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/username", self.username)
-            s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/password", self.password)
-            s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/authcfg", '')
+            s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{clean_name}/username", self.username)
+            s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{clean_name}/password", self.password)
+            s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{clean_name}/authcfg", '')
 
-        s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/qgis_server_path",
+        s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{clean_name}/qgis_server_path",
                    self.qgis_server_path)
-        s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.name}/mb_basis_url", self.mb_basis_url)
+        s.setValue(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{clean_name}/mb_basis_url", self.mb_basis_url)
 
     @staticmethod
     def saveBasicToAuthDb(server_name, username, password, authCfgId) -> str:
@@ -83,14 +96,18 @@ class ServerConfig:
                 ServerConfig: The loaded server configuration object.
         """
         s = QgsSettings()
-        username = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/username")
-        password = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/password")
-        qgis_server_path = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/qgis_server_path")
-        mb_basis_url = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/mb_basis_url")
-        authcfg = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{name}/authcfg")
+        # Clean the name for storage retrieval
+        clean_name = ServerConfig.clean_name_for_storage(name)
+        original_name = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{clean_name}/original_name",
+                                clean_name)
+        username = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{clean_name}/username")
+        password = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{clean_name}/password")
+        qgis_server_path = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{clean_name}/qgis_server_path")
+        mb_basis_url = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{clean_name}/mb_basis_url")
+        authcfg = s.value(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{clean_name}/authcfg")
         if authcfg:
             username, password = ServerConfig.get_username_and_password_from_auth_db(authcfg)
-        return ServerConfig(name, username, password, qgis_server_path,
+        return ServerConfig(original_name, username, password, qgis_server_path,
                         mb_basis_url, authcfg)
 
     @staticmethod

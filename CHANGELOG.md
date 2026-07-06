@@ -1,7 +1,18 @@
+## next version
+
+### Features:
+* Added Portuguese translations ([#PR31](https://github.com/WhereGroup/qgis2mapbender/pull/31))
+* Add Information about how to create translations to CONTRIBUTE.md ([#PR35](https://github.com/WhereGroup/qgis2mapbender/pull/35))
+
+
 ## v1.1.0
 
 ### Features:
-* Added german, spanish and italian translations.
+* Added german, spanish and italian translations ([#PR28](https://github.com/WhereGroup/qgis2mapbender/pull/28))
+
+### Bugfixes:
+* Server configuration name with "/" in name deletes whole server configuration ([#PR27](https://github.com/WhereGroup/qgis2mapbender/pull/27))
+* Fix import contextmanager and clean imports (PyQt5, _core) ([#PR26](https://github.com/WhereGroup/qgis2mapbender/pull/26))
 
 ## v1.0.0
 
