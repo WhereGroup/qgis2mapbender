@@ -64,7 +64,7 @@ class ApiRequest:
 
         response_json = self._parse_json_response(response, endpoint)
         if response_json is None:
-            error_message = f"Server returned status {response.status_code} with a non-JSON response. Check Mapbender server configuration."
+            error_message = f"Server returned status {response.status_code}. Check Mapbender logs for more information"
             QgsMessageLog.logMessage(f"{ERROR_MSG_TITLE}: {error_message}", TAG, level=Qgis.MessageLevel.Critical)
             show_fail_box(ERROR_MSG_TITLE, error_message)
             return None
@@ -224,7 +224,7 @@ class ApiRequest:
 
         response_json = self._parse_json_response(response, endpoint)
         if response_json is None:
-            error_msg = f"Server returned status {response.status_code} with a non-JSON response. Check Mapbender server logs"
+            error_msg = f"Server returned status {response.status_code}. Check Mapbender logs for more information"
             return response.status_code, None, error_msg
 
         if response.status_code == 200:
@@ -270,7 +270,7 @@ class ApiRequest:
         response_json = self._parse_json_response(response, endpoint)
 
         if response_json is None:
-            error_wms_add = f"Server returned status {status_code} with a non-JSON response. Check Mapbender server logs"
+            error_wms_add = f"Server returned status {status_code}. Check Mapbender logs for more information"
             QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: {error_wms_add}", TAG,
                                      level=Qgis.MessageLevel.Critical)
             return status_code, None, error_wms_add
@@ -313,7 +313,7 @@ class ApiRequest:
 
         response_json = self._parse_json_response(response, endpoint)
         if response_json is None:
-            return response.status_code, {"error": f"Server returned status {response.status_code} with a non-JSON response. Check Mapbender server logs"}
+            return response.status_code, {"error": f"Server returned status {response.status_code}. Check Mapbender logs for more information"}
 
         return response.status_code, response_json
 
@@ -346,7 +346,7 @@ class ApiRequest:
 
         response_json = self._parse_json_response(response, endpoint)
         if response_json is None:
-            return response.status_code, {"error": f"Server returned status {response.status_code} with a non-JSON response. Check Mapbender server logs"}
+            return response.status_code, {"error": f"Server returned status {response.status_code}. Check Mapbender logs for more information"}
 
         return response.status_code, response_json
 
