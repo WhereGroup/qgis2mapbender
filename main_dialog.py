@@ -325,7 +325,8 @@ class MainDialog(BASE, WIDGET):
                     selected_server_config=selected_server_config)) != QMessageBox.StandardButton.Yes:
             return
         s = QSettings()
-        s.remove(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{selected_server_config}")
+        clean_name = ServerConfig.clean_name_for_storage(selected_server_config)
+        s.remove(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{clean_name}")
         show_success_box(self.tr('Success'),
                          self.tr('Server configuration successfully removed'))
         self.update_server_table()
