@@ -321,11 +321,13 @@ class ServerConfigDialog(BASE, WIDGET):
             bool: True if the name is valid, False otherwise.
         """
         saved_config_names = list_qgs_settings_child_groups(f'{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection')
-        if self.mode == 'edit' and config_name_from_formular not in saved_config_names:
+        clean_form_name = ServerConfig.clean_name_for_storage(config_name_from_formular)
+        if self.mode == 'edit' and clean_form_name not in saved_config_names:
             s = QSettings()
-            s.remove(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{self.selected_server_config_name}")
+            clean_selected = ServerConfig.clean_name_for_storage(self.selected_server_config_name)
+            s.remove(f"{PLUGIN_SETTINGS_SERVER_CONFIG_KEY}/connection/{clean_selected}")
             return True
-        if config_name_from_formular in saved_config_names and self.mode != 'edit':
+        if clean_form_name in saved_config_names and self.mode != 'edit':
             show_fail_box('Failed', 'Server configuration name already exists')
             return False
         return True
