@@ -11,7 +11,7 @@ from qgis.core import QgsMessageLog, Qgis
 from ..api_request import ApiRequest
 from ..helpers import show_success_box, list_qgs_settings_child_groups, show_fail_box, uri_validator, waitCursor
 from ..server_config import ServerConfig
-from ..settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
+from ..settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG, REQUEST_TIMEOUT_SIMPLE
 
 # Dialog from .ui file
 WIDGET, BASE = uic.loadUiType(os.path.join(
@@ -227,7 +227,7 @@ class ServerConfigDialog(BASE, WIDGET):
         if not uri_validator(url):
             return errorStr
         try:
-            resp = requests.get(url)
+            resp = requests.get(url, timeout=REQUEST_TIMEOUT_SIMPLE)
             if serverName != "Mapbender":
                 if resp.status_code != 200:
                     content_type = resp.headers.get('Content-Type', '')
@@ -236,7 +236,7 @@ class ServerConfigDialog(BASE, WIDGET):
             else:
                 if resp.status_code != 200:
                     return errorStr
-        except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError) as error:
+        except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.Timeout) as error:
             QgsMessageLog.logMessage(f"Connection error: {error}", TAG, level=Qgis.MessageLevel.Critical)
             return f"{errorStr}"
 

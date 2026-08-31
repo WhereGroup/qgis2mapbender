@@ -3,3 +3,7 @@
 # General
 PLUGIN_SETTINGS_SERVER_CONFIG_KEY = 'QGIS2Mapbender'
 TAG = 'QGIS2Mapbender'
+
+# Timeout settings for HTTP requests
+REQUEST_TIMEOUT_SIMPLE = 30
+REQUEST_TIMEOUT_API = (10, 300)

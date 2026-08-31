@@ -4,7 +4,7 @@ import re
 
 from qgis.core import QgsMessageLog, Qgis
 
-from .settings import TAG
+from .settings import TAG, REQUEST_TIMEOUT_API
 from .helpers import show_fail_box
 
 
@@ -61,19 +61,20 @@ class ApiRequest:
         if response == None:
             show_fail_box(ERROR_MSG_TITLE, ERROR_MSG_OTHER)
             return self.token
-        if response.status_code:
-            if response.status_code == 200:
-                self.token = response.json().get("token")
-            else:
-                try:
-                    response_json = response.json()
-                    error_message = response_json.get("error", "Unknown error")
-                    QgsMessageLog.logMessage(f"{ERROR_MSG_TITLE}: {error_message}", TAG, level=Qgis.MessageLevel.Critical)
-                    show_fail_box(ERROR_MSG_TITLE, error_message)
-                except ValueError as e:
-                    QgsMessageLog.logMessage(f"Error parsing the response from endpoint {endpoint}: {e}", TAG, level=Qgis.MessageLevel.Critical)
-                    show_fail_box(ERROR_MSG_TITLE, ERROR_MSG_OTHER)
-                    return None
+
+        response_json = self._parse_json_response(response, endpoint)
+        if response_json is None:
+            error_message = f"Server returned status {response.status_code}. Check Mapbender logs for more information"
+            QgsMessageLog.logMessage(f"{ERROR_MSG_TITLE}: {error_message}", TAG, level=Qgis.MessageLevel.Critical)
+            show_fail_box(ERROR_MSG_TITLE, error_message)
+            return None
+
+        if response.status_code == 200:
+            self.token = response_json.get("token")
+        else:
+            error_message = response_json.get("error", "Unknown error")
+            QgsMessageLog.logMessage(f"{ERROR_MSG_TITLE}: {error_message}", TAG, level=Qgis.MessageLevel.Critical)
+            show_fail_box(ERROR_MSG_TITLE, error_message)
         return self.token
 
     def _ensure_token(self) -> None:
@@ -114,11 +115,13 @@ class ApiRequest:
         if endpoint != "/login_check" and endpoint != "/upload/zip":
             QgsMessageLog.logMessage(f"Sending request to endpoint {endpoint} with kwargs: {kwargs}", TAG, level=Qgis.MessageLevel.Info)
         try:
-            response = self.session.request(method=method.upper(), url=url, headers= self.headers, **kwargs)
+            response = self.session.request(method=method.upper(), url=url, headers= self.headers, timeout=REQUEST_TIMEOUT_API, **kwargs)
             return response
-        except requests.HTTPError as http_err:
+        except requests.exceptions.HTTPError as http_err:
             QgsMessageLog.logMessage(str(http_err), TAG, level=Qgis.MessageLevel.Critical)
-        except requests.RequestException as req_err:
+        except requests.exceptions.Timeout as timeout_err:
+            QgsMessageLog.logMessage(str(timeout_err), TAG, level=Qgis.MessageLevel.Critical)
+        except requests.exceptions.RequestException as req_err:
             QgsMessageLog.logMessage(str(req_err), TAG, level=Qgis.MessageLevel.Critical)
         return None
 
@@ -172,6 +175,33 @@ class ApiRequest:
         return status_code, upload_dir, error_upload_zip
 
 
+    def _parse_json_response(self, response, endpoint: str) -> Optional[dict]:
+        """
+        Safely parses a JSON response, handling non-JSON responses (e.g. HTML error pages).
+
+        Args:
+            response: The HTTP response object.
+            endpoint (str): The API endpoint for logging context.
+
+        Returns:
+            Optional[dict]: Parsed JSON, or None if parsing fails.
+        """
+        if response is None:
+            return None
+        content_type = response.headers.get('Content-Type', '')
+        if 'application/json' not in content_type:
+            QgsMessageLog.logMessage(
+                f"Endpoint {endpoint} returned non-JSON response (Content-Type: {content_type}, "
+                f"status: {response.status_code}). The Mapbender server may have an internal error.",
+                TAG, level=Qgis.MessageLevel.Critical)
+            return None
+        try:
+            return response.json()
+        except ValueError as e:
+            QgsMessageLog.logMessage(
+                f"Error parsing JSON from endpoint {endpoint}: {e}", TAG, level=Qgis.MessageLevel.Warning)
+            return None
+
     def wms_show(self, wms_url: str) -> tuple[int, Optional[list]]:
         """
         Queries the API to check if a WMS source exists in Mapbender.
@@ -189,25 +219,28 @@ class ApiRequest:
         self._ensure_token()
 
         response = self._sendRequest(endpoint, "get", params=params)
-        try:
-            response_json = response.json()
-            if response.status_code == 200:
-                source_ids = [item['id'] for item in response_json.get('message', []) if isinstance(item, dict) and 'id' in item]
-                if source_ids:
-                    QgsMessageLog.logMessage(f"WMS is already a source(s) in Mapbender with ID(s): {source_ids}", TAG,
-                                         level=Qgis.MessageLevel.Info)
-                else:
-                    QgsMessageLog.logMessage(f"WMS does not exist as a source in Mapbender yet.", TAG,
-                                         level=Qgis.MessageLevel.Info)
-                return response.status_code, source_ids, None
+        if response is None:
+            return 0, None, "No response received from server"
+
+        response_json = self._parse_json_response(response, endpoint)
+        if response_json is None:
+            error_msg = f"Server returned status {response.status_code}. Check Mapbender logs for more information"
+            return response.status_code, None, error_msg
+
+        if response.status_code == 200:
+            source_ids = [item['id'] for item in response_json.get('message', []) if isinstance(item, dict) and 'id' in item]
+            if source_ids:
+                QgsMessageLog.logMessage(f"WMS is already a source(s) in Mapbender with ID(s): {source_ids}", TAG,
+                                     level=Qgis.MessageLevel.Info)
             else:
-                error = response_json.get('error', None)
-                QgsMessageLog.logMessage(f"Error: {error}", TAG,
-                                         level=Qgis.MessageLevel.Warning)
-                return response.status_code, None, error
-        except ValueError as e:
-            QgsMessageLog.logMessage(f"Error while processing the response from endpoint wms/show:  {e}", TAG, level=Qgis.MessageLevel.Warning)
-            return response.status_code, None, None
+                QgsMessageLog.logMessage(f"WMS does not exist as a source in Mapbender yet.", TAG,
+                                     level=Qgis.MessageLevel.Info)
+            return response.status_code, source_ids, None
+        else:
+            error = response_json.get('error', None)
+            QgsMessageLog.logMessage(f"Error: {error}", TAG,
+                                     level=Qgis.MessageLevel.Warning)
+            return response.status_code, None, error
 
 
     def wms_add(self, wms_url: str) -> Tuple[int, Optional[str], Optional[str]]:
@@ -230,10 +263,19 @@ class ApiRequest:
         added_source_id = None
 
         response = self._sendRequest(endpoint, "get", params=params)
+        if response is None:
+            return 0, None, "No response received from server"
+
         status_code = response.status_code
+        response_json = self._parse_json_response(response, endpoint)
+
+        if response_json is None:
+            error_wms_add = f"Server returned status {status_code}. Check Mapbender logs for more information"
+            QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: {error_wms_add}", TAG,
+                                     level=Qgis.MessageLevel.Critical)
+            return status_code, None, error_wms_add
 
         if status_code == 200:
-            response_json = response.json()
             match = re.search(r"#(\d+)", response_json.get("message", ""))
             if match:
                 added_source_id = match.group(1)
@@ -243,14 +285,9 @@ class ApiRequest:
                 QgsMessageLog.logMessage(f"Status code: {status_code}. But added source ID not readable from API-answer."
                                          f" Full API response as JSON: {response_json}")
         else:
-            try:
-                error_wms_add = response.json().get("error", "Unknown error")
-                QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: {error_wms_add}", TAG,
-                                         level=Qgis.MessageLevel.Critical)
-
-            except ValueError as e:
-                QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: Error parsing the response: {e}", TAG,
-                                         level=Qgis.MessageLevel.Critical)
+            error_wms_add = response_json.get("error", "Unknown error")
+            QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: {error_wms_add}", TAG,
+                                     level=Qgis.MessageLevel.Critical)
         return status_code, added_source_id, error_wms_add
 
     def wms_reload(self, source_id: str, wms_url: str) -> tuple[int, Optional[dict]]:
@@ -271,11 +308,14 @@ class ApiRequest:
         self._ensure_token()
 
         response = self._sendRequest(endpoint, "get", params=params)
-        try:
-            response_json= response.json()
-            return response.status_code, response_json
-        except ValueError:
-            return response.status_code, None
+        if response is None:
+            return 0, {"error": "No response received from server"}
+
+        response_json = self._parse_json_response(response, endpoint)
+        if response_json is None:
+            return response.status_code, {"error": f"Server returned status {response.status_code}. Check Mapbender logs for more information"}
+
+        return response.status_code, response_json
 
     def wms_assign(self, application: str, source: int, layer_set: Optional[str]) -> tuple[int, Optional[dict]]:
         """
@@ -301,13 +341,12 @@ class ApiRequest:
         self._ensure_token()
 
         response = self._sendRequest(endpoint, "get", params=params)
-        try:
-            if response.text:
-                response_json = response.json()
-            else:
-                response_json = None
-        except ValueError:
-            response_json = None
+        if response is None:
+            return 0, {"error": "No response received from server"}
+
+        response_json = self._parse_json_response(response, endpoint)
+        if response_json is None:
+            return response.status_code, {"error": f"Server returned status {response.status_code}. Check Mapbender logs for more information"}
 
         return response.status_code, response_json
 
@@ -326,20 +365,18 @@ class ApiRequest:
         endpoint = "/application/clone"
         params = {"slug": template_slug}
         self._ensure_token()
-        response_json = None
 
         response = self._sendRequest(endpoint, "get", params=params)
+        if response is None:
+            error_message = "No response received from server"
+            QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
+            return 0, None
+
         status_code = response.status_code
-        try:
-            if response.text:
-                response_json = response.json()
-            else:
-                response_json = None
-        except ValueError:
-            pass
+        response_json = self._parse_json_response(response, endpoint)
 
         if response_json:
-            return response.status_code, response_json
+            return status_code, response_json
         else:
             error_message = f"Failed to clone application. Status code: {status_code}"
             QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
