@@ -9,7 +9,6 @@ from qgis.PyQt.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView, QWid
 
 from qgis.core import Qgis, QgsSettings, QgsMessageLog
 
-
 from .api_request import ApiRequest
 from .qgis_server_api_upload import QgisServerApiUpload
 from .mapbender_api_upload import MapbenderApiUpload
