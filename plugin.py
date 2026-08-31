@@ -1,6 +1,6 @@
 import os
 from typing import Optional
-from PyQt5.QtCore import QTranslator, QCoreApplication, QSettings
+from qgis.PyQt.QtCore import QTranslator, QCoreApplication, QSettings
 from qgis.PyQt.QtWidgets import QAction
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsMessageLog, Qgis
@@ -59,7 +59,7 @@ class Qgis2Mapbender:
                 QCoreApplication.installTranslator(self.translator)
 
         except Exception as e:
-            QgsMessageLog.logMessage(f"{self.plugin_name}: Error in initGui: {e}", self.plugin_name, level=Qgis.Critical)
+            QgsMessageLog.logMessage(f"{self.plugin_name}: Error in initGui: {e}", self.plugin_name, level=Qgis.MessageLevel.Critical)
 
     def unload(self) -> None:
         """
@@ -72,7 +72,7 @@ class Qgis2Mapbender:
             self.iface.removePluginWebMenu(self.web_menu, self.action)
             self.iface.removeToolBarIcon(self.action)
         except Exception as e:
-            QgsMessageLog.logMessage(f"{self.plugin_name}: Error in unload: {e}", self.plugin_name, level=Qgis.Critical)
+            QgsMessageLog.logMessage(f"{self.plugin_name}: Error in unload: {e}", self.plugin_name, level=Qgis.MessageLevel.Critical)
 
     def run(self) -> None:
         """
@@ -88,4 +88,4 @@ class Qgis2Mapbender:
             self.dlg.raise_()
             self.dlg.activateWindow()
         except Exception as e:
-            QgsMessageLog.logMessage(f"{self.plugin_name}: Error in run: {e}", self.plugin_name, level=Qgis.Critical)
+            QgsMessageLog.logMessage(f"{self.plugin_name}: Error in run: {e}", self.plugin_name, level=Qgis.MessageLevel.Critical)

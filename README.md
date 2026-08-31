@@ -80,3 +80,6 @@ info@wheregroup.com
 
 ## License
 The plugin is licensed under the attached GNU General Public License.
+
+## Translations
+Translation files are placed in the folder i18n of the plugin. If you want to contribute a translation, please have a look at the CONTRIBUTE.md file.

@@ -1,6 +1,6 @@
 from urllib.parse import urlparse
 
-from PyQt5.QtWidgets import QApplication
+from qgis.PyQt.QtWidgets import QApplication
 from qgis.PyQt.QtCore import Qt
 from contextlib import contextmanager
 
@@ -37,8 +37,8 @@ def check_if_qgis_project_is_dirty_and_save() -> bool:
         msgBox.setText("There are unsaved changes.")
         msgBox.setInformativeText("Do you want to save your changes before continuing?")
         msgBox.setStandardButtons(QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Cancel)
-        msgBox.button(QMessageBox.Save).setText("Save")
-        msgBox.button(QMessageBox.Cancel).setText("Cancel")
+        msgBox.button(QMessageBox.StandardButton.Save).setText("Save")
+        msgBox.button(QMessageBox.StandardButton.Cancel).setText("Cancel")
         msgBox.setDefaultButton(QMessageBox.StandardButton.Save)
         ret = msgBox.exec()
         if ret == QMessageBox.StandardButton.Save:
@@ -169,8 +169,8 @@ def show_question_box(text: str) -> int:
     questionBox.setIcon(QMessageBox.Icon.Question)
     questionBox.setText(text)
     questionBox.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-    questionBox.button(QMessageBox.Yes).setText("Yes")
-    questionBox.button(QMessageBox.No).setText("No")
+    questionBox.button(QMessageBox.StandardButton.Yes).setText("Yes")
+    questionBox.button(QMessageBox.StandardButton.No).setText("No")
     return questionBox.exec()
 
 
