@@ -1,10 +1,11 @@
 import requests
 from typing import Optional, Tuple
 import re
+from html import unescape
 
 from qgis.core import QgsMessageLog, Qgis
 
-from .settings import TAG, REQUEST_TIMEOUT_API
+from .settings import TAG, REQUEST_TIMEOUT_API, MAX_API_ERROR_MESSAGE_LENGTH
 from .helpers import show_fail_box
 
 
@@ -63,16 +64,19 @@ class ApiRequest:
             return self.token
 
         response_json = self._parse_json_response(response, endpoint)
-        if response_json is None:
-            error_message = f"Server returned status {response.status_code}. Check Mapbender logs for more information"
+        if response.status_code != 200 or response_json is None:
+            error_message = self._response_error_message(response, response_json)
             QgsMessageLog.logMessage(f"{ERROR_MSG_TITLE}: {error_message}", TAG, level=Qgis.MessageLevel.Critical)
             show_fail_box(ERROR_MSG_TITLE, error_message)
             return None
 
-        if response.status_code == 200:
-            self.token = response_json.get("token")
-        else:
-            error_message = response_json.get("error", "Unknown error")
+        self.token = response_json.get("token")
+        if not self.token:
+            error_message = self._response_error_message(
+                response,
+                response_json,
+                "The server response did not contain an authentication token."
+            )
             QgsMessageLog.logMessage(f"{ERROR_MSG_TITLE}: {error_message}", TAG, level=Qgis.MessageLevel.Critical)
             show_fail_box(ERROR_MSG_TITLE, error_message)
         return self.token
@@ -153,31 +157,156 @@ class ApiRequest:
                 QgsMessageLog.logMessage(
                     f"Sending request to endpoint {endpoint} with file: {file_log}", TAG, level=Qgis.MessageLevel.Info)
                 response = self._sendRequest(endpoint, "post", files=files)
-                try:
-                    response_json = response.json()
-                    status_code = response.status_code
-                    if status_code == 200:
-                        upload_dir = response.json().get("upload_dir", None)
-                        QgsMessageLog.logMessage(f"Server response {status_code}: Zip file uploaded and extracted "
-                                                 f"successfully in upload_dir {upload_dir}.", TAG,
-                                                 level=Qgis.MessageLevel.Info)
-                    else:
-                        error_upload_zip = response_json.get('error', None)
-                        QgsMessageLog.logMessage(f"Error: {status_code}:  {error_upload_zip}", TAG,
-                                                 level=Qgis.MessageLevel.Critical)
-                        show_fail_box("Failed",
-                                         f"Upload to QGIS server failed. \n\nError {status_code}: {error_upload_zip}")
-                except ValueError as e:
-                    QgsMessageLog.logMessage(f"Error while processing the response from endpoint upload/zip:  {e}", TAG,
-                                             level=Qgis.MessageLevel.Critical)
+                if response is None:
+                    error_upload_zip = "No response received from server."
+                    QgsMessageLog.logMessage(
+                        f"Upload to QGIS server failed: {error_upload_zip}",
+                        TAG,
+                        level=Qgis.MessageLevel.Critical
+                    )
+                    show_fail_box(
+                        "Upload failed",
+                        "Upload to QGIS Server failed.\n\n"
+                        f"{error_upload_zip}\n\n"
+                        "See the QGIS2Mapbender log for details."
+                    )
+                    return status_code, upload_dir, error_upload_zip
+
+                status_code = response.status_code
+                response_json = self._parse_json_response(response, endpoint)
+                if status_code != 200 or response_json is None:
+                    error_upload_zip = self._response_error_message(response, response_json)
+                else:
+                    upload_dir = response_json.get("upload_dir")
+                    if not upload_dir:
+                        error_upload_zip = self._response_error_message(
+                            response,
+                            response_json,
+                            "The server response did not contain an upload directory."
+                        )
+
+                if error_upload_zip:
+                    if status_code == 200 and response_json is not None:
+                        self._log_response_summary(endpoint, response, error_upload_zip)
+                    QgsMessageLog.logMessage(
+                        f"Upload to QGIS server failed. HTTP {status_code}: {error_upload_zip}",
+                        TAG,
+                        level=Qgis.MessageLevel.Critical
+                    )
+                    show_fail_box(
+                        "Upload failed",
+                        f"Upload to QGIS Server failed (HTTP {status_code}).\n\n"
+                        f"{error_upload_zip}\n\n"
+                        "See the QGIS2Mapbender log for technical details."
+                    )
+                else:
+                    QgsMessageLog.logMessage(
+                        f"Server response {status_code}: Zip file uploaded and extracted "
+                        f"successfully in upload_dir {upload_dir}.",
+                        TAG,
+                        level=Qgis.MessageLevel.Info
+                    )
         except FileNotFoundError:
             QgsMessageLog.logMessage(f"Zip file with qgis project created but not found: {file_path}", TAG, level=Qgis.MessageLevel.Critical)
         return status_code, upload_dir, error_upload_zip
 
 
-    def _parse_json_response(self, response, endpoint: str) -> Optional[dict]:
+    @staticmethod
+    def _response_error_message(response: requests.Response, response_json: Optional[dict] = None,
+                                default_message: str = "The server returned an empty response.") -> str:
         """
-        Safely parses a JSON response, handling non-JSON responses (e.g. HTML error pages).
+        Returns the most useful error detail available from an API response.
+
+        JSON error or message fields take precedence. For non-JSON responses, a concise detail
+        is extracted from the response.
+        """
+        if response_json:
+            for key in ("error", "message"):
+                message = response_json.get(key)
+                if message:
+                    formatted_message = ApiRequest._format_response_message(str(message))
+                    if formatted_message:
+                        return formatted_message
+
+        response_text = response.text.strip()
+        if response_text and response_json is None:
+            extracted_message = ApiRequest._extract_response_message(response_text)
+            if extracted_message:
+                return extracted_message
+        return default_message
+
+    @staticmethod
+    def _format_response_message(message: str) -> str:
+        """
+        Converts a response detail into text suitable for a message box.
+
+        Server-side HTML and long diagnostic messages are kept in the QGIS log; only a
+        concise, readable detail is returned to the caller.
+        """
+        cleaned_message = ApiRequest._strip_markup(message)
+        cleaned_message = re.sub(
+            r"\s*\(\d{3}\s+[^)]*\)\s*$",
+            "",
+            cleaned_message
+        )
+        cleaned_message = re.sub(
+            r'The\s+""\s+file',
+            "The uploaded file",
+            cleaned_message,
+            flags=re.IGNORECASE
+        )
+        if cleaned_message.lower() in {
+            "an error occurred: internal server error",
+            "oops! an error occurred"
+        }:
+            cleaned_message = "The server reported an internal error."
+
+        if len(cleaned_message) > MAX_API_ERROR_MESSAGE_LENGTH:
+            message_end = MAX_API_ERROR_MESSAGE_LENGTH - len("...")
+            return f"{cleaned_message[:message_end].rstrip()}..."
+        return cleaned_message
+
+    @staticmethod
+    def _strip_markup(text: str) -> str:
+        """Removes HTML markup and collapses whitespace in a response detail."""
+        text_without_scripts = re.sub(
+            r"(?is)<(script|style)\b[^>]*>.*?</\1>",
+            " ",
+            text
+        )
+        text_without_tags = re.sub(r"(?s)<[^>]+>", " ", text_without_scripts)
+        return " ".join(unescape(text_without_tags).split())
+
+    @classmethod
+    def _extract_response_message(cls, response_text: str) -> str:
+        """Extracts a short message from an HTML or plain-text server response."""
+        for pattern in (
+            r"(?is)<title\b[^>]*>(.*?)</title>",
+            r"(?is)<h1\b[^>]*>(.*?)</h1>",
+            r"(?is)<h2\b[^>]*>(.*?)</h2>"
+        ):
+            match = re.search(pattern, response_text)
+            if match:
+                message = cls._format_response_message(match.group(1))
+                if message:
+                    return message
+        return cls._format_response_message(response_text)
+
+    @staticmethod
+    def _log_response_summary(endpoint: str, response: requests.Response, detail: str) -> None:
+        """Writes concise response metadata and the server detail to the QGIS message log."""
+        QgsMessageLog.logMessage(
+            f"API response from endpoint {endpoint}: "
+            f"HTTP {response.status_code}; "
+            f"Content-Type: {response.headers.get('Content-Type', '<unknown>')}; "
+            f"Server message: {detail}",
+            TAG,
+            level=Qgis.MessageLevel.Critical
+        )
+
+    def _parse_json_response(self, response: requests.Response, endpoint: str) -> Optional[dict]:
+        """
+        Parses a JSON response when available without requiring a specific content type.
 
         Args:
             response: The HTTP response object.
@@ -188,19 +317,30 @@ class ApiRequest:
         """
         if response is None:
             return None
-        content_type = response.headers.get('Content-Type', '')
-        if 'application/json' not in content_type:
-            QgsMessageLog.logMessage(
-                f"Endpoint {endpoint} returned non-JSON response (Content-Type: {content_type}, "
-                f"status: {response.status_code}). The Mapbender server may have an internal error.",
-                TAG, level=Qgis.MessageLevel.Critical)
-            return None
+
         try:
-            return response.json()
-        except ValueError as e:
-            QgsMessageLog.logMessage(
-                f"Error parsing JSON from endpoint {endpoint}: {e}", TAG, level=Qgis.MessageLevel.Warning)
+            response_json = response.json()
+        except ValueError:
+            detail = self._extract_response_message(response.text) or "The response was not valid JSON."
+            self._log_response_summary(endpoint, response, detail)
             return None
+
+        if not isinstance(response_json, dict):
+            self._log_response_summary(
+                endpoint,
+                response,
+                "The JSON response has an unsupported structure."
+            )
+            return None
+
+        if response.status_code != 200:
+            self._log_response_summary(
+                endpoint,
+                response,
+                self._response_error_message(response, response_json)
+            )
+
+        return response_json
 
     def wms_show(self, wms_url: str) -> tuple[int, Optional[list]]:
         """
@@ -223,8 +363,13 @@ class ApiRequest:
             return 0, None, "No response received from server"
 
         response_json = self._parse_json_response(response, endpoint)
-        if response_json is None:
-            error_msg = f"Server returned status {response.status_code}. Check Mapbender logs for more information"
+        if response.status_code != 200 or response_json is None:
+            error_msg = self._response_error_message(response, response_json)
+            QgsMessageLog.logMessage(
+                f"WMS information request failed. HTTP {response.status_code}: {error_msg}",
+                TAG,
+                level=Qgis.MessageLevel.Critical
+            )
             return response.status_code, None, error_msg
 
         if response.status_code == 200:
@@ -269,10 +414,13 @@ class ApiRequest:
         status_code = response.status_code
         response_json = self._parse_json_response(response, endpoint)
 
-        if response_json is None:
-            error_wms_add = f"Server returned status {status_code}. Check Mapbender logs for more information"
-            QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: {error_wms_add}", TAG,
-                                     level=Qgis.MessageLevel.Critical)
+        if status_code != 200 or response_json is None:
+            error_wms_add = self._response_error_message(response, response_json)
+            QgsMessageLog.logMessage(
+                f"WMS could not be added to Mapbender. HTTP {status_code}: {error_wms_add}",
+                TAG,
+                level=Qgis.MessageLevel.Critical
+            )
             return status_code, None, error_wms_add
 
         if status_code == 200:
@@ -282,8 +430,16 @@ class ApiRequest:
                 QgsMessageLog.logMessage(f"New source added with ID: {added_source_id}", TAG,
                                          level=Qgis.MessageLevel.Info)
             else:
-                QgsMessageLog.logMessage(f"Status code: {status_code}. But added source ID not readable from API-answer."
-                                         f" Full API response as JSON: {response_json}")
+                error_wms_add = self._response_error_message(
+                    response,
+                    response_json,
+                    "The server response did not contain a source ID."
+                )
+                QgsMessageLog.logMessage(
+                    f"WMS could not be added to Mapbender. HTTP {status_code}: {error_wms_add}",
+                    TAG,
+                    level=Qgis.MessageLevel.Critical
+                )
         else:
             error_wms_add = response_json.get("error", "Unknown error")
             QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: {error_wms_add}", TAG,
@@ -313,7 +469,7 @@ class ApiRequest:
 
         response_json = self._parse_json_response(response, endpoint)
         if response_json is None:
-            return response.status_code, {"error": f"Server returned status {response.status_code}. Check Mapbender logs for more information"}
+            return response.status_code, {"error": self._response_error_message(response)}
 
         return response.status_code, response_json
 
@@ -346,7 +502,7 @@ class ApiRequest:
 
         response_json = self._parse_json_response(response, endpoint)
         if response_json is None:
-            return response.status_code, {"error": f"Server returned status {response.status_code}. Check Mapbender logs for more information"}
+            return response.status_code, {"error": self._response_error_message(response)}
 
         return response.status_code, response_json
 
@@ -375,12 +531,16 @@ class ApiRequest:
         status_code = response.status_code
         response_json = self._parse_json_response(response, endpoint)
 
-        if response_json:
+        if response_json is not None:
             return status_code, response_json
-        else:
-            error_message = f"Failed to clone application. Status code: {status_code}"
-            QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
-            return status_code, None
+
+        error_message = self._response_error_message(response)
+        QgsMessageLog.logMessage(
+            f"Failed to clone application. HTTP {status_code}: {error_message}",
+            TAG,
+            level=Qgis.MessageLevel.Critical
+        )
+        return status_code, {"error": error_message}
 
     def mark_api_requests_done(self) -> None:
         """
