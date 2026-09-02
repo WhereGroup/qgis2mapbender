@@ -84,6 +84,8 @@ class Qgis2Mapbender:
         try:
             if not self.dlg:
                 self.dlg = MainDialog()
+            else:
+                self.dlg.update_project_storage_hint()
             self.dlg.show()
             self.dlg.raise_()
             self.dlg.activateWindow()

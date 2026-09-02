@@ -129,7 +129,7 @@
            </widget>
           </item>
           <item row="9" column="0" colspan="3">
-           <widget class="QLabel" name="label_3">
+           <widget class="QLabel" name="projectStorageHintLabel">
             <property name="font">
              <font>
               <italic>true</italic>

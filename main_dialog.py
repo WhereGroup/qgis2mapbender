@@ -13,13 +13,19 @@ from .api_request import ApiRequest
 from .qgis_server_api_upload import QgisServerApiUpload
 from .mapbender_api_upload import MapbenderApiUpload
 from .dialogs.server_config_dialog import ServerConfigDialog
-from .helpers import qgis_project_is_saved, check_if_qgis_project_is_dirty_and_save, \
+from .helpers import get_qgis_project_storage_type, qgis_project_is_saved, \
+    check_if_qgis_project_is_dirty_and_save, \
     show_fail_box, show_success_box, show_success_link_box, \
     list_qgs_settings_child_groups, show_question_box, \
     update_mb_slug_in_settings
 from .paths import Paths
 from .server_config import ServerConfig
-from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
+from .settings import (
+    PLUGIN_SETTINGS_SERVER_CONFIG_KEY,
+    PROJECT_STORAGE_DATABASE,
+    PROJECT_STORAGE_UNSUPPORTED,
+    TAG,
+)
 
 # Dialog from .ui file
 WIDGET, BASE = uic.loadUiType(os.path.join(
@@ -39,6 +45,7 @@ class MainDialog(BASE, WIDGET):
     cloneTemplateRadioButton: QRadioButton
     serverTableWidget: QTableWidget
     warningFirstServerLabel: QLabel
+    projectStorageHintLabel: QLabel
     serverConfigComboBox: QComboBox
     mbSlugComboBox: QComboBox
     buttonBoxTab1: QDialogButtonBox
@@ -72,6 +79,7 @@ class MainDialog(BASE, WIDGET):
         """
         super().setupUi(widget)
         self.warningFirstServerLabel.setPixmap(QPixmap(':/images/themes/default/mIconWarning.svg'))
+        self.update_project_storage_hint()
         # Tabs
         self.tabWidget.setCurrentWidget(self.serverUploadTab)
 
@@ -115,6 +123,17 @@ class MainDialog(BASE, WIDGET):
         # Set Button Tab2 to english
         button_close_tab2 = self.buttonBoxTab2.button(QDialogButtonBox.StandardButton.Close)
         button_close_tab2.setText(self.tr("Close"))
+
+    def update_project_storage_hint(self) -> None:
+        """Updates the upload hint for the currently open QGIS project."""
+        project_storage_type = get_qgis_project_storage_type()
+        if project_storage_type == PROJECT_STORAGE_DATABASE:
+            hint = self.tr("The QGIS project is stored in a database.")
+        elif project_storage_type == PROJECT_STORAGE_UNSUPPORTED:
+            hint = self.tr("The storage type of the current QGIS project is not supported.")
+        else:
+            hint = self.tr("If the QGIS project already exists on the server, it will be overwritten")
+        self.projectStorageHintLabel.setText(hint)
 
     def setupConnections(self) -> None:
         """

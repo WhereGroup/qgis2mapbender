@@ -8,7 +8,14 @@ from qgis.PyQt.QtGui import QPixmap
 from qgis.PyQt.QtWidgets import QMessageBox
 from qgis.core import QgsApplication, QgsProject, QgsSettings
 
-from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY
+from .settings import (
+    DATABASE_PROJECT_STORAGE_BACKENDS,
+    PLUGIN_SETTINGS_SERVER_CONFIG_KEY,
+    PROJECT_STORAGE_DATABASE,
+    PROJECT_STORAGE_LOCAL,
+    PROJECT_STORAGE_UNSUPPORTED,
+    PROJECT_STORAGE_UNSAVED,
+)
 
 from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout, QLabel, QDialogButtonBox
 
@@ -63,6 +70,35 @@ def qgis_project_is_saved() -> bool:
         show_fail_box('Failed', "Please use the QGIS2Mapbender from a saved QGIS-Project")
         return False
     return True
+
+
+def get_qgis_project_storage_type(project=None) -> str:
+    """
+    Returns the storage type of a QGIS project.
+
+    QGIS does not expose a project storage object for projects stored on the
+    local filesystem. Database-backed projects expose their backend through
+    ``QgsProjectStorage.type()``.
+
+    Args:
+        project: Optional QGIS project. The current project is used by default.
+
+    Returns:
+        str: One of the project storage type constants from ``settings.py``.
+    """
+    qgis_project = project if project is not None else QgsProject.instance()
+    if not qgis_project.fileName():
+        return PROJECT_STORAGE_UNSAVED
+
+    project_storage = qgis_project.projectStorage()
+    if project_storage is None:
+        return PROJECT_STORAGE_LOCAL
+
+    storage_backend = str(project_storage.type()).lower()
+    if storage_backend in DATABASE_PROJECT_STORAGE_BACKENDS:
+        return PROJECT_STORAGE_DATABASE
+    return PROJECT_STORAGE_UNSUPPORTED
+
 
 def create_fail_box(title: str, text: str) -> QMessageBox:
     """
