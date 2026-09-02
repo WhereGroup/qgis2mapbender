@@ -6,7 +6,7 @@ from contextlib import contextmanager
 
 from qgis.PyQt.QtGui import QPixmap
 from qgis.PyQt.QtWidgets import QMessageBox
-from qgis.core import QgsApplication, QgsProject, QgsSettings
+from qgis.core import Qgis, QgsApplication, QgsProject, QgsSettings, QgsMessageLog
 
 from .settings import (
     DATABASE_PROJECT_STORAGE_BACKENDS,
@@ -15,6 +15,7 @@ from .settings import (
     PROJECT_STORAGE_LOCAL,
     PROJECT_STORAGE_UNSUPPORTED,
     PROJECT_STORAGE_UNSAVED,
+    TAG,
 )
 
 from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout, QLabel, QDialogButtonBox
@@ -87,17 +88,28 @@ def get_qgis_project_storage_type(project=None) -> str:
         str: One of the project storage type constants from ``settings.py``.
     """
     qgis_project = project if project is not None else QgsProject.instance()
+    storage_backend = None
     if not qgis_project.fileName():
-        return PROJECT_STORAGE_UNSAVED
+        project_storage_type = PROJECT_STORAGE_UNSAVED
+    else:
+        project_storage = qgis_project.projectStorage()
+        if project_storage is None:
+            project_storage_type = PROJECT_STORAGE_LOCAL
+        else:
+            storage_backend = str(project_storage.type()).lower()
+            project_storage_type = (
+                PROJECT_STORAGE_DATABASE
+                if storage_backend in DATABASE_PROJECT_STORAGE_BACKENDS
+                else PROJECT_STORAGE_UNSUPPORTED
+            )
 
-    project_storage = qgis_project.projectStorage()
-    if project_storage is None:
-        return PROJECT_STORAGE_LOCAL
-
-    storage_backend = str(project_storage.type()).lower()
-    if storage_backend in DATABASE_PROJECT_STORAGE_BACKENDS:
-        return PROJECT_STORAGE_DATABASE
-    return PROJECT_STORAGE_UNSUPPORTED
+    backend_info = f" (backend: {storage_backend})" if storage_backend else ""
+    QgsMessageLog.logMessage(
+        f"Evaluated QGIS project storage: {project_storage_type}{backend_info}",
+        TAG,
+        level=Qgis.MessageLevel.Info
+    )
+    return project_storage_type
 
 
 def create_fail_box(title: str, text: str) -> QMessageBox:
