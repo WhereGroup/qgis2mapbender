@@ -190,12 +190,14 @@ class ServerConfigDialog(BASE, WIDGET):
                     # Test 4: ZIP upload
                     test_zip_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../resources/test_upload/test_upload.zip'))
                     status_code, upload_dir, error_zip_upload = api_request.uploadZip(test_zip_path)
-                    if status_code != 200:
+                    if status_code != 200 or not upload_dir:
                         failed_tests.append(
                             self.tr("Server upload is not validated (status code {status_code}: {error_zip_upload}).").format(
                             status_code=status_code,
-                            error_zip_upload=error_zip_upload
-                        ))
+                                error_zip_upload=error_zip_upload or self.tr(
+                                    "The server response did not contain an upload directory."
+                                )
+                            ))
                     else:
                         successful_tests.append(self.tr("Server upload is validated. Upload directory on server: {upload_dir}.").format(
                             upload_dir=upload_dir

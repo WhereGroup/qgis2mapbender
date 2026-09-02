@@ -381,7 +381,7 @@ class MainDialog(BASE, WIDGET):
             qgis_server_upload = QgisServerApiUpload(api_request, paths)
             status_code_server_upload, upload_dir = qgis_server_upload.process_and_upload_project()
 
-            if status_code_server_upload == 200:
+            if status_code_server_upload == 200 and upload_dir:
                 wms_url = qgis_server_upload.get_wms_url(server_config, upload_dir)
             if not wms_url:
                 return
@@ -423,7 +423,7 @@ class MainDialog(BASE, WIDGET):
 
             if is_clone_app:
                 exit_status_app_clone, slug = mb_upload.clone_app_and_get_slug(input_slug)
-                if exit_status_app_clone != 200:
+                if exit_status_app_clone != 200 or not slug:
                     update_mb_slug_in_settings(input_slug, is_mb_slug=False)
                     self.update_slug_combo_box()
                     return

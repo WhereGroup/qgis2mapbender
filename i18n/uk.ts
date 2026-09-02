@@ -545,5 +545,29 @@ API-тести (генерація токена, завантаження на �
         <translation>URL QGIS Server*</translation>
     </message>
 </context>
+<context>
+    <name>QgisServerApiUpload</name>
+    <message>
+        <location filename="../qgis_server_api_upload.py" line="66"/>
+        <location filename="../qgis_server_api_upload.py" line="84"/>
+        <source>Upload failed</source>
+        <translation>Помилка завантаження</translation>
+    </message>
+    <message>
+        <location filename="../qgis_server_api_upload.py" line="70"/>
+        <source>Failed to create ZIP file for the project.</source>
+        <translation>Не вдалося створити ZIP-файл проєкту.</translation>
+    </message>
+    <message>
+        <location filename="../qgis_server_api_upload.py" line="74"/>
+        <location filename="../qgis_server_api_upload.py" line="92"/>
+        <source>See the QGIS2Mapbender log for details.</source>
+        <translation>Докладні відомості див. у журналі QGIS2Mapbender.</translation>
+    </message>
+    <message>
+        <location filename="../qgis_server_api_upload.py" line="88"/>
+        <source>File not found: {path}</source>
+        <translation>Файл не знайдено: {path}</translation>
+    </message>
+</context>
 </TS>
-

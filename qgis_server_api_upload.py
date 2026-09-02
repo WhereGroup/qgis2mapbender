@@ -2,9 +2,10 @@ import os
 import shutil
 from typing import Optional
 
+from qgis.PyQt.QtCore import QCoreApplication
 from qgis.core import QgsMessageLog, Qgis
 
-from .helpers import waitCursor, get_size_and_unit
+from .helpers import waitCursor, get_size_and_unit, show_fail_box
 from .server_config import ServerConfig
 from .settings import TAG
 
@@ -61,11 +62,37 @@ class QgisServerApiUpload:
         if not self._zip_local_project_dir():
             QgsMessageLog.logMessage(f"Failed to create ZIP file for the project.", TAG,
                                      level=Qgis.MessageLevel.Critical)
+            show_fail_box(
+                QCoreApplication.translate("QgisServerApiUpload", "Upload failed"),
+                "\n\n".join((
+                    QCoreApplication.translate(
+                        "QgisServerApiUpload",
+                        "Failed to create ZIP file for the project."
+                    ),
+                    QCoreApplication.translate(
+                        "QgisServerApiUpload",
+                        "See the QGIS2Mapbender log for details."
+                    )
+                ))
+            )
 
         # Step 2: Upload the ZIP file
         elif not os.path.isfile(self.source_project_zip_file_path):
             QgsMessageLog.logMessage(f"File not found: {self.source_project_zip_file_path}", TAG,
                                      level=Qgis.MessageLevel.Critical)
+            show_fail_box(
+                QCoreApplication.translate("QgisServerApiUpload", "Upload failed"),
+                "\n\n".join((
+                    QCoreApplication.translate(
+                        "QgisServerApiUpload",
+                        "File not found: {path}"
+                    ).format(path=self.source_project_zip_file_path),
+                    QCoreApplication.translate(
+                        "QgisServerApiUpload",
+                        "See the QGIS2Mapbender log for details."
+                    )
+                ))
+            )
 
         elif self.api_request.token:
             status_code, upload_dir, error_upload_dir = self.api_request.uploadZip(self.source_project_zip_file_path)

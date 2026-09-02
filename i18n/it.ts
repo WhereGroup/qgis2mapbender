@@ -355,4 +355,29 @@ Impossibile eseguire i test API (generazione di token, caricamento sul server, e
         <translation>Testa la connessione</translation>
     </message>
 </context>
+<context>
+    <name>QgisServerApiUpload</name>
+    <message>
+        <location filename="../qgis_server_api_upload.py" line="66"/>
+        <location filename="../qgis_server_api_upload.py" line="84"/>
+        <source>Upload failed</source>
+        <translation>Caricamento non riuscito</translation>
+    </message>
+    <message>
+        <location filename="../qgis_server_api_upload.py" line="70"/>
+        <source>Failed to create ZIP file for the project.</source>
+        <translation>Impossibile creare il file ZIP del progetto.</translation>
+    </message>
+    <message>
+        <location filename="../qgis_server_api_upload.py" line="74"/>
+        <location filename="../qgis_server_api_upload.py" line="92"/>
+        <source>See the QGIS2Mapbender log for details.</source>
+        <translation>Per ulteriori informazioni, consultare il registro di QGIS2Mapbender.</translation>
+    </message>
+    <message>
+        <location filename="../qgis_server_api_upload.py" line="88"/>
+        <source>File not found: {path}</source>
+        <translation>File non trovato: {path}</translation>
+    </message>
+</context>
 </TS>
