@@ -545,5 +545,29 @@ API-tests (token genereren, uploaden naar server, etc.) konden niet worden uitge
         <translation>QGIS Server URL*</translation>
     </message>
 </context>
+<context>
+    <name>QgisServerApiUpload</name>
+    <message>
+        <location filename="../qgis_server_api_upload.py" line="66"/>
+        <location filename="../qgis_server_api_upload.py" line="84"/>
+        <source>Upload failed</source>
+        <translation>Upload mislukt</translation>
+    </message>
+    <message>
+        <location filename="../qgis_server_api_upload.py" line="70"/>
+        <source>Failed to create ZIP file for the project.</source>
+        <translation>ZIP-bestand voor het project kon niet worden gemaakt.</translation>
+    </message>
+    <message>
+        <location filename="../qgis_server_api_upload.py" line="74"/>
+        <location filename="../qgis_server_api_upload.py" line="92"/>
+        <source>See the QGIS2Mapbender log for details.</source>
+        <translation>Raadpleeg het QGIS2Mapbender-logboek voor meer informatie.</translation>
+    </message>
+    <message>
+        <location filename="../qgis_server_api_upload.py" line="88"/>
+        <source>File not found: {path}</source>
+        <translation>Bestand niet gevonden: {path}</translation>
+    </message>
+</context>
 </TS>
-

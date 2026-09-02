@@ -2,6 +2,7 @@ import os
 import shutil
 from typing import Optional
 
+from qgis.PyQt.QtCore import QCoreApplication
 from qgis.core import QgsMessageLog, Qgis
 
 from .helpers import waitCursor, get_size_and_unit, show_fail_box
@@ -62,9 +63,17 @@ class QgisServerApiUpload:
             QgsMessageLog.logMessage(f"Failed to create ZIP file for the project.", TAG,
                                      level=Qgis.MessageLevel.Critical)
             show_fail_box(
-                "Upload failed",
-                "Failed to create ZIP file for the project.\n\n"
-                "See the QGIS2Mapbender log for details."
+                QCoreApplication.translate("QgisServerApiUpload", "Upload failed"),
+                "\n\n".join((
+                    QCoreApplication.translate(
+                        "QgisServerApiUpload",
+                        "Failed to create ZIP file for the project."
+                    ),
+                    QCoreApplication.translate(
+                        "QgisServerApiUpload",
+                        "See the QGIS2Mapbender log for details."
+                    )
+                ))
             )
 
         # Step 2: Upload the ZIP file
@@ -72,9 +81,17 @@ class QgisServerApiUpload:
             QgsMessageLog.logMessage(f"File not found: {self.source_project_zip_file_path}", TAG,
                                      level=Qgis.MessageLevel.Critical)
             show_fail_box(
-                "Upload failed",
-                f"File not found: {self.source_project_zip_file_path}\n\n"
-                "See the QGIS2Mapbender log for details."
+                QCoreApplication.translate("QgisServerApiUpload", "Upload failed"),
+                "\n\n".join((
+                    QCoreApplication.translate(
+                        "QgisServerApiUpload",
+                        "File not found: {path}"
+                    ).format(path=self.source_project_zip_file_path),
+                    QCoreApplication.translate(
+                        "QgisServerApiUpload",
+                        "See the QGIS2Mapbender log for details."
+                    )
+                ))
             )
 
         elif self.api_request.token:
