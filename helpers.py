@@ -12,6 +12,7 @@ from .settings import (
     PLUGIN_SETTINGS_SERVER_CONFIG_KEY,
     PROJECT_STORAGE_LOCAL,
     PROJECT_STORAGE_UNSAVED,
+    QGIS_SERVER_POSTGRESQL_WRAPPER_PATH,
 )
 
 from qgis.PyQt.QtWidgets import (
@@ -114,6 +115,12 @@ def append_query_to_url(url: str, query: str) -> str:
     else:
         separator = '?'
     return f'{url}{separator}{query}'
+
+
+def is_postgresql_qgis_server_url(url: str) -> bool:
+    """Returns whether a URL targets the PostgreSQL QGIS Server wrapper."""
+    wrapper_path = QGIS_SERVER_POSTGRESQL_WRAPPER_PATH.rstrip('/')
+    return urlparse(url).path.rstrip('/').endswith(wrapper_path)
 
 
 def create_fail_box(title: str, text: str) -> QMessageBox:

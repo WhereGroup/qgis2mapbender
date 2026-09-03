@@ -18,7 +18,7 @@ from .helpers import get_qgis_project_storage_type, qgis_project_is_saved, \
     check_if_qgis_project_is_dirty_and_save, \
     show_fail_box, show_success_box, show_success_link_box, \
     list_qgs_settings_child_groups, show_question_box, \
-    update_mb_slug_in_settings
+    update_mb_slug_in_settings, is_postgresql_qgis_server_url
 from .paths import Paths
 from .server_config import ServerConfig
 from .settings import (
@@ -365,16 +365,22 @@ class MainDialog(BASE, WIDGET):
         self.update_server_table()
         self.update_server_combo_box()
 
-    def initialize_api_request(self) -> tuple[ServerConfig, ApiRequest]:
+    def initialize_api_request(self, server_config: Optional[ServerConfig] = None) -> tuple[ServerConfig, ApiRequest]:
         """
             Initializes and returns the server configuration and ApiRequest instance.
+
+            Args:
+                server_config: Optional server configuration. If omitted, the selected
+                    configuration is loaded from QGIS settings.
 
             Returns:
                 tuple[ServerConfig, ApiRequest]: The server configuration and API request objects.
         """
-        server_config = ServerConfig.getParamsFromSettings(self.serverConfigComboBox.currentText())
-        api_request = ApiRequest(server_config)
-        return server_config, api_request
+        selected_server_config = server_config
+        if selected_server_config is None:
+            selected_server_config = ServerConfig.getParamsFromSettings(self.serverConfigComboBox.currentText())
+        api_request = ApiRequest(selected_server_config)
+        return selected_server_config, api_request
 
     def validate_project_storage(self, project_storage_type: str) -> bool:
         """Validates that the current QGIS project storage is supported."""
@@ -388,6 +394,36 @@ class MainDialog(BASE, WIDGET):
             return False
 
         return True
+
+    def validate_server_url_for_project_storage(
+        self, project_storage_type: str, server_config: ServerConfig
+    ) -> bool:
+        """Validates that the server endpoint matches the project's storage type."""
+        uses_postgresql_wrapper = is_postgresql_qgis_server_url(server_config.qgis_server_path)
+
+        if project_storage_type == PROJECT_STORAGE_LOCAL and uses_postgresql_wrapper:
+            show_fail_box(
+                self.tr("Failed"),
+                self.tr(
+                    "The QGIS project is stored locally and requires a direct QGIS Server "
+                    "base URL, for example /cgi-bin/qgis_mapserv.fcgi. The /qgis/ URL is "
+                    "reserved for PostgreSQL projects."
+                )
+            )
+            return False
+
+        if project_storage_type == PROJECT_STORAGE_POSTGRESQL and not uses_postgresql_wrapper:
+            show_fail_box(
+                self.tr("Failed"),
+                self.tr(
+                    "The QGIS project is stored in PostgreSQL and requires a QGIS Server "
+                    "base URL containing /qgis/."
+                )
+            )
+            return False
+
+        return True
+
 
     def run(self) -> None:
         """
@@ -413,11 +449,6 @@ class MainDialog(BASE, WIDGET):
         api_request = None
         try:
             action = "publish" if self.publishRadioButton.isChecked() else "update"
-            if action == "publish" and self.mbSlugComboBox.currentText() == '':
-                show_fail_box(self.tr("Please complete Mapbender parameters"),
-                                 self.tr("Please enter a valid Mapbender URL title"))
-                return
-
             project_storage_type = get_qgis_project_storage_type()
             QgsMessageLog.logMessage(
                 f"Evaluated QGIS project storage: {project_storage_type}",
@@ -426,7 +457,14 @@ class MainDialog(BASE, WIDGET):
             )
             if not self.validate_project_storage(project_storage_type):
                 return
-            server_config, api_request = self.initialize_api_request()
+            server_config = ServerConfig.getParamsFromSettings(self.serverConfigComboBox.currentText())
+            if not self.validate_server_url_for_project_storage(project_storage_type, server_config):
+                return
+            if action == "publish" and self.mbSlugComboBox.currentText() == '':
+                show_fail_box(self.tr("Please complete Mapbender parameters"),
+                              self.tr("Please enter a valid Mapbender URL title"))
+                return
+            server_config, api_request = self.initialize_api_request(server_config)
             if not api_request.token:
                 return
 
