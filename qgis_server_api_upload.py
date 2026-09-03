@@ -1,11 +1,13 @@
 import os
 import shutil
 from typing import Optional
+from urllib.parse import urlencode
 
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.core import QgsMessageLog, Qgis
 
 from .helpers import (
+    append_query_to_url,
     get_size_and_unit,
     show_fail_box,
     waitCursor,
@@ -46,11 +48,14 @@ class QgisServerApiUpload:
                 str: The WMS URL.
         """
 
-        wms_service_version_request = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities&map="
         server_project_dir = self.source_project_file_name.split('.')[0]
-        wms_url = (f'{server_config.qgis_server_path}'
-                   f'{wms_service_version_request}{upload_dir}{server_project_dir}/'
-                   f'{self.source_project_file_name}')
+        query = urlencode({
+            "SERVICE": "WMS",
+            "VERSION": "1.3.0",
+            "REQUEST": "GetCapabilities",
+            "map": f"{upload_dir}{server_project_dir}/{self.source_project_file_name}",
+        })
+        wms_url = append_query_to_url(server_config.qgis_server_path, query)
         QgsMessageLog.logMessage(f"WMS URL: {wms_url}", TAG, level=Qgis.MessageLevel.Info)
         return wms_url
 
