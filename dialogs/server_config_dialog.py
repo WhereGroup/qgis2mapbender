@@ -9,9 +9,22 @@ from qgis.PyQt.QtWidgets import QDialogButtonBox, QLineEdit, QRadioButton, QLabe
 from qgis.core import QgsMessageLog, Qgis
 
 from ..api_request import ApiRequest
-from ..helpers import show_success_box, list_qgs_settings_child_groups, show_fail_box, uri_validator, waitCursor
+from ..helpers import (
+    get_qgis_project_storage_type,
+    show_success_box,
+    list_qgs_settings_child_groups,
+    show_fail_box,
+    uri_validator,
+    waitCursor,
+)
+from ..qgis_server_postgresql_wms import get_postgresql_project_wms_url
 from ..server_config import ServerConfig
-from ..settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG, REQUEST_TIMEOUT_SIMPLE
+from ..settings import (
+    PLUGIN_SETTINGS_SERVER_CONFIG_KEY,
+    PROJECT_STORAGE_POSTGRESQL,
+    TAG,
+    REQUEST_TIMEOUT_SIMPLE,
+)
 
 # Dialog from .ui file
 WIDGET, BASE = uic.loadUiType(os.path.join(
@@ -70,7 +83,9 @@ class ServerConfigDialog(BASE, WIDGET):
         button_save.setText(self.tr('Save'))
 
         self.serverConfigNameLineEdit.setToolTip('Custom server configuration name without blank spaces')
-        self.qgisServerUrlLineEdit.setToolTip('Example: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi')
+        self.qgisServerUrlLineEdit.setToolTip(
+            self.tr('Example: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi or [SERVER_NAME]/qgis/')
+        )
         self.mbBasisUrlLineEdit.setToolTip('Example: [SERVER_NAME]/mapbender/index_dev.php/')
 
         # QLineEdit validators
@@ -163,14 +178,25 @@ class ServerConfigDialog(BASE, WIDGET):
         failed_tests = []
         successful_tests = []
 
-        # Test 1: QGIS Servre-URL
-        wmsServiceRequest = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities"
-        qgisServerUrl = (f'{configFromForm.qgis_server_path}{wmsServiceRequest}')
-        errorStr = self.testHttpConn(qgisServerUrl, 'QGIS Servre')
+        # Test 1: QGIS Server URL
+        project_storage_type = get_qgis_project_storage_type()
+        qgis_server_test_name = self.tr('QGIS Server')
+        if project_storage_type == PROJECT_STORAGE_POSTGRESQL:
+            qgis_server_test_name = self.tr('QGIS Server PostgreSQL wrapper')
+            qgisServerUrl = get_postgresql_project_wms_url(configFromForm)
+        else:
+            wmsServiceRequest = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities"
+            qgisServerUrl = f'{configFromForm.qgis_server_path}{wmsServiceRequest}'
+
+        errorStr = self.testHttpConn(qgisServerUrl, qgis_server_test_name)
         if errorStr:
             failed_tests.append(errorStr)
         else:
-            successful_tests.append(self.tr("Connection to QGIS Server was successful."))
+            successful_tests.append(
+                self.tr("Connection to {server_name} was successful.").format(
+                    server_name=qgis_server_test_name
+                )
+            )
 
         # Test 2: Mapbender-URL
         mapbenderUrl = configFromForm.mb_basis_url
