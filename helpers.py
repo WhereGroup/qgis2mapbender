@@ -65,7 +65,7 @@ def qgis_project_is_saved() -> bool:
     """
     source_project_file_path = QgsProject.instance().fileName()
     if not source_project_file_path:
-        show_fail_box('Failed', "Please use the QGIS2Mapbender from a saved QGIS-Project")
+        show_fail_box('Failed', "The QGIS project has not been saved. Please save the project before publishing or updating.")
         return False
     return True
 
