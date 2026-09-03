@@ -9,11 +9,8 @@ from qgis.PyQt.QtWidgets import QMessageBox
 from qgis.core import Qgis, QgsApplication, QgsProject, QgsSettings, QgsMessageLog
 
 from .settings import (
-    DATABASE_PROJECT_STORAGE_BACKENDS,
     PLUGIN_SETTINGS_SERVER_CONFIG_KEY,
-    PROJECT_STORAGE_DATABASE,
     PROJECT_STORAGE_LOCAL,
-    PROJECT_STORAGE_UNSUPPORTED,
     PROJECT_STORAGE_UNSAVED,
     TAG,
 )
@@ -88,7 +85,6 @@ def get_qgis_project_storage_type(project=None) -> str:
         str: One of the project storage type constants from ``settings.py``.
     """
     qgis_project = project if project is not None else QgsProject.instance()
-    storage_backend = None
     if not qgis_project.fileName():
         project_storage_type = PROJECT_STORAGE_UNSAVED
     else:
@@ -96,16 +92,11 @@ def get_qgis_project_storage_type(project=None) -> str:
         if project_storage is None:
             project_storage_type = PROJECT_STORAGE_LOCAL
         else:
-            storage_backend = str(project_storage.type()).lower()
-            project_storage_type = (
-                PROJECT_STORAGE_DATABASE
-                if storage_backend in DATABASE_PROJECT_STORAGE_BACKENDS
-                else PROJECT_STORAGE_UNSUPPORTED
-            )
+            project_storage_backend = project_storage.type()
+            project_storage_type = str(project_storage_backend).lower()
 
-    backend_info = f" (backend: {storage_backend})" if storage_backend else ""
     QgsMessageLog.logMessage(
-        f"Evaluated QGIS project storage: {project_storage_type}{backend_info}",
+        f"Evaluated QGIS project storage: {project_storage_type}",
         TAG,
         level=Qgis.MessageLevel.Info
     )

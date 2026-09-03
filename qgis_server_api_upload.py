@@ -3,31 +3,39 @@ import shutil
 from typing import Optional
 
 from qgis.PyQt.QtCore import QCoreApplication
-from qgis.core import QgsMessageLog, Qgis
+from qgis.core import QgsMessageLog, Qgis, QgsProject
 
-from .helpers import waitCursor, get_size_and_unit, show_fail_box
+from .helpers import (
+    #append_query_to_url,
+    get_qgis_project_storage_type,
+    get_size_and_unit,
+    show_fail_box,
+    waitCursor,
+)
 from .server_config import ServerConfig
-from .settings import TAG
+from .settings import PROJECT_STORAGE_LOCAL, PROJECT_STORAGE_POSTGRESQL, TAG
 
 
 class QgisServerApiUpload:
     """
         Handles the process of zipping, uploading, and cleaning up QGIS project files for QGIS Server API integration.
     """
-    def __init__(self, api_request, paths) -> None:
+    def __init__(self, api_request, paths=None, project_storage_type: Optional[str] = None) -> None:
         """
             Initializes the QgisServerApiUpload object with necessary paths and API request handler.
 
             Args:
                 api_request: The API request handler for uploading the project.
-                paths: An object containing paths related to the QGIS project.
-            Returns:
-                None
+                paths: An object containing paths related to a local QGIS project.
+                project_storage_type: Optional storage type of the current QGIS project.
+                Returns:
+                    None
         """
-        self.source_project_dir_path = paths.source_project_dir_path
-        self.source_project_dir_name = paths.source_project_dir_name
-        self.source_project_file_name = paths.source_project_file_name
-        self.source_project_zip_file_path = paths.source_project_zip_file_path
+        self.project_storage_type = project_storage_type or get_qgis_project_storage_type()
+        self.source_project_dir_path = paths.source_project_dir_path if paths else None
+        self.source_project_dir_name = paths.source_project_dir_name if paths else None
+        self.source_project_file_name = paths.source_project_file_name if paths else None
+        self.source_project_zip_file_path = paths.source_project_zip_file_path if paths else None
         self.api_request = api_request
 
     def get_wms_url(self, server_config: ServerConfig, upload_dir: str) -> str:
@@ -56,6 +64,14 @@ class QgisServerApiUpload:
             Returns:
                 Optional[str]: status code
         """
+        if self.project_storage_type != PROJECT_STORAGE_LOCAL:
+            QgsMessageLog.logMessage(
+                f"Upload skipped. No project upload needed. Project storage: {self.project_storage_type}",
+                TAG,
+                level=Qgis.MessageLevel.Warning
+            )
+            return None, None
+
         status_code = None
         upload_dir = None
         # Step 1: Create a ZIP of the local project directory

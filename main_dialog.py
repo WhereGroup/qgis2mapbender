@@ -22,8 +22,9 @@ from .paths import Paths
 from .server_config import ServerConfig
 from .settings import (
     PLUGIN_SETTINGS_SERVER_CONFIG_KEY,
-    PROJECT_STORAGE_DATABASE,
-    PROJECT_STORAGE_UNSUPPORTED,
+    PROJECT_STORAGE_GEOPACKAGE,
+    PROJECT_STORAGE_POSTGRESQL,
+    PROJECT_STORAGE_LOCAL,
     TAG,
 )
 
@@ -127,13 +128,18 @@ class MainDialog(BASE, WIDGET):
     def update_project_storage_hint(self) -> None:
         """Updates the upload hint for the currently open QGIS project."""
         project_storage_type = get_qgis_project_storage_type()
-        if project_storage_type == PROJECT_STORAGE_DATABASE:
-            hint = self.tr("The QGIS project is stored in a database.")
-        elif project_storage_type == PROJECT_STORAGE_UNSUPPORTED:
-            hint = self.tr("The storage type of the current QGIS project is not supported.")
+        hint_style = ""
+
+        if project_storage_type == PROJECT_STORAGE_POSTGRESQL:
+            hint = self.tr(f"The QGIS project is stored in a database ({project_storage_type}).")
+        elif project_storage_type == PROJECT_STORAGE_LOCAL:
+            hint = self.tr("The QGIS project is stored locally and will be uploaded to the server. If the QGIS project "
+                           "already exists on the server, it will be overwritten")
         else:
-            hint = self.tr("If the QGIS project already exists on the server, it will be overwritten")
+            hint = self.tr(f"The storage type of the current QGIS project ({project_storage_type}) is not supported.")
+            hint_style = "color: red;"
         self.projectStorageHintLabel.setText(hint)
+        self.projectStorageHintLabel.setStyleSheet(hint_style)
 
     def setupConnections(self) -> None:
         """
@@ -361,6 +367,17 @@ class MainDialog(BASE, WIDGET):
         api_request = ApiRequest(server_config)
         return server_config, api_request
 
+    def validate_project_storage(self, project_storage_type: str) -> bool:
+        """Validates that the current QGIS project storage is supported."""
+        if project_storage_type not in PROJECT_STORAGE_LOCAL and project_storage_type not in PROJECT_STORAGE_POSTGRESQL:
+            show_fail_box(
+                self.tr("Unsupported QGIS project storage"),
+                self.tr("The storage type of the current QGIS project is not supported.")
+            )
+            return False
+
+        return True
+
     def run(self) -> None:
         """
             Executes the publishing or updating process for the current QGIS project.
@@ -390,6 +407,18 @@ class MainDialog(BASE, WIDGET):
                                  self.tr("Please enter a valid Mapbender URL title"))
                 return
 
+            project_storage_type = get_qgis_project_storage_type()
+            if project_storage_type == PROJECT_STORAGE_GEOPACKAGE:
+                QgsMessageLog.logMessage(
+                    "GeoPackage project upload is not supported.",
+                    TAG,
+                    level=Qgis.MessageLevel.Info
+                )
+                show_fail_box(self.tr("Failed"), f"GeoPackage project upload is not supported.")
+                return
+
+            if not self.validate_project_storage(project_storage_type):
+                return
             server_config, api_request = self.initialize_api_request()
             if not api_request.token:
                 return

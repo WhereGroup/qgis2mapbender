@@ -13,7 +13,7 @@ MAX_API_ERROR_MESSAGE_LENGTH = 500
 
 # QGIS project storage types
 PROJECT_STORAGE_LOCAL = 'local'
-PROJECT_STORAGE_DATABASE = 'database'
-PROJECT_STORAGE_UNSUPPORTED = 'unsupported'
+PROJECT_STORAGE_GEOPACKAGE = 'geopackage'
+PROJECT_STORAGE_POSTGRESQL = 'postgresql'
 PROJECT_STORAGE_UNSAVED = 'unsaved'
-DATABASE_PROJECT_STORAGE_BACKENDS = frozenset({'geopackage', 'postgresql'})
+
