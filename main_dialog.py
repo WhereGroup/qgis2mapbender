@@ -372,7 +372,7 @@ class MainDialog(BASE, WIDGET):
         if project_storage_type not in PROJECT_STORAGE_LOCAL and project_storage_type not in PROJECT_STORAGE_POSTGRESQL:
             show_fail_box(
                 self.tr("Unsupported QGIS project storage"),
-                self.tr("The storage type of the current QGIS project is not supported.")
+                self.tr(f"The storage type  of the current QGIS project ({project_storage_type}) is not supported.")
             )
             return False
 
@@ -408,15 +408,6 @@ class MainDialog(BASE, WIDGET):
                 return
 
             project_storage_type = get_qgis_project_storage_type()
-            if project_storage_type == PROJECT_STORAGE_GEOPACKAGE:
-                QgsMessageLog.logMessage(
-                    "GeoPackage project upload is not supported.",
-                    TAG,
-                    level=Qgis.MessageLevel.Info
-                )
-                show_fail_box(self.tr("Failed"), f"GeoPackage project upload is not supported.")
-                return
-
             if not self.validate_project_storage(project_storage_type):
                 return
             server_config, api_request = self.initialize_api_request()
