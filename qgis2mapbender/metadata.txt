@@ -3,7 +3,7 @@ name=QGIS2Mapbender
 author=WhereGroup (Carmen Viesca, Paolo Favero, Peter Gipper, Christoph Welker, Dennis Davidsohn, Lena Hackenjos)
 email=info@wheregroup.com
 description=QGIS plugin to populate Mapbender with WMS services from QGIS Server.
-about=This QGIS plugin exports your project as a QGIS Server WMS (Web Map Service) and publishes it in a Mapbender application (https://mapbender.org). 
+about=This QGIS plugin exports your project as a QGIS Server WMS (Web Map Service) and publishes it in a Mapbender application (https://mapbender.org). Server-side Linux/Docker templates for PostgreSQL projects: https://github.com/WhereGroup/QGIS2Mapbender/tree/main/scripts
  System Requirements: 
  
  - Please note that QGIS2Mapbender version >= 1.0.0 needs Mapbender version >= 4.1.2.
@@ -20,7 +20,7 @@ about=This QGIS plugin exports your project as a QGIS Server WMS (Web Map Servic
  
  You find a detailed documentation at https://github.com/WhereGroup/QGIS2Mapbender/blob/main/README.md
  
- Docker: QGIS Server and Mapbender can be run as Docker containers. 
+ Docker: QGIS Server and Mapbender can be run as Docker containers. PostgreSQL projects are supported with the Apache wrapper in both direct Linux and Docker deployments.
 
 homepage=https://github.com/WhereGroup/QGIS2Mapbender
 repository=https://github.com/WhereGroup/QGIS2Mapbender
@@ -32,6 +32,6 @@ version=1.1.0
 qgisMinimumVersion=3.2
 qgisMaximumVersion=4.99
 
-icon=qgis2mapbender.png
+icon=resources/icons/qgis2mapbender.png
 experimental=False
 deprecated=False

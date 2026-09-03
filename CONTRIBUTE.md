@@ -4,7 +4,7 @@ Contributors are welcome to extend the plugin's features further. Please fork th
 
 ## Translations
 
-Translation files are placed in the folder i18n of the plugin. 
+Translation files are placed in the folder qgis2mapbender/i18n of the plugin.
 
 You can copy an existing .ts file and translate it to your language (sections translation). 
 Please name the new file according to the following scheme: `xx.ts`, where `xx` is the [ISO 639-1 language code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) of your language (e.g. `de` for German, `es` for Spanish, `it` for Italian, etc.).
