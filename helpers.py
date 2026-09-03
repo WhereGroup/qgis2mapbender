@@ -14,7 +14,13 @@ from .settings import (
     PROJECT_STORAGE_UNSAVED,
 )
 
-from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout, QLabel, QDialogButtonBox
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QVBoxLayout,
+    QLabel,
+    QDialogButtonBox,
+    QSizePolicy,
+)
 
 
 
@@ -184,6 +190,8 @@ def show_success_link_box(title: str, text: str) -> int:
 
     icon_label = QLabel()
     icon_label.setPixmap(QPixmap(':/images/themes/default/mIconSuccess.svg'))
+    icon_label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+    icon_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     layout.addWidget(icon_label)
 
     message_label = QLabel()
@@ -191,6 +199,12 @@ def show_success_link_box(title: str, text: str) -> int:
     message_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
     message_label.setOpenExternalLinks(True)
     message_label.setWordWrap(True)
+    message_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    available_width = QApplication.primaryScreen().availableGeometry().width()
+    margins = layout.contentsMargins()
+    message_label.setMaximumWidth(
+        available_width // 2 - margins.left() - margins.right()
+    )
     message_label.setText(text)
     layout.addWidget(message_label)
 
@@ -198,6 +212,7 @@ def show_success_link_box(title: str, text: str) -> int:
     button_box.accepted.connect(dialog.accept)
     layout.addWidget(button_box)
 
+    dialog.adjustSize()
     return dialog.exec()
 
 
