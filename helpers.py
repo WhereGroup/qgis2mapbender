@@ -6,13 +6,12 @@ from contextlib import contextmanager
 
 from qgis.PyQt.QtGui import QPixmap
 from qgis.PyQt.QtWidgets import QMessageBox
-from qgis.core import Qgis, QgsApplication, QgsProject, QgsSettings, QgsMessageLog
+from qgis.core import QgsApplication, QgsProject, QgsSettings
 
 from .settings import (
     PLUGIN_SETTINGS_SERVER_CONFIG_KEY,
     PROJECT_STORAGE_LOCAL,
     PROJECT_STORAGE_UNSAVED,
-    TAG,
 )
 
 from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout, QLabel, QDialogButtonBox
@@ -95,11 +94,6 @@ def get_qgis_project_storage_type(project=None) -> str:
             project_storage_backend = project_storage.type()
             project_storage_type = str(project_storage_backend).lower()
 
-    QgsMessageLog.logMessage(
-        f"Evaluated QGIS project storage: {project_storage_type}",
-        TAG,
-        level=Qgis.MessageLevel.Info
-    )
     return project_storage_type
 
 

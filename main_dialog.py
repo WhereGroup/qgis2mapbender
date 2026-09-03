@@ -419,6 +419,11 @@ class MainDialog(BASE, WIDGET):
                 return
 
             project_storage_type = get_qgis_project_storage_type()
+            QgsMessageLog.logMessage(
+                f"Evaluated QGIS project storage: {project_storage_type}",
+                TAG,
+                level=Qgis.MessageLevel.Info
+            )
             if not self.validate_project_storage(project_storage_type):
                 return
             server_config, api_request = self.initialize_api_request()
