@@ -150,6 +150,27 @@
                     &lt;a href=&quot;{wms_url}&quot; style=&quot;color:black;&quot;&gt;{wms_url}&lt;/a&gt;
                     </translation>
     </message>
+    <message>
+        <location filename="../main_dialog.py" line="135"/>
+        <source>The QGIS project is stored in a database ({project_storage_type}).</source>
+        <translation>El proyecto QGIS está almacenado en una base de datos ({project_storage_type}).</translation>
+    </message>
+    <message>
+        <location filename="../main_dialog.py" line="138"/>
+        <source>The QGIS project is stored locally and will be uploaded to the server. If the QGIS project already exists on the server, it will be overwritten</source>
+        <translation>El proyecto QGIS está almacenado localmente y se subirá al servidor. Si el proyecto QGIS ya existe en el servidor, se sobrescribirá</translation>
+    </message>
+    <message>
+        <location filename="../main_dialog.py" line="143"/>
+        <location filename="../main_dialog.py" line="378"/>
+        <source>The storage type of the current QGIS project ({project_storage_type}) is not supported.</source>
+        <translation>El tipo de almacenamiento del proyecto QGIS actual ({project_storage_type}) no es compatible.</translation>
+    </message>
+    <message>
+        <location filename="../main_dialog.py" line="377"/>
+        <source>Unsupported QGIS project storage</source>
+        <translation>Almacenamiento de proyecto QGIS no compatible</translation>
+    </message>
 </context>
 <context>
     <name>ServerConfigDialog</name>
@@ -230,6 +251,31 @@ No se pudieron ejecutar las pruebas de la API (generación de tokens, subida al 
         <location filename="../dialogs/server_config_dialog.py" line="173"/>
         <source>Connection to QGIS Server was successful.</source>
         <translation>La conexión al servidor QGIS fue exitosa.</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="86"/>
+        <source>Example: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi or [SERVER_NAME]/qgis/</source>
+        <translation>Ejemplo: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi o [SERVER_NAME]/qgis/</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="183"/>
+        <source>QGIS Server</source>
+        <translation>QGIS Server</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="185"/>
+        <source>QGIS Server PostgreSQL wrapper</source>
+        <translation>Wrapper PostgreSQL de QGIS Server</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="196"/>
+        <source>Connection to {server_name} was successful.</source>
+        <translation>La conexión a {server_name} fue exitosa.</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="324"/>
+        <source>{server_name}/cgi-bin/qgis_mapserv.fcgi or {server_name}/qgis/</source>
+        <translation>{server_name}/cgi-bin/qgis_mapserv.fcgi o {server_name}/qgis/</translation>
     </message>
 </context>
 <context>

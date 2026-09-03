@@ -132,12 +132,16 @@ class MainDialog(BASE, WIDGET):
         hint_style = ""
 
         if project_storage_type == PROJECT_STORAGE_POSTGRESQL:
-            hint = self.tr(f"The QGIS project is stored in a database ({project_storage_type}).")
+            hint = self.tr(
+                "The QGIS project is stored in a database ({project_storage_type})."
+            ).format(project_storage_type=project_storage_type)
         elif project_storage_type == PROJECT_STORAGE_LOCAL:
             hint = self.tr("The QGIS project is stored locally and will be uploaded to the server. If the QGIS project "
                            "already exists on the server, it will be overwritten")
         else:
-            hint = self.tr(f"The storage type of the current QGIS project ({project_storage_type}) is not supported.")
+            hint = self.tr(
+                "The storage type of the current QGIS project ({project_storage_type}) is not supported."
+            ).format(project_storage_type=project_storage_type)
             hint_style = "color: red;"
         self.projectStorageHintLabel.setText(hint)
         self.projectStorageHintLabel.setStyleSheet(hint_style)
@@ -373,7 +377,9 @@ class MainDialog(BASE, WIDGET):
         if project_storage_type not in PROJECT_STORAGE_LOCAL and project_storage_type not in PROJECT_STORAGE_POSTGRESQL:
             show_fail_box(
                 self.tr("Unsupported QGIS project storage"),
-                self.tr(f"The storage type  of the current QGIS project ({project_storage_type}) is not supported.")
+                self.tr(
+                    "The storage type  of the current QGIS project ({project_storage_type}) is not supported."
+                ).format(project_storage_type=project_storage_type)
             )
             return False
 

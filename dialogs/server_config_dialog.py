@@ -321,7 +321,11 @@ class ServerConfigDialog(BASE, WIDGET):
             Returns:
                 None
         """
-        self.qgisServerUrlLineEdit.setPlaceholderText(newValue + '/cgi-bin/qgis_mapserv.fcgi')
+        self.qgisServerUrlLineEdit.setPlaceholderText(
+            self.tr(
+                '{server_name}/cgi-bin/qgis_mapserv.fcgi or {server_name}/qgis/'
+            ).format(server_name=newValue)
+        )
         self.mbBasisUrlLineEdit.setPlaceholderText(newValue + '/mapbender/index.php/')
         self.validateFields()
 

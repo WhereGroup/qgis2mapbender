@@ -150,6 +150,27 @@
                     &lt;a href=&quot;{wms_url}&quot; style=&quot;color:black;&quot;&gt;{wms_url}&lt;/a&gt;
                     </translation>
     </message>
+    <message>
+        <location filename="../main_dialog.py" line="135"/>
+        <source>The QGIS project is stored in a database ({project_storage_type}).</source>
+        <translation>Il progetto QGIS è memorizzato in un database ({project_storage_type}).</translation>
+    </message>
+    <message>
+        <location filename="../main_dialog.py" line="138"/>
+        <source>The QGIS project is stored locally and will be uploaded to the server. If the QGIS project already exists on the server, it will be overwritten</source>
+        <translation>Il progetto QGIS è memorizzato localmente e verrà caricato sul server. Se il progetto QGIS esiste già sul server, verrà sovrascritto</translation>
+    </message>
+    <message>
+        <location filename="../main_dialog.py" line="143"/>
+        <location filename="../main_dialog.py" line="378"/>
+        <source>The storage type of the current QGIS project ({project_storage_type}) is not supported.</source>
+        <translation>Il tipo di archiviazione del progetto QGIS corrente ({project_storage_type}) non è supportato.</translation>
+    </message>
+    <message>
+        <location filename="../main_dialog.py" line="377"/>
+        <source>Unsupported QGIS project storage</source>
+        <translation>Archiviazione del progetto QGIS non supportata</translation>
+    </message>
 </context>
 <context>
     <name>ServerConfigDialog</name>
@@ -230,6 +251,31 @@ Impossibile eseguire i test API (generazione di token, caricamento sul server, e
         <location filename="../dialogs/server_config_dialog.py" line="223"/>
         <source>Unable to connect to the {serverName}. Is the address correct and is the schema supplied (http)? Please see QGIS2Mapbender logs for more information.</source>
         <translation>Impossibile connettersi a {serverName}. L&apos;indirizzo è corretto e lo schema è stato fornito (http)? Consulta i log di QGIS2Mapbender per ulteriori informazioni.</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="86"/>
+        <source>Example: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi or [SERVER_NAME]/qgis/</source>
+        <translation>Esempio: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi o [SERVER_NAME]/qgis/</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="183"/>
+        <source>QGIS Server</source>
+        <translation>QGIS Server</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="185"/>
+        <source>QGIS Server PostgreSQL wrapper</source>
+        <translation>Wrapper PostgreSQL di QGIS Server</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="196"/>
+        <source>Connection to {server_name} was successful.</source>
+        <translation>Connessione a {server_name} avvenuta con successo.</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="324"/>
+        <source>{server_name}/cgi-bin/qgis_mapserv.fcgi or {server_name}/qgis/</source>
+        <translation>{server_name}/cgi-bin/qgis_mapserv.fcgi o {server_name}/qgis/</translation>
     </message>
 </context>
 <context>
