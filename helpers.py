@@ -103,6 +103,20 @@ def get_qgis_project_storage_type(project=None) -> str:
     return project_storage_type
 
 
+def append_query_to_url(url: str, query: str) -> str:
+    """Appends a query string without introducing a duplicate separator."""
+    normalized_query = query.lstrip('?&')
+    if not normalized_query:
+        return url
+    if url.endswith(('?', '&')):
+        separator = ''
+    elif '?' in url:
+        separator = '&'
+    else:
+        separator = '?'
+    return f'{url}{separator}{normalized_query}'
+
+
 def create_fail_box(title: str, text: str) -> QMessageBox:
     """
     Creates a QMessageBox with a failure icon.

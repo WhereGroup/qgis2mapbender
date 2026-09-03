@@ -11,6 +11,7 @@ from qgis.core import Qgis, QgsSettings, QgsMessageLog
 
 from .api_request import ApiRequest
 from .qgis_server_api_upload import QgisServerApiUpload
+from .qgis_server_postgresql_wms import get_postgresql_project_wms_url
 from .mapbender_api_upload import MapbenderApiUpload
 from .dialogs.server_config_dialog import ServerConfigDialog
 from .helpers import get_qgis_project_storage_type, qgis_project_is_saved, \
@@ -414,14 +415,28 @@ class MainDialog(BASE, WIDGET):
             if not api_request.token:
                 return
 
-            QgsMessageLog.logMessage("Preparing upload to QGIS server...", TAG, level=Qgis.MessageLevel.Info)
-            # Get server config: project paths
-            paths = Paths.get_paths()
-            qgis_server_upload = QgisServerApiUpload(api_request, paths)
-            status_code_server_upload, upload_dir = qgis_server_upload.process_and_upload_project()
+            if project_storage_type == PROJECT_STORAGE_POSTGRESQL:
+                QgsMessageLog.logMessage(
+                    f"Upload skipped. No project upload needed. Project storage: {project_storage_type}",
+                    TAG,
+                    level=Qgis.MessageLevel.Info
+                )
+                wms_url = get_postgresql_project_wms_url(server_config)
+            elif project_storage_type == PROJECT_STORAGE_LOCAL:
+                QgsMessageLog.logMessage(
+                    "Preparing upload to QGIS server...",
+                    TAG,
+                    level=Qgis.MessageLevel.Info
+                )
+                # Get server config: project paths
+                paths = Paths.get_paths()
+                qgis_server_upload = QgisServerApiUpload(api_request, paths)
+                status_code_server_upload, upload_dir = qgis_server_upload.process_and_upload_project()
 
-            if status_code_server_upload == 200 and upload_dir:
-                wms_url = qgis_server_upload.get_wms_url(server_config, upload_dir)
+                if status_code_server_upload == 200 and upload_dir:
+                    wms_url = qgis_server_upload.get_wms_url(server_config, upload_dir)
+            else:
+                return
             if not wms_url:
                 return
 
