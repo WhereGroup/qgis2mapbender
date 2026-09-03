@@ -23,7 +23,7 @@ from .paths import Paths
 from .server_config import ServerConfig
 from .settings import (
     PLUGIN_SETTINGS_SERVER_CONFIG_KEY,
-    PROJECT_STORAGE_GEOPACKAGE,
+    PROJECT_STORAGE_UNSAVED,
     PROJECT_STORAGE_POSTGRESQL,
     PROJECT_STORAGE_LOCAL,
     TAG,
@@ -138,6 +138,10 @@ class MainDialog(BASE, WIDGET):
         elif project_storage_type == PROJECT_STORAGE_LOCAL:
             hint = self.tr("The QGIS project is stored locally and will be uploaded to the server. If the QGIS project "
                            "already exists on the server, it will be overwritten")
+        elif project_storage_type == PROJECT_STORAGE_UNSAVED:
+            hint = self.tr(
+                "The QGIS project has not been saved. Please save the project before publishing or updating.")
+            hint_style = "color: red;"
         else:
             hint = self.tr(
                 "The storage type of the current QGIS project ({project_storage_type}) is not supported."
