@@ -98,9 +98,8 @@ def get_qgis_project_storage_type(project=None) -> str:
 
 
 def append_query_to_url(url: str, query: str) -> str:
-    """Appends a query string without introducing a duplicate separator."""
-    normalized_query = query.lstrip('?&')
-    if not normalized_query:
+    """Appends a separator-free query string without duplicating the separator."""
+    if not query:
         return url
     if url.endswith(('?', '&')):
         separator = ''
@@ -108,7 +107,7 @@ def append_query_to_url(url: str, query: str) -> str:
         separator = '&'
     else:
         separator = '?'
-    return f'{url}{separator}{normalized_query}'
+    return f'{url}{separator}{query}'
 
 
 def create_fail_box(title: str, text: str) -> QMessageBox:
