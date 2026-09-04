@@ -6,7 +6,6 @@ source /data/bin/qgisserver.env
 : "${QGIS_DB_SERVICE:?QGIS_DB_SERVICE is required}"
 : "${QGIS_SERVER_BASE_URL:?QGIS_SERVER_BASE_URL is required}"
 : "${QGIS_SERVER_FCGI:?QGIS_SERVER_FCGI is required}"
-: "${PGSERVICEFILE:?PGSERVICEFILE is required}"
 
 extract_param() {
     echo "$QUERY_STRING" | tr '&' '\n' | grep "^$1=" | head -1 | cut -d= -f2-
