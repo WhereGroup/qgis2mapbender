@@ -8,10 +8,6 @@ source /data/bin/qgisserver.env
 : "${QGIS_SERVER_FCGI:?QGIS_SERVER_FCGI is required}"
 : "${PGSERVICEFILE:?PGSERVICEFILE is required}"
 
-export PGSERVICEFILE
-unset PGPASSFILE
-unset PGPASSWORD
-
 extract_param() {
     echo "$QUERY_STRING" | tr '&' '\n' | grep "^$1=" | head -1 | cut -d= -f2-
 }
