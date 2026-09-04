@@ -13,4 +13,4 @@ pb_tool.cfg
 .venv
 
 # scripts
-scripts/deploy_qgis_profiles.sh
+deploy_script/deploy_qgis_profiles.sh
