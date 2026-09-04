@@ -412,15 +412,15 @@ class MainDialog(BASE, WIDGET):
             )
             return False
 
-        if project_storage_type == PROJECT_STORAGE_POSTGRESQL and not uses_postgresql_wrapper:
-            show_fail_box(
-                self.tr("Failed"),
-                self.tr(
-                    "The QGIS project is stored in PostgreSQL and requires a QGIS Server "
-                    "base URL containing /qgis/."
-                )
-            )
-            return False
+        # if project_storage_type == PROJECT_STORAGE_POSTGRESQL and not uses_postgresql_wrapper:
+        #     show_fail_box(
+        #         self.tr("Failed"),
+        #         self.tr(
+        #             "The QGIS project is stored in PostgreSQL and requires a QGIS Server "
+        #             "base URL containing /qgis/."
+        #         )
+        #     )
+        #     return False
 
         return True
 
