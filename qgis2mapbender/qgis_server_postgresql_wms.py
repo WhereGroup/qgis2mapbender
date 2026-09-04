@@ -17,7 +17,6 @@ def get_postgresql_project_wms_url(server_config: ServerConfig) -> str:
         level=Qgis.MessageLevel.Info
     )
     project_uri = QgsProject.instance().fileName()
-    print(f"Project URI: {project_uri}")
     if not project_uri:
         return ""
 
@@ -28,8 +27,6 @@ def get_postgresql_project_wms_url(server_config: ServerConfig) -> str:
     project_name = project_parameters.get("project", [None])[0]
     schema = project_parameters.get("schema", [None])[0]
     service = project_parameters.get("service", [None])[0]
-    print(project_parameters)
-    print(service)
     if not project_name or not schema:
         QgsMessageLog.logMessage(
             "The PostgreSQL project URI does not contain a project name and schema.",
@@ -47,6 +44,5 @@ def get_postgresql_project_wms_url(server_config: ServerConfig) -> str:
     })
 
     wms_url = append_query_to_url(server_config.qgis_server_path, query)
-    print(f"WMS URL: {wms_url}")
     QgsMessageLog.logMessage(f"WMS URL: {wms_url}", TAG, level=Qgis.MessageLevel.Info)
     return wms_url
