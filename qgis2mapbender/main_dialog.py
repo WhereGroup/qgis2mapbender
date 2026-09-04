@@ -395,36 +395,6 @@ class MainDialog(BASE, WIDGET):
 
         return True
 
-    def validate_server_url_for_project_storage(
-        self, project_storage_type: str, server_config: ServerConfig
-    ) -> bool:
-        """Validates that the server endpoint matches the project's storage type."""
-        uses_postgresql_wrapper = is_postgresql_qgis_server_url(server_config.qgis_server_path)
-
-        if project_storage_type == PROJECT_STORAGE_LOCAL and uses_postgresql_wrapper:
-            show_fail_box(
-                self.tr("Failed"),
-                self.tr(
-                    "The QGIS project is stored locally and requires a direct QGIS Server "
-                    "base URL, for example /cgi-bin/qgis_mapserv.fcgi. The /qgis/ URL is "
-                    "reserved for PostgreSQL projects."
-                )
-            )
-            return False
-
-        # if project_storage_type == PROJECT_STORAGE_POSTGRESQL and not uses_postgresql_wrapper:
-        #     show_fail_box(
-        #         self.tr("Failed"),
-        #         self.tr(
-        #             "The QGIS project is stored in PostgreSQL and requires a QGIS Server "
-        #             "base URL containing /qgis/."
-        #         )
-        #     )
-        #     return False
-
-        return True
-
-
     def run(self) -> None:
         """
             Executes the publishing or updating process for the current QGIS project.
@@ -458,8 +428,6 @@ class MainDialog(BASE, WIDGET):
             if not self.validate_project_storage(project_storage_type):
                 return
             server_config = ServerConfig.getParamsFromSettings(self.serverConfigComboBox.currentText())
-            if not self.validate_server_url_for_project_storage(project_storage_type, server_config):
-                return
             if action == "publish" and self.mbSlugComboBox.currentText() == '':
                 show_fail_box(self.tr("Please complete Mapbender parameters"),
                               self.tr("Please enter a valid Mapbender URL title"))
