@@ -16,11 +16,13 @@ QGIS2Mapbender is published in the QGIS plugin repository. The installation is p
 Alternatively, a release can be downloaded here. The zipped folder can be installed manually. Click on the menu item **Plugins  ► Manage and Install Plugins**. Select the **Not Installed option** in the Plugin Manager dialog and upload the zip.
 
 ### Requirements on your local system
-- The QGIS project must be saved in the same folder as the data. Please note that, along with the QGIS project, all the files in the folder containing the QGIS project will also be uploaded to the server.
+- For local QGIS projects, the QGIS project must be saved in the same folder as the data. Please note that, along with the QGIS project, all the files in the folder containing the QGIS project will also be uploaded to the server.
+- QGIS projects stored in a PostgreSQL database are also supported.
 
 ### Requirements on your server
 - QGIS Server is installed on your server.
 - Mapbender is installed and configured on your server.
+- Additional information about the requirements for PostgreSQL-stored projects is provided below.
 
 ### Requirements for your Mapbender installation
 
@@ -69,7 +71,7 @@ A few comments on a standard configuration:
 | **QGIS Server URL**   | URL to access your QGIS Server              | http://localhost/cgi-bin/qgis_mapserv.fcgi   |
 
 
-### Deployment modes: direct Linux installation and Docker
+### Deployment modes
 
 The plugin supports both a standard Linux installation and Docker
 deployments. No Docker-specific setting is required in the plugin; configure
@@ -77,8 +79,9 @@ the URLs and server-side paths for the deployment being used.
 
 For local `.qgs` or `.qgz` projects, keep using the direct QGIS Server URL
 (for example `/cgi-bin/qgis_mapserv.fcgi`). The upload workflow is unchanged.
-For PostgreSQL projects, use the Apache wrapper URL described below in both
-deployment modes.
+
+For PostgreSQL projects, use the Apache wrapper URL described below when the
+wrapper is installed in the same environment as QGIS Server.
 
 When QGIS Server and Mapbender run as Docker containers, make sure that the
 Mapbender upload directory **api_upload_dir** has the same path as the QGIS
@@ -86,13 +89,14 @@ Server project directory, as it is used in the QGIS Server request as the
 `MAP` path. A default QGIS project (`QGIS_PROJECT_FILE`) should **not** be
 specified.
 
-### PostgreSQL projects with the Apache wrapper (Linux server and Docker)
+### PostgreSQL projects with the Apache wrapper (Linux)
 
 For a QGIS project stored in PostgreSQL, the plugin sends only the public
 project name and schema to the `/qgis/` endpoint. The wrapper adds the
 PostgreSQL service name on the server and QGIS Server resolves the connection
-through libpq. **PostgreSQL projects with the Apache wrapper are supported on
-Linux servers, including QGIS Server deployments in Docker containers.**
+through libpq. This avoids putting database connection details in the public
+WMS URL.
+
 Select this public `/qgis/` endpoint in the plugin's QGIS Server URL setting
 for PostgreSQL projects; use the direct QGIS Server endpoint for local
 projects.
@@ -109,14 +113,22 @@ The server files have the following roles:
 | `qgis_mapserv_wrapper.sh` | PostgreSQL projects exposed through Apache | `/data/bin/qgis_mapserv_wrapper.sh` |
 | `qgis-server-apache.conf` | Apache alias and process environment | `/etc/apache2/conf-available/qgis_server.conf` |
 | `qgisserver.env.example` | Wrapper deployment settings | `/data/bin/qgisserver.env` |
-| `pg_service.conf` | PostgreSQL service and credentials | `/data/config/pg_service.conf` |
-| `deploy_qgis_profiles.sh` | Local development only | Not required on the server |
 
-`pg_service.conf` is intentionally not shipped as an example: create it on
-the QGIS Server host or container. The service section must match
-`QGIS_DB_SERVICE` and contain the connection settings used by that service,
-including the password. Protect the file so only the QGIS Server process can
-read it. No `.pgpass` file and no `PGPASSFILE` setting are required.
+Create `pg_service.conf`on the QGIS Server host or container with a service section matching
+`QGIS_DB_SERVICE`, for example:
+
+```ini
+[replace_with_service_name]
+host=replace_with_postgresql_host
+port=5432
+dbname=replace_with_database
+user=replace_with_user
+password=replace_with_password
+```
+
+Replace every placeholder with the values for the target deployment. Protect
+the file so only the QGIS Server process can read it. No `.pgpass` file or
+`PGPASSFILE` setting is required.
 
 On Debian or Ubuntu, install the wrapper, its deployment settings, the
 server-side service file, and the Apache configuration as follows. Replace
@@ -143,22 +155,17 @@ QGIS Server host; it may differ from a local development port. The service
 file does not contain `schema` or `project`: those identify the project in the
 WMS request.
 
-The Apache configuration sets `PGSERVICEFILE` for libpq. Libpq is the
-PostgreSQL client library used by QGIS Server's PostgreSQL provider; it is not
-a plugin dependency and it is not part of every Linux installation. The
-QGIS Server package or container must provide the PostgreSQL provider and its
-libpq runtime dependency. Removing `.pgpass` does not remove the need for
-libpq: it still resolves the service name and opens the PostgreSQL connection
-using the credentials in `pg_service.conf`.
+The QGIS Server package or container must provide the
+PostgreSQL provider and its libpq runtime dependency. 
 
-If QGIS Server runs in Docker, make the wrapper, `qgisserver.env`, and
-`pg_service.conf` available inside that container and use paths that exist
-inside it in `qgis-server-apache.conf` and `qgisserver.env`. Mount the service
-file with permissions that allow the QGIS Server user to read it. The wrapper
-must run in the same host or container as the QGIS Server FastCGI executable.
-If only PostgreSQL and/or Mapbender are containerized, install the wrapper on
-the QGIS Server host as usual and use the published database address and port
-in `pg_service.conf`.
+If the QGIS Server environment is a Docker container, make the wrapper,
+`qgisserver.env`, and `pg_service.conf` available inside that container and
+use paths that exist inside it in `qgis-server-apache.conf` and
+`qgisserver.env`. Apache with `mod_fcgid` and the wrapper must run in the same
+container as the QGIS Server FastCGI executable. These files do not configure
+a wrapper in a separate Mapbender container. If only PostgreSQL and/or
+Mapbender are containerized, install the wrapper on the QGIS Server host as
+usual and use the published database address and port in `pg_service.conf`.
 
 If Mapbender and QGIS Server share a Docker network,
 `QGIS_SERVER_BASE_URL` may use the QGIS Server service name (for example
@@ -178,6 +185,7 @@ Enable the Apache configuration and reload Apache:
 
 ```bash
 sudo a2enmod cgi env fcgid
+sudo a2enconf serve-cgi-bin
 sudo a2enconf qgis_server
 sudo apachectl configtest
 sudo systemctl reload apache2
@@ -186,25 +194,6 @@ sudo systemctl reload apache2
 The name `qgis_server.conf` is a Debian/Ubuntu convention, not a QGIS Server
 requirement. An installed file named `qgis-server-apache.conf` is also valid;
 in that case enable it with `sudo a2enconf qgis-server-apache`.
-
-### Packaging and release
-
-The repository root contains documentation, tests, development files, and
-server-side templates. The installable plugin is the `qgis2mapbender/`
-directory; do not compress the repository root for a QGIS release.
-
-Use [qgis-plugin-ci](https://github.com/opengisch/qgis-plugin-ci/) to create a
-release archive from the repository root:
-
-```bash
-python -m pip install qgis-plugin-ci
-qgis-plugin-ci package 1.1.0
-```
-
-The resulting archive contains only the plugin package. The server-side
-templates remain available from the repository link in `metadata.txt` and are
-not installed through the QGIS Plugin Manager.
-
 
 ## Support
 info@wheregroup.com
