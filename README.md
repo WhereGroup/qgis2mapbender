@@ -65,10 +65,11 @@ The figure below shows a typical configuration of the connection to the server.
 
 A few comments on a standard configuration:
 
-| **Parameter**          | **Description**                                           | **Example**                          |
-|------------------------|-----------------------------------------------------------|-----------------------------------------------|
-| **Mapbender base URL** | Link to your Mapbender landing page (application overview) | http://localhost/mapbender/  |                                                                                                                                  |
-| **QGIS Server URL**   | URL to access your QGIS Server              | http://localhost/cgi-bin/qgis_mapserv.fcgi   |
+| **Parameter**                                      | **Description**                                           | **Example**                          |
+|----------------------------------------------------|-----------------------------------------------------------|-----------------------------------------------|
+| **Mapbender base URL**                             | Link to your Mapbender landing page (application overview) | http://localhost/mapbender/  |                                                                                                                                  |
+| **QGIS Server URL (for standard local projects)**  | URL to access your QGIS Server              | http://localhost/cgi-bin/qgis_mapserv.fcgi   |
+| **QGIS Server URL (for PostgreSQL QGIS projects)** | Apache wrapper URL for QGIS projects stored in PostgreSQL | http://localhost/qgis/ |
 
 
 ### Deployment modes
