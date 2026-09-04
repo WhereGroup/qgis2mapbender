@@ -11,3 +11,6 @@ pb_tool.cfg
 # VS Code
 .vscode
 .venv
+
+# scripts
+scripts/deploy_qgis_profiles.sh
