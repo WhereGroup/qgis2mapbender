@@ -43,6 +43,7 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
 
           qgis-plugin-ci release "${VERSION}" \
+            --release-tag "${GITHUB_REF_NAME}" \
             --github-token "${GITHUB_TOKEN}" \
             --osgeo-username "${OSGEO_USER}" \
             --osgeo-password "${OSGEO_PASSWORD}"
