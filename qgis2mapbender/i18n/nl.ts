@@ -83,6 +83,27 @@
         <source>Failed</source>
         <translation type="obsolete">Mislukt</translation>
     </message>
+    <message>
+        <location filename="../main_dialog.py" line="135"/>
+        <source>The QGIS project is stored in a database ({project_storage_type}).</source>
+        <translation>Het QGIS-project is opgeslagen in een database ({project_storage_type}).</translation>
+    </message>
+    <message>
+        <location filename="../main_dialog.py" line="138"/>
+        <source>The QGIS project is stored locally and will be uploaded to the server. If the QGIS project already exists on the server, it will be overwritten</source>
+        <translation>Het QGIS-project is lokaal opgeslagen en wordt naar de server geüpload. Als het QGIS-project al op de server bestaat, wordt het overschreven</translation>
+    </message>
+    <message>
+        <location filename="../main_dialog.py" line="143"/>
+        <location filename="../main_dialog.py" line="378"/>
+        <source>The storage type of the current QGIS project ({project_storage_type}) is not supported.</source>
+        <translation>Het opslagtype van het huidige QGIS-project ({project_storage_type}) wordt niet ondersteund.</translation>
+    </message>
+    <message>
+        <location filename="../main_dialog.py" line="377"/>
+        <source>Unsupported QGIS project storage</source>
+        <translation>Niet-ondersteund QGIS-projectopslagtype</translation>
+    </message>
 </context>
 <context>
     <name>MainDialog</name>
@@ -324,6 +345,31 @@
                     &lt;br&gt;&lt;br&gt;
                     &lt;a href=&quot;{wms_url}&quot; style=&quot;color:black;&quot;&gt;{wms_url}&lt;/a&gt;
                     </translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="86"/>
+        <source>Example: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi or [SERVER_NAME]/qgis/</source>
+        <translation>Voorbeeld: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi of [SERVER_NAME]/qgis/</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="183"/>
+        <source>QGIS Server</source>
+        <translation>QGIS Server</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="185"/>
+        <source>QGIS Server PostgreSQL wrapper</source>
+        <translation>QGIS Server PostgreSQL-wrapper</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="196"/>
+        <source>Connection to {server_name} was successful.</source>
+        <translation>Verbinding met {server_name} was succesvol.</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="324"/>
+        <source>{server_name}/cgi-bin/qgis_mapserv.fcgi or {server_name}/qgis/</source>
+        <translation>{server_name}/cgi-bin/qgis_mapserv.fcgi of {server_name}/qgis/</translation>
     </message>
 </context>
 <context>
@@ -568,6 +614,237 @@ API-tests (token genereren, uploaden naar server, etc.) konden niet worden uitge
         <location filename="../qgis_server_api_upload.py" line="88"/>
         <source>File not found: {path}</source>
         <translation>Bestand niet gevonden: {path}</translation>
+    </message>
+</context>
+<context>
+    <name>QGIS2Mapbender</name>
+    <message>
+        <source>Authentication failed. Please see logs under QGIS2Mapbender for more information.</source>
+        <translation>Authenticatie mislukt. Raadpleeg de logboeken onder QGIS2Mapbender voor meer informatie.</translation>
+    </message>
+    <message>
+        <source>Failed to obtain a valid token. Authentication failed</source>
+        <translation>Geen geldig token verkregen. Authenticatie mislukt</translation>
+    </message>
+    <message>
+        <source>The server response did not contain an authentication token.</source>
+        <translation>Het serverantwoord bevatte geen authenticatietoken.</translation>
+    </message>
+    <message>
+        <source>Upload failed</source>
+        <translation>Upload mislukt</translation>
+    </message>
+    <message>
+        <source>Upload to QGIS Server failed.&#10;&#10;{error}&#10;&#10;See the QGIS2Mapbender log for details.</source>
+        <translation>Upload naar QGIS Server mislukt.&#10;&#10;{error}&#10;&#10;Bekijk het QGIS2Mapbender-logboek voor meer informatie.</translation>
+    </message>
+    <message>
+        <source>The server response did not contain an upload directory.</source>
+        <translation>Het serverantwoord bevatte geen uploadmap.</translation>
+    </message>
+    <message>
+        <source>Upload to QGIS Server failed (HTTP {status_code}).&#10;&#10;{error}&#10;&#10;See the QGIS2Mapbender log for technical details.</source>
+        <translation>Upload naar QGIS Server mislukt (HTTP {status_code}).&#10;&#10;{error}&#10;&#10;Bekijk het QGIS2Mapbender-logboek voor technische details.</translation>
+    </message>
+    <message>
+        <source>The server returned an empty response.</source>
+        <translation>De server heeft een leeg antwoord teruggestuurd.</translation>
+    </message>
+    <message>
+        <source>The uploaded file</source>
+        <translation>Het geüploade bestand</translation>
+    </message>
+    <message>
+        <source>The server reported an internal error.</source>
+        <translation>De server heeft een interne fout gemeld.</translation>
+    </message>
+    <message>
+        <source>No response received from server</source>
+        <translation>Geen antwoord ontvangen van de server</translation>
+    </message>
+    <message>
+        <source>No response received from server.</source>
+        <translation>Geen antwoord ontvangen van de server.</translation>
+    </message>
+    <message>
+        <source>The server response did not contain a source ID.</source>
+        <translation>Het serverantwoord bevatte geen bron-ID.</translation>
+    </message>
+    <message>
+        <source>Unknown error</source>
+        <translation>Onbekende fout</translation>
+    </message>
+    <message>
+        <source>Custom server configuration name without blank spaces</source>
+        <translation>Aangepaste naam voor serverconfiguratie zonder spaties</translation>
+    </message>
+    <message>
+        <source>Example: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi or [SERVER_NAME]/qgis/</source>
+        <translation>Voorbeeld: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi of [SERVER_NAME]/qgis/</translation>
+    </message>
+    <message>
+        <source>Example: [SERVER_NAME]/mapbender/index_dev.php/</source>
+        <translation>Voorbeeld: [SERVER_NAME]/mapbender/index_dev.php/</translation>
+    </message>
+    <message>
+        <source>QGIS Server</source>
+        <translation>QGIS Server</translation>
+    </message>
+    <message>
+        <source>QGIS Server PostgreSQL wrapper</source>
+        <translation>PostgreSQL-wrapper van QGIS Server</translation>
+    </message>
+    <message>
+        <source>Connection to {server_name} was successful.</source>
+        <translation>Verbinding met {server_name} is geslaagd.</translation>
+    </message>
+    <message>
+        <source>{server_name}/cgi-bin/qgis_mapserv.fcgi or {server_name}/qgis/</source>
+        <translation>{server_name}/cgi-bin/qgis_mapserv.fcgi of {server_name}/qgis/</translation>
+    </message>
+    <message>
+        <source>Authentication saved in database. Configuration: {authcfg}</source>
+        <translation>Authenticatie opgeslagen in de database. Configuratie: {authcfg}</translation>
+    </message>
+    <message>
+        <source>Server configuration name already exists</source>
+        <translation>Naam van serverconfiguratie bestaat al</translation>
+    </message>
+    <message>
+        <source>Server configuration successfully saved</source>
+        <translation>Serverconfiguratie succesvol opgeslagen</translation>
+    </message>
+    <message>
+        <source>There are unsaved changes.</source>
+        <translation>Er zijn niet-opgeslagen wijzigingen.</translation>
+    </message>
+    <message>
+        <source>Do you want to save your changes before continuing?</source>
+        <translation>Wilt u uw wijzigingen opslaan voordat u doorgaat?</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Opslaan</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Annuleren</translation>
+    </message>
+    <message>
+        <source>Save failed</source>
+        <translation>Opslaan mislukt</translation>
+    </message>
+    <message>
+        <source>Could not save the QGIS project.&#10;&#10;{error_message}</source>
+        <translation>QGIS-project kon niet worden opgeslagen.&#10;&#10;{error_message}</translation>
+    </message>
+    <message>
+        <source>Failed</source>
+        <translation>Mislukt</translation>
+    </message>
+    <message>
+        <source>The QGIS project has not been saved. Please save the project before publishing or updating.</source>
+        <translation>Het QGIS-project is niet opgeslagen. Sla het project op voordat u het publiceert of bijwerkt.</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <source>Yes</source>
+        <translation>Ja</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nee</translation>
+    </message>
+    <message>
+        <source>Success</source>
+        <translation>Geslaagd</translation>
+    </message>
+    <message>
+        <source>The QGIS project is stored in a database ({project_storage_type}).</source>
+        <translation>Het QGIS-project is opgeslagen in een database ({project_storage_type}).</translation>
+    </message>
+    <message>
+        <source>The QGIS project is stored locally and will be uploaded to the server. If the QGIS project already exists on the server, it will be overwritten</source>
+        <translation>Het QGIS-project is lokaal opgeslagen en wordt naar de server geüpload. Als het QGIS-project al op de server bestaat, wordt het overschreven</translation>
+    </message>
+    <message>
+        <source>The storage type of the current QGIS project ({project_storage_type}) is not supported.</source>
+        <translation>Het opslagtype van het huidige QGIS-project ({project_storage_type}) wordt niet ondersteund.</translation>
+    </message>
+    <message>
+        <source>Unsupported QGIS project storage</source>
+        <translation>Niet-ondersteunde QGIS-projectopslag</translation>
+    </message>
+    <message>
+        <source>An error occurred during Mapbender publish: {error}</source>
+        <translation>Er is een fout opgetreden tijdens het publiceren naar Mapbender: {error}</translation>
+    </message>
+    <message>
+        <source>No source to update. WMS {wms_url} is not an existing source in Mapbender.</source>
+        <translation>Geen bron om bij te werken. WMS {wms_url} is geen bestaande bron in Mapbender.</translation>
+    </message>
+    <message>
+        <source>An error occurred during Mapbender update: {error}</source>
+        <translation>Er is een fout opgetreden tijdens het bijwerken naar Mapbender: {error}</translation>
+    </message>
+    <message>
+        <source>WMS layer information on Mapbender could not be displayed. Error: {error}.&#10;&#10;WMS was successfully created/updated but Mapbender upload will be interrupted.&#10;&#10;Link to Capabilities:&#10;{wms_url}</source>
+        <translation>WMS-laaginformatie in Mapbender kon niet worden weergegeven. Fout: {error}.&#10;&#10;WMS is succesvol gemaakt/bijgewerkt, maar de Mapbender-upload wordt onderbroken.&#10;&#10;Link naar Capabilities:&#10;{wms_url}</translation>
+    </message>
+    <message>
+        <source>WMS was successfully created but Mapbender upload will be interrupted:&#10;&#10;Failed to add WMS source. Error: {error}.&#10;&#10;Link to Capabilities:&#10;{wms_url}</source>
+        <translation>WMS is succesvol gemaakt, maar de Mapbender-upload wordt onderbroken:&#10;&#10;WMS-bron toevoegen mislukt. Fout: {error}.&#10;&#10;Link naar Capabilities:&#10;{wms_url}</translation>
+    </message>
+    <message>
+        <source>WMS was successfully updated on the server but Mapbender upload will be interrupted:&#10;&#10;WMS layer information on Mapbender could not be displayed. Error: {error}.&#10;&#10;Link to Capabilities:&#10;{wms_url}</source>
+        <translation>WMS is succesvol bijgewerkt op de server, maar de Mapbender-upload wordt onderbroken:&#10;&#10;WMS-laaginformatie in Mapbender kon niet worden weergegeven. Fout: {error}.&#10;&#10;Link naar Capabilities:&#10;{wms_url}</translation>
+    </message>
+    <message>
+        <source>WMS was successfully updated on the server.&#10;&#10;Failed to reload WMS with source ID #{source_id} in Mapbender. Error: {error}</source>
+        <translation>WMS is succesvol bijgewerkt op de server.&#10;&#10;WMS opnieuw laden met bron-ID #{source_id} in Mapbender mislukt. Fout: {error}</translation>
+    </message>
+    <message>
+        <source>Reloaded sources: {source_ids}. WMS could not be reloaded in all sources in Mapbender.</source>
+        <translation>Opnieuw geladen bronnen: {source_ids}. WMS kon niet in alle bronnen in Mapbender opnieuw worden geladen.</translation>
+    </message>
+    <message>
+        <source>WMS was successfully created/updated but Mapbender publishing failed:&#10;&#10;Failed to clone application '{template_slug}'. Error: {error}&#10;&#10;Link to Capabilities:&#10;{wms_url}</source>
+        <translation>WMS is succesvol gemaakt/bijgewerkt, maar publiceren naar Mapbender is mislukt:&#10;&#10;Toepassing '{template_slug}' klonen mislukt. Fout: {error}&#10;&#10;Link naar Capabilities:&#10;{wms_url}</translation>
+    </message>
+    <message>
+        <source>WMS successfully created/updated and uploaded/reloaded to Mapbender as source #{source_id}.&#10;&#10;Failed to assign source #{source_id} to application '{slug}'. Error: {error}.&#10;&#10;Link to Capabilities:&#10;{wms_url}</source>
+        <translation>WMS is succesvol gemaakt/bijgewerkt en als bron #{source_id} naar Mapbender geüpload/opnieuw geladen.&#10;&#10;Bron #{source_id} toewijzen aan toepassing '{slug}' mislukt. Fout: {error}.&#10;&#10;Link naar Capabilities:&#10;{wms_url}</translation>
+    </message>
+    <message>
+        <source>The response was not valid JSON.</source>
+        <translation>Het antwoord was geen geldige JSON.</translation>
+    </message>
+    <message>
+        <source>The JSON response has an unsupported structure.</source>
+        <translation>Het JSON-antwoord heeft een niet-ondersteunde structuur.</translation>
+    </message>
+    <message>
+        <source>The generated WMS URL is invalid.</source>
+        <translation>De gegenereerde WMS-URL is ongeldig.</translation>
+    </message>
+    <message>
+        <source>The generated WMS URL could not be reached. Please see the QGIS2Mapbender log for more information.</source>
+        <translation>De gegenereerde WMS-URL kon niet worden bereikt. Raadpleeg het QGIS2Mapbender-log voor meer informatie.</translation>
+    </message>
+    <message>
+        <source>The generated WMS URL returned HTTP status {status_code}.</source>
+        <translation>De gegenereerde WMS-URL retourneerde HTTP-status {status_code}.</translation>
+    </message>
+    <message>
+        <source>The server response is not a valid WMS capabilities document.</source>
+        <translation>Het antwoord van de server is geen geldig WMS-capabilitiesdocument.</translation>
+    </message>
+    <message>
+        <source>The generated WMS URL could not be validated. Please check the server configuration. Is the QGIS Server base URL correct?&#10;&#10;{error}&#10;&#10;The process was interrupted.&#10;&#10;Link to Capabilities:&#10;{wms_url}</source>
+        <translation>De gegenereerde WMS-URL kon niet worden gevalideerd. Controleer de serverconfiguratie. Is de basis-URL van de QGIS-server correct?&#10;&#10;{error}&#10;&#10;Het proces is onderbroken.&#10;&#10;Link naar Capabilities:&#10;{wms_url}</translation>
     </message>
 </context>
 </TS>

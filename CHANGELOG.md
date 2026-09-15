@@ -1,11 +1,13 @@
-## next version
+## v1.2.0
 
 ### Features:
+* Added support for QGIS projects stored in PostgreSQL via `pg_service.conf` ([#PR43](https://github.com/WhereGroup/qgis2mapbender/pull/43))
+* Added request timeouts and improved handling of non-JSON API responses ([#PR38](https://github.com/WhereGroup/qgis2mapbender/pull/38))
 * Added Portuguese translations ([#PR31](https://github.com/WhereGroup/qgis2mapbender/pull/31))
-* Add Information about how to create translations to CONTRIBUTE.md ([#PR35](https://github.com/WhereGroup/qgis2mapbender/pull/35))
-* Added ukrainian translations ([#PR34](https://github.com/WhereGroup/qgis2mapbender/pull/34))
-* Added Dutch translations ([#PR33](https://github.com/WhereGroup/qgis2mapbender/pull/33))
 * Added Polish translations ([#PR32](https://github.com/WhereGroup/qgis2mapbender/pull/32))
+* Added Dutch translations ([#PR33](https://github.com/WhereGroup/qgis2mapbender/pull/33))
+* Added ukrainian translations ([#PR34](https://github.com/WhereGroup/qgis2mapbender/pull/34))
+* Add Information about how to create translations to CONTRIBUTE.md ([#PR35](https://github.com/WhereGroup/qgis2mapbender/pull/35))
 
 
 ## v1.1.0
@@ -46,4 +48,3 @@
 * QGIS Server and Mapbender can also be run as Docker containers.
 * Rename dialogs in plugins.
 * In the "Server Configuration Manager" tab, add a button to test the SSH connection and verify access to the Mapbender and QGIS server URLs.
-

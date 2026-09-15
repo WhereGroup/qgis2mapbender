@@ -11,15 +11,24 @@ from qgis.core import Qgis, QgsSettings, QgsMessageLog
 
 from .api_request import ApiRequest
 from .qgis_server_api_upload import QgisServerApiUpload
+from .qgis_server_postgresql_wms import get_postgresql_project_wms_url
 from .mapbender_api_upload import MapbenderApiUpload
 from .dialogs.server_config_dialog import ServerConfigDialog
-from .helpers import qgis_project_is_saved, check_if_qgis_project_is_dirty_and_save, \
+from .helpers import get_qgis_project_storage_type, qgis_project_is_saved, \
+    check_if_qgis_project_is_dirty_and_save, \
     show_fail_box, show_success_box, show_success_link_box, \
     list_qgs_settings_child_groups, show_question_box, \
-    update_mb_slug_in_settings
+    update_mb_slug_in_settings, translate, \
+    check_wms_url
 from .paths import Paths
 from .server_config import ServerConfig
-from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY, TAG
+from .settings import (
+    PLUGIN_SETTINGS_SERVER_CONFIG_KEY,
+    PROJECT_STORAGE_UNSAVED,
+    PROJECT_STORAGE_POSTGRESQL,
+    PROJECT_STORAGE_LOCAL,
+    TAG,
+)
 
 # Dialog from .ui file
 WIDGET, BASE = uic.loadUiType(os.path.join(
@@ -39,6 +48,7 @@ class MainDialog(BASE, WIDGET):
     cloneTemplateRadioButton: QRadioButton
     serverTableWidget: QTableWidget
     warningFirstServerLabel: QLabel
+    projectStorageHintLabel: QLabel
     serverConfigComboBox: QComboBox
     mbSlugComboBox: QComboBox
     buttonBoxTab1: QDialogButtonBox
@@ -72,6 +82,7 @@ class MainDialog(BASE, WIDGET):
         """
         super().setupUi(widget)
         self.warningFirstServerLabel.setPixmap(QPixmap(':/images/themes/default/mIconWarning.svg'))
+        self.update_project_storage_hint()
         # Tabs
         self.tabWidget.setCurrentWidget(self.serverUploadTab)
 
@@ -115,6 +126,32 @@ class MainDialog(BASE, WIDGET):
         # Set Button Tab2 to english
         button_close_tab2 = self.buttonBoxTab2.button(QDialogButtonBox.StandardButton.Close)
         button_close_tab2.setText(self.tr("Close"))
+
+    def update_project_storage_hint(self) -> None:
+        """Updates the upload hint for the currently open QGIS project."""
+        project_storage_type = get_qgis_project_storage_type()
+        hint_style = ""
+
+        if project_storage_type == PROJECT_STORAGE_POSTGRESQL:
+            hint = translate(
+                "The QGIS project is stored in a database ({project_storage_type})."
+            ).format(project_storage_type=project_storage_type)
+        elif project_storage_type == PROJECT_STORAGE_LOCAL:
+            hint = translate(
+                "The QGIS project is stored locally and will be uploaded to the server. "
+                "If the QGIS project already exists on the server, it will be overwritten"
+            )
+        elif project_storage_type == PROJECT_STORAGE_UNSAVED:
+            hint = translate(
+                "The QGIS project has not been saved. Please save the project before publishing or updating.")
+            hint_style = "color: red;"
+        else:
+            hint = translate(
+                "The storage type of the current QGIS project ({project_storage_type}) is not supported."
+            ).format(project_storage_type=project_storage_type)
+            hint_style = "color: red;"
+        self.projectStorageHintLabel.setText(hint)
+        self.projectStorageHintLabel.setStyleSheet(hint_style)
 
     def setupConnections(self) -> None:
         """
@@ -331,16 +368,35 @@ class MainDialog(BASE, WIDGET):
         self.update_server_table()
         self.update_server_combo_box()
 
-    def initialize_api_request(self) -> tuple[ServerConfig, ApiRequest]:
+    def initialize_api_request(self, server_config: Optional[ServerConfig] = None) -> tuple[ServerConfig, ApiRequest]:
         """
             Initializes and returns the server configuration and ApiRequest instance.
+
+            Args:
+                server_config: Optional server configuration. If omitted, the selected
+                    configuration is loaded from QGIS settings.
 
             Returns:
                 tuple[ServerConfig, ApiRequest]: The server configuration and API request objects.
         """
-        server_config = ServerConfig.getParamsFromSettings(self.serverConfigComboBox.currentText())
-        api_request = ApiRequest(server_config)
-        return server_config, api_request
+        selected_server_config = server_config
+        if selected_server_config is None:
+            selected_server_config = ServerConfig.getParamsFromSettings(self.serverConfigComboBox.currentText())
+        api_request = ApiRequest(selected_server_config)
+        return selected_server_config, api_request
+
+    def validate_project_storage(self, project_storage_type: str) -> bool:
+        """Validates that the current QGIS project storage is supported."""
+        if project_storage_type not in PROJECT_STORAGE_LOCAL and project_storage_type not in PROJECT_STORAGE_POSTGRESQL:
+            show_fail_box(
+                translate("Unsupported QGIS project storage"),
+                translate(
+                    "The storage type of the current QGIS project ({project_storage_type}) is not supported."
+                ).format(project_storage_type=project_storage_type)
+            )
+            return False
+
+        return True
 
     def run(self) -> None:
         """
@@ -366,24 +422,64 @@ class MainDialog(BASE, WIDGET):
         api_request = None
         try:
             action = "publish" if self.publishRadioButton.isChecked() else "update"
+            project_storage_type = get_qgis_project_storage_type()
+            QgsMessageLog.logMessage(
+                f"Evaluated QGIS project storage: {project_storage_type}",
+                TAG,
+                level=Qgis.MessageLevel.Info
+            )
+            if not self.validate_project_storage(project_storage_type):
+                return
+            server_config = ServerConfig.getParamsFromSettings(self.serverConfigComboBox.currentText())
             if action == "publish" and self.mbSlugComboBox.currentText() == '':
                 show_fail_box(self.tr("Please complete Mapbender parameters"),
-                                 self.tr("Please enter a valid Mapbender URL title"))
+                              self.tr("Please enter a valid Mapbender URL title"))
                 return
-
-            server_config, api_request = self.initialize_api_request()
+            server_config, api_request = self.initialize_api_request(server_config)
             if not api_request.token:
                 return
 
-            QgsMessageLog.logMessage("Preparing upload to QGIS server...", TAG, level=Qgis.MessageLevel.Info)
-            # Get server config: project paths
-            paths = Paths.get_paths()
-            qgis_server_upload = QgisServerApiUpload(api_request, paths)
-            status_code_server_upload, upload_dir = qgis_server_upload.process_and_upload_project()
+            if project_storage_type == PROJECT_STORAGE_POSTGRESQL:
+                QgsMessageLog.logMessage(
+                    f"Upload skipped. No project upload needed. Project storage: {project_storage_type}",
+                    TAG,
+                    level=Qgis.MessageLevel.Info
+                )
+                wms_url = get_postgresql_project_wms_url(server_config)
+            elif project_storage_type == PROJECT_STORAGE_LOCAL:
+                QgsMessageLog.logMessage(
+                    "Preparing upload to QGIS server...",
+                    TAG,
+                    level=Qgis.MessageLevel.Info
+                )
+                # Get server config: project paths
+                paths = Paths.get_paths()
+                qgis_server_upload = QgisServerApiUpload(api_request, paths)
+                status_code_server_upload, upload_dir = qgis_server_upload.process_and_upload_project()
 
-            if status_code_server_upload == 200 and upload_dir:
-                wms_url = qgis_server_upload.get_wms_url(server_config, upload_dir)
+                if status_code_server_upload == 200 and upload_dir:
+                    wms_url = qgis_server_upload.get_wms_url(server_config, upload_dir)
+            else:
+                return
             if not wms_url:
+                return
+
+            wms_validation_error = check_wms_url(wms_url)
+            if wms_validation_error:
+                message = translate(
+                    "The generated WMS URL could not be validated. "
+                    "Please check the server configuration. "
+                    "Is the QGIS Server base URL correct?\n\n"
+                    "{error}\n\n"
+                    "The process was interrupted.\n\n"
+                    "Link to Capabilities:\n{wms_url}"
+                ).format(error=wms_validation_error, wms_url=wms_url)
+                QgsMessageLog.logMessage(
+                    message,
+                    TAG,
+                    level=Qgis.MessageLevel.Critical,
+                )
+                show_fail_box(self.tr("Failed"), message)
                 return
 
             if action == "publish":
@@ -418,7 +514,7 @@ class MainDialog(BASE, WIDGET):
             mb_upload = MapbenderApiUpload(server_config, api_request, wms_url)
             exit_status_mb_upload, source_ids, is_reloaded = mb_upload.mb_upload()
             if exit_status_mb_upload != 0 or not source_ids:
-                QgsMessageLog.logMessage(f"FAILED mb_upload", TAG, level=Qgis.MessageLevel.Info)
+                QgsMessageLog.logMessage(f"FAILED Mapbender Upload", TAG, level=Qgis.MessageLevel.Info)
                 return
 
             if is_clone_app:
@@ -488,7 +584,12 @@ class MainDialog(BASE, WIDGET):
                 )
             #self.close()
         except Exception as e:
-            show_fail_box(self.tr("Failed"), f"An error occurred during Mapbender publish: {e}")
+            show_fail_box(
+                self.tr("Failed"),
+                translate("An error occurred during Mapbender publish: {error}").format(
+                    error=e
+                ),
+            )
             QgsMessageLog.logMessage(f"Error in mb_publish: {e}", TAG, level=Qgis.MessageLevel.Critical)
         return
 
@@ -509,7 +610,12 @@ class MainDialog(BASE, WIDGET):
             mb_reload = MapbenderApiUpload(server_config, api_request, wms_url)
             exit_status, source_ids = mb_reload.mb_reload()
             if exit_status != 0 or not source_ids:
-                show_fail_box(self.tr("Failed"), f"No source to update. WMS {wms_url} is not an existing source in Mapbender.")
+                show_fail_box(
+                    self.tr("Failed"),
+                    translate(
+                        "No source to update. WMS {wms_url} is not an existing source in Mapbender."
+                    ).format(wms_url=wms_url),
+                )
                 QgsMessageLog.logMessage(f"FAILED mb_update: No source to update. WMS {wms_url} is not an existing source in Mapbender.", TAG, level=Qgis.MessageLevel.Info)
                 return
             else:
@@ -533,6 +639,11 @@ class MainDialog(BASE, WIDGET):
                 )
 
         except Exception as e:
-            show_fail_box(self.tr("Failed"), f"An error occurred during Mapbender update: {e}")
+            show_fail_box(
+                self.tr("Failed"),
+                translate("An error occurred during Mapbender update: {error}").format(
+                    error=e
+                ),
+            )
             QgsMessageLog.logMessage(f"Error in mb_update: {e}", TAG, level=Qgis.MessageLevel.Critical)
         return

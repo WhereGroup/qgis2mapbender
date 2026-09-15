@@ -6,7 +6,7 @@ from html import unescape
 from qgis.core import QgsMessageLog, Qgis
 
 from .settings import TAG, REQUEST_TIMEOUT_API, MAX_API_ERROR_MESSAGE_LENGTH
-from .helpers import show_fail_box
+from .helpers import show_fail_box, translate
 
 
 class ApiRequest:
@@ -55,8 +55,10 @@ class ApiRequest:
             "username": self.server_config.username,
             "password": self.server_config.password
         }
-        ERROR_MSG_OTHER = "Authentication failed. Please see logs under QGIS2Mapbender for more information."
-        ERROR_MSG_TITLE = "Failed to obtain a valid token. Authentication failed"
+        ERROR_MSG_OTHER = translate(
+            "Authentication failed. Please see logs under QGIS2Mapbender for more information."
+        )
+        ERROR_MSG_TITLE = translate("Failed to obtain a valid token. Authentication failed")
 
         response = self._sendRequest(endpoint, "post", json=credentials)
         if response == None:
@@ -75,7 +77,7 @@ class ApiRequest:
             error_message = self._response_error_message(
                 response,
                 response_json,
-                "The server response did not contain an authentication token."
+                translate("The server response did not contain an authentication token."),
             )
             QgsMessageLog.logMessage(f"{ERROR_MSG_TITLE}: {error_message}", TAG, level=Qgis.MessageLevel.Critical)
             show_fail_box(ERROR_MSG_TITLE, error_message)
@@ -158,17 +160,19 @@ class ApiRequest:
                     f"Sending request to endpoint {endpoint} with file: {file_log}", TAG, level=Qgis.MessageLevel.Info)
                 response = self._sendRequest(endpoint, "post", files=files)
                 if response is None:
-                    error_upload_zip = "No response received from server."
+                    error_upload_zip = translate("No response received from server.")
                     QgsMessageLog.logMessage(
                         f"Upload to QGIS server failed: {error_upload_zip}",
                         TAG,
                         level=Qgis.MessageLevel.Critical
                     )
                     show_fail_box(
-                        "Upload failed",
-                        "Upload to QGIS Server failed.\n\n"
-                        f"{error_upload_zip}\n\n"
-                        "See the QGIS2Mapbender log for details."
+                        translate("Upload failed"),
+                        translate(
+                            "Upload to QGIS Server failed.\n\n"
+                            "{error}\n\n"
+                            "See the QGIS2Mapbender log for details."
+                        ).format(error=error_upload_zip),
                     )
                     return status_code, upload_dir, error_upload_zip
 
@@ -182,7 +186,9 @@ class ApiRequest:
                         error_upload_zip = self._response_error_message(
                             response,
                             response_json,
-                            "The server response did not contain an upload directory."
+                            translate(
+                                "The server response did not contain an upload directory."
+                            ),
                         )
 
                 if error_upload_zip:
@@ -194,10 +200,15 @@ class ApiRequest:
                         level=Qgis.MessageLevel.Critical
                     )
                     show_fail_box(
-                        "Upload failed",
-                        f"Upload to QGIS Server failed (HTTP {status_code}).\n\n"
-                        f"{error_upload_zip}\n\n"
-                        "See the QGIS2Mapbender log for technical details."
+                        translate("Upload failed"),
+                        translate(
+                            "Upload to QGIS Server failed (HTTP {status_code}).\n\n"
+                            "{error}\n\n"
+                            "See the QGIS2Mapbender log for technical details."
+                        ).format(
+                            status_code=status_code,
+                            error=error_upload_zip,
+                        ),
                     )
                 else:
                     QgsMessageLog.logMessage(
@@ -212,14 +223,20 @@ class ApiRequest:
 
 
     @staticmethod
-    def _response_error_message(response: requests.Response, response_json: Optional[dict] = None,
-                                default_message: str = "The server returned an empty response.") -> str:
+    def _response_error_message(
+        response: requests.Response,
+        response_json: Optional[dict] = None,
+        default_message: Optional[str] = None,
+    ) -> str:
         """
         Returns the most useful error detail available from an API response.
 
         JSON error or message fields take precedence. For non-JSON responses, a concise detail
         is extracted from the response.
         """
+        if default_message is None:
+            default_message = translate("The server returned an empty response.")
+
         if response_json:
             for key in ("error", "message"):
                 message = response_json.get(key)
@@ -251,7 +268,7 @@ class ApiRequest:
         )
         cleaned_message = re.sub(
             r'The\s+""\s+file',
-            "The uploaded file",
+            translate("The uploaded file"),
             cleaned_message,
             flags=re.IGNORECASE
         )
@@ -259,7 +276,7 @@ class ApiRequest:
             "an error occurred: internal server error",
             "oops! an error occurred"
         }:
-            cleaned_message = "The server reported an internal error."
+            cleaned_message = translate("The server reported an internal error.")
 
         if len(cleaned_message) > MAX_API_ERROR_MESSAGE_LENGTH:
             message_end = MAX_API_ERROR_MESSAGE_LENGTH - len("...")
@@ -315,13 +332,12 @@ class ApiRequest:
         Returns:
             Optional[dict]: Parsed JSON, or None if parsing fails.
         """
-        if response is None:
-            return None
-
         try:
             response_json = response.json()
         except ValueError:
-            detail = self._extract_response_message(response.text) or "The response was not valid JSON."
+            detail = self._extract_response_message(response.text) or translate(
+                "The response was not valid JSON."
+            )
             self._log_response_summary(endpoint, response, detail)
             return None
 
@@ -329,7 +345,7 @@ class ApiRequest:
             self._log_response_summary(
                 endpoint,
                 response,
-                "The JSON response has an unsupported structure."
+                translate("The JSON response has an unsupported structure."),
             )
             return None
 
@@ -360,7 +376,7 @@ class ApiRequest:
 
         response = self._sendRequest(endpoint, "get", params=params)
         if response is None:
-            return 0, None, "No response received from server"
+            return 0, None, translate("No response received from server")
 
         response_json = self._parse_json_response(response, endpoint)
         if response.status_code != 200 or response_json is None:
@@ -409,7 +425,7 @@ class ApiRequest:
 
         response = self._sendRequest(endpoint, "get", params=params)
         if response is None:
-            return 0, None, "No response received from server"
+            return 0, None, translate("No response received from server")
 
         status_code = response.status_code
         response_json = self._parse_json_response(response, endpoint)
@@ -433,7 +449,7 @@ class ApiRequest:
                 error_wms_add = self._response_error_message(
                     response,
                     response_json,
-                    "The server response did not contain a source ID."
+                    translate("The server response did not contain a source ID."),
                 )
                 QgsMessageLog.logMessage(
                     f"WMS could not be added to Mapbender. HTTP {status_code}: {error_wms_add}",
@@ -441,7 +457,7 @@ class ApiRequest:
                     level=Qgis.MessageLevel.Critical
                 )
         else:
-            error_wms_add = response_json.get("error", "Unknown error")
+            error_wms_add = response_json.get("error", translate("Unknown error"))
             QgsMessageLog.logMessage(f"WMS could not be added to Mapbender. Reason: {error_wms_add}", TAG,
                                      level=Qgis.MessageLevel.Critical)
         return status_code, added_source_id, error_wms_add
@@ -465,7 +481,7 @@ class ApiRequest:
 
         response = self._sendRequest(endpoint, "get", params=params)
         if response is None:
-            return 0, {"error": "No response received from server"}
+            return 0, {"error": translate("No response received from server")}
 
         response_json = self._parse_json_response(response, endpoint)
         if response_json is None:
@@ -498,7 +514,7 @@ class ApiRequest:
 
         response = self._sendRequest(endpoint, "get", params=params)
         if response is None:
-            return 0, {"error": "No response received from server"}
+            return 0, {"error": translate("No response received from server")}
 
         response_json = self._parse_json_response(response, endpoint)
         if response_json is None:
@@ -524,7 +540,7 @@ class ApiRequest:
 
         response = self._sendRequest(endpoint, "get", params=params)
         if response is None:
-            error_message = "No response received from server"
+            error_message = translate("No response received from server")
             QgsMessageLog.logMessage(error_message, TAG, level=Qgis.MessageLevel.Critical)
             return 0, None
 

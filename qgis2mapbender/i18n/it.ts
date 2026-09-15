@@ -150,6 +150,27 @@
                     &lt;a href=&quot;{wms_url}&quot; style=&quot;color:black;&quot;&gt;{wms_url}&lt;/a&gt;
                     </translation>
     </message>
+    <message>
+        <location filename="../main_dialog.py" line="135"/>
+        <source>The QGIS project is stored in a database ({project_storage_type}).</source>
+        <translation>Il progetto QGIS è memorizzato in un database ({project_storage_type}).</translation>
+    </message>
+    <message>
+        <location filename="../main_dialog.py" line="138"/>
+        <source>The QGIS project is stored locally and will be uploaded to the server. If the QGIS project already exists on the server, it will be overwritten</source>
+        <translation>Il progetto QGIS è memorizzato localmente e verrà caricato sul server. Se il progetto QGIS esiste già sul server, verrà sovrascritto</translation>
+    </message>
+    <message>
+        <location filename="../main_dialog.py" line="143"/>
+        <location filename="../main_dialog.py" line="378"/>
+        <source>The storage type of the current QGIS project ({project_storage_type}) is not supported.</source>
+        <translation>Il tipo di archiviazione del progetto QGIS corrente ({project_storage_type}) non è supportato.</translation>
+    </message>
+    <message>
+        <location filename="../main_dialog.py" line="377"/>
+        <source>Unsupported QGIS project storage</source>
+        <translation>Archiviazione del progetto QGIS non supportata</translation>
+    </message>
 </context>
 <context>
     <name>ServerConfigDialog</name>
@@ -171,7 +192,7 @@
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="122"/>
         <source>&lt;b&gt;Failed Tests:&lt;/b&gt;&lt;ul&gt;{errors}&lt;/ul&gt;&lt;b&gt;Successful Tests:&lt;/b&gt;&lt;ul&gt;{successes}&lt;/ul&gt;</source>
-        <translation></translation>
+        <translation>&lt;b&gt;Test non superati:&lt;/b&gt;&lt;ul&gt;{errors}&lt;/ul&gt;&lt;b&gt;Test superati:&lt;/b&gt;&lt;ul&gt;{successes}&lt;/ul&gt;</translation>
     </message>
     <message>
         <location filename="../dialogs/server_config_dialog.py" line="133"/>
@@ -231,6 +252,31 @@ Impossibile eseguire i test API (generazione di token, caricamento sul server, e
         <source>Unable to connect to the {serverName}. Is the address correct and is the schema supplied (http)? Please see QGIS2Mapbender logs for more information.</source>
         <translation>Impossibile connettersi a {serverName}. L&apos;indirizzo è corretto e lo schema è stato fornito (http)? Consulta i log di QGIS2Mapbender per ulteriori informazioni.</translation>
     </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="86"/>
+        <source>Example: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi or [SERVER_NAME]/qgis/</source>
+        <translation>Esempio: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi o [SERVER_NAME]/qgis/</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="183"/>
+        <source>QGIS Server</source>
+        <translation>QGIS Server</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="185"/>
+        <source>QGIS Server PostgreSQL wrapper</source>
+        <translation>Wrapper PostgreSQL di QGIS Server</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="196"/>
+        <source>Connection to {server_name} was successful.</source>
+        <translation>Connessione a {server_name} avvenuta con successo.</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="324"/>
+        <source>{server_name}/cgi-bin/qgis_mapserv.fcgi or {server_name}/qgis/</source>
+        <translation>{server_name}/cgi-bin/qgis_mapserv.fcgi o {server_name}/qgis/</translation>
+    </message>
 </context>
 <context>
     <name>mainDialog</name>
@@ -252,7 +298,7 @@ Impossibile eseguire i test API (generazione di token, caricamento sul server, e
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="80"/>
         <source>Copy application</source>
-        <translation>Copia domanda</translation>
+        <translation>Copia applicazione</translation>
     </message>
     <message>
         <location filename="../dialogs/ui/main_dialog.ui" line="87"/>
@@ -378,6 +424,237 @@ Impossibile eseguire i test API (generazione di token, caricamento sul server, e
         <location filename="../qgis_server_api_upload.py" line="88"/>
         <source>File not found: {path}</source>
         <translation>File non trovato: {path}</translation>
+    </message>
+</context>
+<context>
+    <name>QGIS2Mapbender</name>
+    <message>
+        <source>Authentication failed. Please see logs under QGIS2Mapbender for more information.</source>
+        <translation>Autenticazione non riuscita. Consulta i log di QGIS2Mapbender per ulteriori informazioni.</translation>
+    </message>
+    <message>
+        <source>Failed to obtain a valid token. Authentication failed</source>
+        <translation>Impossibile ottenere un token valido. Autenticazione non riuscita</translation>
+    </message>
+    <message>
+        <source>The server response did not contain an authentication token.</source>
+        <translation>La risposta del server non conteneva un token di autenticazione.</translation>
+    </message>
+    <message>
+        <source>Upload failed</source>
+        <translation>Caricamento non riuscito</translation>
+    </message>
+    <message>
+        <source>Upload to QGIS Server failed.&#10;&#10;{error}&#10;&#10;See the QGIS2Mapbender log for details.</source>
+        <translation>Caricamento su QGIS Server non riuscito.&#10;&#10;{error}&#10;&#10;Consulta il log di QGIS2Mapbender per ulteriori informazioni.</translation>
+    </message>
+    <message>
+        <source>The server response did not contain an upload directory.</source>
+        <translation>La risposta del server non conteneva una directory di caricamento.</translation>
+    </message>
+    <message>
+        <source>Upload to QGIS Server failed (HTTP {status_code}).&#10;&#10;{error}&#10;&#10;See the QGIS2Mapbender log for technical details.</source>
+        <translation>Caricamento su QGIS Server non riuscito (HTTP {status_code}).&#10;&#10;{error}&#10;&#10;Consulta il log tecnico di QGIS2Mapbender.</translation>
+    </message>
+    <message>
+        <source>The server returned an empty response.</source>
+        <translation>Il server ha restituito una risposta vuota.</translation>
+    </message>
+    <message>
+        <source>The uploaded file</source>
+        <translation>Il file caricato</translation>
+    </message>
+    <message>
+        <source>The server reported an internal error.</source>
+        <translation>Il server ha segnalato un errore interno.</translation>
+    </message>
+    <message>
+        <source>No response received from server</source>
+        <translation>Nessuna risposta ricevuta dal server</translation>
+    </message>
+    <message>
+        <source>No response received from server.</source>
+        <translation>Nessuna risposta ricevuta dal server.</translation>
+    </message>
+    <message>
+        <source>The server response did not contain a source ID.</source>
+        <translation>La risposta del server non conteneva un ID sorgente.</translation>
+    </message>
+    <message>
+        <source>Unknown error</source>
+        <translation>Errore sconosciuto</translation>
+    </message>
+    <message>
+        <source>Custom server configuration name without blank spaces</source>
+        <translation>Nome personalizzato della configurazione del server senza spazi</translation>
+    </message>
+    <message>
+        <source>Example: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi or [SERVER_NAME]/qgis/</source>
+        <translation>Esempio: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi o [SERVER_NAME]/qgis/</translation>
+    </message>
+    <message>
+        <source>Example: [SERVER_NAME]/mapbender/index_dev.php/</source>
+        <translation>Esempio: [SERVER_NAME]/mapbender/index_dev.php/</translation>
+    </message>
+    <message>
+        <source>QGIS Server</source>
+        <translation>QGIS Server</translation>
+    </message>
+    <message>
+        <source>QGIS Server PostgreSQL wrapper</source>
+        <translation>Wrapper PostgreSQL di QGIS Server</translation>
+    </message>
+    <message>
+        <source>Connection to {server_name} was successful.</source>
+        <translation>Connessione a {server_name} riuscita.</translation>
+    </message>
+    <message>
+        <source>{server_name}/cgi-bin/qgis_mapserv.fcgi or {server_name}/qgis/</source>
+        <translation>{server_name}/cgi-bin/qgis_mapserv.fcgi o {server_name}/qgis/</translation>
+    </message>
+    <message>
+        <source>Authentication saved in database. Configuration: {authcfg}</source>
+        <translation>Autenticazione salvata nel database. Configurazione: {authcfg}</translation>
+    </message>
+    <message>
+        <source>Server configuration name already exists</source>
+        <translation>Il nome della configurazione del server esiste già</translation>
+    </message>
+    <message>
+        <source>Server configuration successfully saved</source>
+        <translation>Configurazione del server salvata correttamente</translation>
+    </message>
+    <message>
+        <source>There are unsaved changes.</source>
+        <translation>Ci sono modifiche non salvate.</translation>
+    </message>
+    <message>
+        <source>Do you want to save your changes before continuing?</source>
+        <translation>Vuoi salvare le modifiche prima di continuare?</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Salva</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Annulla</translation>
+    </message>
+    <message>
+        <source>Save failed</source>
+        <translation>Salvataggio non riuscito</translation>
+    </message>
+    <message>
+        <source>Could not save the QGIS project.&#10;&#10;{error_message}</source>
+        <translation>Impossibile salvare il progetto QGIS.&#10;&#10;{error_message}</translation>
+    </message>
+    <message>
+        <source>Failed</source>
+        <translation>Fallito</translation>
+    </message>
+    <message>
+        <source>The QGIS project has not been saved. Please save the project before publishing or updating.</source>
+        <translation>Il progetto QGIS non è stato salvato. Salva il progetto prima di pubblicarlo o aggiornarlo.</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <source>Yes</source>
+        <translation>Sì</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>No</translation>
+    </message>
+    <message>
+        <source>Success</source>
+        <translation>Successo</translation>
+    </message>
+    <message>
+        <source>The QGIS project is stored in a database ({project_storage_type}).</source>
+        <translation>Il progetto QGIS è memorizzato in un database ({project_storage_type}).</translation>
+    </message>
+    <message>
+        <source>The QGIS project is stored locally and will be uploaded to the server. If the QGIS project already exists on the server, it will be overwritten</source>
+        <translation>Il progetto QGIS è memorizzato localmente e verrà caricato sul server. Se il progetto QGIS esiste già sul server, verrà sovrascritto</translation>
+    </message>
+    <message>
+        <source>The storage type of the current QGIS project ({project_storage_type}) is not supported.</source>
+        <translation>Il tipo di archiviazione del progetto QGIS corrente ({project_storage_type}) non è supportato.</translation>
+    </message>
+    <message>
+        <source>Unsupported QGIS project storage</source>
+        <translation>Archiviazione del progetto QGIS non supportata</translation>
+    </message>
+    <message>
+        <source>An error occurred during Mapbender publish: {error}</source>
+        <translation>Si è verificato un errore durante la pubblicazione in Mapbender: {error}</translation>
+    </message>
+    <message>
+        <source>No source to update. WMS {wms_url} is not an existing source in Mapbender.</source>
+        <translation>Nessuna sorgente da aggiornare. WMS {wms_url} non è una sorgente esistente in Mapbender.</translation>
+    </message>
+    <message>
+        <source>An error occurred during Mapbender update: {error}</source>
+        <translation>Si è verificato un errore durante l'aggiornamento in Mapbender: {error}</translation>
+    </message>
+    <message>
+        <source>WMS layer information on Mapbender could not be displayed. Error: {error}.&#10;&#10;WMS was successfully created/updated but Mapbender upload will be interrupted.&#10;&#10;Link to Capabilities:&#10;{wms_url}</source>
+        <translation>Non è stato possibile visualizzare le informazioni del layer WMS in Mapbender. Errore: {error}.&#10;&#10;WMS creato/aggiornato con successo, ma il caricamento su Mapbender verrà interrotto.&#10;&#10;Collegamento a Capabilities:&#10;{wms_url}</translation>
+    </message>
+    <message>
+        <source>WMS was successfully created but Mapbender upload will be interrupted:&#10;&#10;Failed to add WMS source. Error: {error}.&#10;&#10;Link to Capabilities:&#10;{wms_url}</source>
+        <translation>WMS creato con successo, ma il caricamento su Mapbender verrà interrotto:&#10;&#10;Impossibile aggiungere la sorgente WMS. Errore: {error}.&#10;&#10;Collegamento a Capabilities:&#10;{wms_url}</translation>
+    </message>
+    <message>
+        <source>WMS was successfully updated on the server but Mapbender upload will be interrupted:&#10;&#10;WMS layer information on Mapbender could not be displayed. Error: {error}.&#10;&#10;Link to Capabilities:&#10;{wms_url}</source>
+        <translation>WMS aggiornato con successo sul server, ma il caricamento su Mapbender verrà interrotto:&#10;&#10;Non è stato possibile visualizzare le informazioni del layer WMS in Mapbender. Errore: {error}.&#10;&#10;Collegamento a Capabilities:&#10;{wms_url}</translation>
+    </message>
+    <message>
+        <source>WMS was successfully updated on the server.&#10;&#10;Failed to reload WMS with source ID #{source_id} in Mapbender. Error: {error}</source>
+        <translation>WMS aggiornato con successo sul server.&#10;&#10;Impossibile ricaricare il WMS con ID sorgente #{source_id} in Mapbender. Errore: {error}</translation>
+    </message>
+    <message>
+        <source>Reloaded sources: {source_ids}. WMS could not be reloaded in all sources in Mapbender.</source>
+        <translation>Sorgenti ricaricate: {source_ids}. Non è stato possibile ricaricare il WMS in tutte le sorgenti di Mapbender.</translation>
+    </message>
+    <message>
+        <source>WMS was successfully created/updated but Mapbender publishing failed:&#10;&#10;Failed to clone application '{template_slug}'. Error: {error}&#10;&#10;Link to Capabilities:&#10;{wms_url}</source>
+        <translation>WMS creato/aggiornato con successo, ma la pubblicazione in Mapbender non è riuscita:&#10;&#10;Impossibile clonare l'applicazione '{template_slug}'. Errore: {error}&#10;&#10;Collegamento a Capabilities:&#10;{wms_url}</translation>
+    </message>
+    <message>
+        <source>WMS successfully created/updated and uploaded/reloaded to Mapbender as source #{source_id}.&#10;&#10;Failed to assign source #{source_id} to application '{slug}'. Error: {error}.&#10;&#10;Link to Capabilities:&#10;{wms_url}</source>
+        <translation>WMS creato/aggiornato e caricato/ricaricato con successo in Mapbender come sorgente #{source_id}.&#10;&#10;Impossibile assegnare la sorgente #{source_id} all'applicazione '{slug}'. Errore: {error}.&#10;&#10;Collegamento a Capabilities:&#10;{wms_url}</translation>
+    </message>
+    <message>
+        <source>The response was not valid JSON.</source>
+        <translation>La risposta non era un JSON valido.</translation>
+    </message>
+    <message>
+        <source>The JSON response has an unsupported structure.</source>
+        <translation>La risposta JSON ha una struttura non supportata.</translation>
+    </message>
+    <message>
+        <source>The generated WMS URL is invalid.</source>
+        <translation>L'URL WMS generato non è valido.</translation>
+    </message>
+    <message>
+        <source>The generated WMS URL could not be reached. Please see the QGIS2Mapbender log for more information.</source>
+        <translation>Non è stato possibile raggiungere l'URL WMS generato. Consultare il log di QGIS2Mapbender per ulteriori informazioni.</translation>
+    </message>
+    <message>
+        <source>The generated WMS URL returned HTTP status {status_code}.</source>
+        <translation>L'URL WMS generato ha restituito lo stato HTTP {status_code}.</translation>
+    </message>
+    <message>
+        <source>The server response is not a valid WMS capabilities document.</source>
+        <translation>La risposta del server non è un documento WMS Capabilities valido.</translation>
+    </message>
+    <message>
+        <source>The generated WMS URL could not be validated. Please check the server configuration. Is the QGIS Server base URL correct?&#10;&#10;{error}&#10;&#10;The process was interrupted.&#10;&#10;Link to Capabilities:&#10;{wms_url}</source>
+        <translation>Non è stato possibile convalidare l'URL WMS generato. Controllare la configurazione del server. L'URL di base del server QGIS è corretto?&#10;&#10;{error}&#10;&#10;Il processo è stato interrotto.&#10;&#10;Collegamento a Capabilities:&#10;{wms_url}</translation>
     </message>
 </context>
 </TS>

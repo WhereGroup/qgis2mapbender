@@ -1,0 +1,40 @@
+[general]
+name=QGIS2Mapbender
+author=WhereGroup (Carmen Viesca, Paolo Favero, Peter Gipper, Christoph Welker, Dennis Davidsohn, Lena Hackenjos)
+email=info@wheregroup.com
+description=QGIS plugin to populate Mapbender with WMS services from QGIS Server using the Mapbender API.
+about=This QGIS plugin exports your QGIS project as a WMS served by QGIS Server and publishes it in a Mapbender application (https://mapbender.org).
+ It supports both local QGIS projects and projects stored in PostgreSQL. Local projects are uploaded together with their local data to the configured server upload directory for QGIS Server to serve as a WMS. Projects stored in PostgreSQL remain in the database, a pg_service.conf file must be available to the QGIS instance opening the project and QGIS Server must also be able to access a corresponding server-side configuration.
+
+ System requirements:
+ - QGIS2Mapbender 1.0.0 or later requires Mapbender 4.1.2 or later.
+
+ Local requirements:
+ - Save local QGIS projects in the same folder as their data. The project folder and all files it contains are uploaded to the configured server upload directory.
+ - For PostgreSQL projects or data sources, configure a local pg_service.conf file for QGIS.
+
+ Server requirements:
+ - Install QGIS Server and Mapbender on your server.
+ - Check the Apache and PHP settings described in the README.
+ - Define the Mapbender upload directory api_upload_dir.
+ - Create at least one template application in Mapbender that can be cloned to publish a new WMS, or an application that can be used directly to publish one. The application must include a layerset named "main" (the default layerset for new WMS services) or a custom-named layerset specified in the plugin.
+ - Grant the required permissions to all Mapbender users and groups who should use QGIS2Mapbender.
+ - For QGIS projects stored in PostgreSQL or projects using PostgreSQL data, configure a server-side pg_service.conf.
+
+ Detailed documentation is available at https://github.com/WhereGroup/QGIS2Mapbender/blob/main/README.md.
+
+ Docker: QGIS Server and Mapbender can also be run as Docker containers.
+
+homepage=https://github.com/WhereGroup/QGIS2Mapbender
+repository=https://github.com/WhereGroup/QGIS2Mapbender
+tracker=https://github.com/WhereGroup/QGIS2Mapbender/issues
+
+tags=mapbender, web, webmap, webmaps, webgis, publish, export, qgis server, wms, ogc wms, qgis, services, sdi, geoportal
+
+version=1.2.0
+qgisMinimumVersion=3.2
+qgisMaximumVersion=4.99
+
+icon=resources/icons/qgis2mapbender.png
+experimental=False
+deprecated=False

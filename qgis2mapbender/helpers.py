@@ -1,18 +1,39 @@
+from typing import Optional
 from urllib.parse import urlparse
+from xml.etree import ElementTree
+
+import requests
 
 from qgis.PyQt.QtWidgets import QApplication
-from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtCore import QCoreApplication, Qt
 from contextlib import contextmanager
 
 from qgis.PyQt.QtGui import QPixmap
 from qgis.PyQt.QtWidgets import QMessageBox
-from qgis.core import QgsApplication, QgsProject, QgsSettings
+from qgis.core import Qgis, QgsApplication, QgsMessageLog, QgsProject, QgsSettings
 
-from .settings import PLUGIN_SETTINGS_SERVER_CONFIG_KEY
+from .settings import (
+    PLUGIN_SETTINGS_SERVER_CONFIG_KEY,
+    PROJECT_STORAGE_LOCAL,
+    PROJECT_STORAGE_UNSAVED,
+    QGIS_SERVER_POSTGRESQL_WRAPPER_PATH,
+    REQUEST_TIMEOUT_SIMPLE,
+    TAG,
+    WMS_CAPABILITIES_ROOT_ELEMENTS,
+)
 
-from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout, QLabel, QDialogButtonBox
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QVBoxLayout,
+    QLabel,
+    QDialogButtonBox,
+    QSizePolicy,
+)
 
 
+def translate(text: str) -> str:
+    """Translate text that is shared by dialogs and message boxes."""
+    return QCoreApplication.translate("QGIS2Mapbender", text)
 
 
 def get_project_layer_names() -> list:
@@ -29,23 +50,36 @@ def check_if_qgis_project_is_dirty_and_save() -> bool:
         Checks if the current QGIS project has unsaved changes and prompts the user to save.
 
         Returns:
-            bool: True if the project is saved or user chose to continue, False if cancelled.
+            bool: True if the project is saved or has no changes, False if cancelled or saving failed.
     """
-    if QgsProject.instance().isDirty():
+    project = QgsProject.instance()
+    if project.isDirty():
         msgBox = QMessageBox()
         msgBox.setWindowTitle("")
-        msgBox.setText("There are unsaved changes.")
-        msgBox.setInformativeText("Do you want to save your changes before continuing?")
+        msgBox.setText(translate("There are unsaved changes."))
+        msgBox.setInformativeText(translate("Do you want to save your changes before continuing?"))
         msgBox.setStandardButtons(QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Cancel)
-        msgBox.button(QMessageBox.StandardButton.Save).setText("Save")
-        msgBox.button(QMessageBox.StandardButton.Cancel).setText("Cancel")
+        msgBox.button(QMessageBox.StandardButton.Save).setText(translate("Save"))
+        msgBox.button(QMessageBox.StandardButton.Cancel).setText(translate("Cancel"))
         msgBox.setDefaultButton(QMessageBox.StandardButton.Save)
         ret = msgBox.exec()
         if ret == QMessageBox.StandardButton.Save:
-            QgsProject.instance().write()
-            return True
-        elif ret == QMessageBox.StandardButton.Cancel:
-            return False
+            if project.write():
+                return True
+
+            error_message = project.error()
+            QgsMessageLog.logMessage(
+                f"Failed to save QGIS project: {error_message}",
+                TAG,
+                level=Qgis.MessageLevel.Critical,
+            )
+            show_fail_box(
+                translate("Save failed"),
+                translate("Could not save the QGIS project.\n\n{error_message}").format(
+                    error_message=error_message
+                ),
+            )
+        return False
     return True
 
 
@@ -60,9 +94,56 @@ def qgis_project_is_saved() -> bool:
     """
     source_project_file_path = QgsProject.instance().fileName()
     if not source_project_file_path:
-        show_fail_box('Failed', "Please use the QGIS2Mapbender from a saved QGIS-Project")
+        show_fail_box(
+            translate("Failed"),
+            translate(
+                "The QGIS project has not been saved. Please save the project before publishing or updating."
+            ),
+        )
         return False
     return True
+
+
+def get_qgis_project_storage_type(project=None) -> str:
+    """
+    Returns the storage type of a QGIS project.
+
+    QGIS does not expose a project storage object for projects stored on the
+    local filesystem. Database-backed projects expose their backend through
+    ``QgsProjectStorage.type()``.
+
+    Args:
+        project: Optional QGIS project. The current project is used by default.
+
+    Returns:
+        str: One of the project storage type constants from ``settings.py``.
+    """
+    qgis_project = project if project is not None else QgsProject.instance()
+    if not qgis_project.fileName():
+        project_storage_type = PROJECT_STORAGE_UNSAVED
+    else:
+        project_storage = qgis_project.projectStorage()
+        if project_storage is None:
+            project_storage_type = PROJECT_STORAGE_LOCAL
+        else:
+            project_storage_backend = project_storage.type()
+            project_storage_type = str(project_storage_backend).lower()
+
+    return project_storage_type
+
+
+def append_query_to_url(url: str, query: str) -> str:
+    """Appends a separator-free query string without duplicating the separator."""
+    if not query:
+        return url
+    if url.endswith(('?', '&')):
+        separator = ''
+    elif '?' in url:
+        separator = '&'
+    else:
+        separator = '?'
+    return f'{url}{separator}{query}'
+
 
 def create_fail_box(title: str, text: str) -> QMessageBox:
     """
@@ -96,6 +177,7 @@ def show_fail_box(title: str, text: str) -> int:
     QApplication.restoreOverrideCursor()
     failBox = create_fail_box(title, text)
     failBox.setStandardButtons(QMessageBox.StandardButton.Ok)
+    failBox.button(QMessageBox.StandardButton.Ok).setText(translate("OK"))
     return failBox.exec()
 
 def show_success_box(title: str, text: str) -> int:
@@ -116,6 +198,7 @@ def show_success_box(title: str, text: str) -> int:
     successBox.setWindowTitle(title)
     successBox.setText(text)
     successBox.setStandardButtons(QMessageBox.StandardButton.Ok)
+    successBox.button(QMessageBox.StandardButton.Ok).setText(translate("OK"))
     return successBox.exec()
 
 def show_success_link_box(title: str, text: str) -> int:
@@ -138,6 +221,8 @@ def show_success_link_box(title: str, text: str) -> int:
 
     icon_label = QLabel()
     icon_label.setPixmap(QPixmap(':/images/themes/default/mIconSuccess.svg'))
+    icon_label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+    icon_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     layout.addWidget(icon_label)
 
     message_label = QLabel()
@@ -145,13 +230,21 @@ def show_success_link_box(title: str, text: str) -> int:
     message_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
     message_label.setOpenExternalLinks(True)
     message_label.setWordWrap(True)
+    message_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    available_width = QApplication.primaryScreen().availableGeometry().width()
+    margins = layout.contentsMargins()
+    message_label.setMaximumWidth(
+        available_width // 2 - margins.left() - margins.right()
+    )
     message_label.setText(text)
     layout.addWidget(message_label)
 
     button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+    button_box.button(QDialogButtonBox.StandardButton.Ok).setText(translate("OK"))
     button_box.accepted.connect(dialog.accept)
     layout.addWidget(button_box)
 
+    dialog.adjustSize()
     return dialog.exec()
 
 
@@ -169,8 +262,8 @@ def show_question_box(text: str) -> int:
     questionBox.setIcon(QMessageBox.Icon.Question)
     questionBox.setText(text)
     questionBox.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-    questionBox.button(QMessageBox.StandardButton.Yes).setText("Yes")
-    questionBox.button(QMessageBox.StandardButton.No).setText("No")
+    questionBox.button(QMessageBox.StandardButton.Yes).setText(translate("Yes"))
+    questionBox.button(QMessageBox.StandardButton.No).setText(translate("No"))
     return questionBox.exec()
 
 
@@ -258,6 +351,45 @@ def uri_validator(url: str) -> bool:
         return all([result.scheme, result.netloc])
     except AttributeError:
         return False
+
+
+def check_wms_url(url: str) -> Optional[str]:
+    """Checks that a generated URL returns a valid WMS capabilities document."""
+    if not uri_validator(url):
+        return translate("The generated WMS URL is invalid.")
+
+    try:
+        response = requests.get(url, timeout=REQUEST_TIMEOUT_SIMPLE)
+    except requests.exceptions.RequestException as error:
+        QgsMessageLog.logMessage(
+            f"Failed to validate WMS URL: {error}",
+            TAG,
+            level=Qgis.MessageLevel.Critical,
+        )
+        return translate(
+            "The generated WMS URL could not be reached. "
+            "Please see the QGIS2Mapbender log for more information."
+        )
+
+    if response.status_code != 200:
+        return translate(
+            "The generated WMS URL returned HTTP status {status_code}."
+        ).format(status_code=response.status_code)
+
+    try:
+        capabilities = ElementTree.fromstring(response.content)
+    except (ElementTree.ParseError, TypeError):
+        return translate(
+            "The server response is not a valid WMS capabilities document."
+        )
+
+    root_name = capabilities.tag.rsplit("}", 1)[-1]
+    if root_name not in WMS_CAPABILITIES_ROOT_ELEMENTS:
+        return translate(
+            "The server response is not a valid WMS capabilities document."
+        )
+
+    return None
 
 
 def get_size_and_unit(bytes_size) -> tuple:

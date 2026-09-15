@@ -83,6 +83,27 @@
         <source>Failed</source>
         <translation type="obsolete">Помилка</translation>
     </message>
+    <message>
+        <location filename="../main_dialog.py" line="135"/>
+        <source>The QGIS project is stored in a database ({project_storage_type}).</source>
+        <translation>Проєкт QGIS зберігається в базі даних ({project_storage_type}).</translation>
+    </message>
+    <message>
+        <location filename="../main_dialog.py" line="138"/>
+        <source>The QGIS project is stored locally and will be uploaded to the server. If the QGIS project already exists on the server, it will be overwritten</source>
+        <translation>Проєкт QGIS зберігається локально та буде завантажений на сервер. Якщо проєкт QGIS уже існує на сервері, його буде перезаписано</translation>
+    </message>
+    <message>
+        <location filename="../main_dialog.py" line="143"/>
+        <location filename="../main_dialog.py" line="378"/>
+        <source>The storage type of the current QGIS project ({project_storage_type}) is not supported.</source>
+        <translation>Тип сховища поточного проєкту QGIS ({project_storage_type}) не підтримується.</translation>
+    </message>
+    <message>
+        <location filename="../main_dialog.py" line="377"/>
+        <source>Unsupported QGIS project storage</source>
+        <translation>Непідтримуване сховище проєкту QGIS</translation>
+    </message>
 </context>
 <context>
     <name>MainDialog</name>
@@ -324,6 +345,31 @@
                     &lt;br&gt;&lt;br&gt;
                     &lt;a href=&quot;{wms_url}&quot; style=&quot;color:black;&quot;&gt;{wms_url}&lt;/a&gt;
                     </translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="86"/>
+        <source>Example: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi or [SERVER_NAME]/qgis/</source>
+        <translation>Приклад: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi або [SERVER_NAME]/qgis/</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="183"/>
+        <source>QGIS Server</source>
+        <translation>QGIS Server</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="185"/>
+        <source>QGIS Server PostgreSQL wrapper</source>
+        <translation>Обгортка PostgreSQL для QGIS Server</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="196"/>
+        <source>Connection to {server_name} was successful.</source>
+        <translation>Підключення до {server_name} успішне.</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/server_config_dialog.py" line="324"/>
+        <source>{server_name}/cgi-bin/qgis_mapserv.fcgi or {server_name}/qgis/</source>
+        <translation>{server_name}/cgi-bin/qgis_mapserv.fcgi або {server_name}/qgis/</translation>
     </message>
 </context>
 <context>
@@ -568,6 +614,237 @@ API-тести (генерація токена, завантаження на �
         <location filename="../qgis_server_api_upload.py" line="88"/>
         <source>File not found: {path}</source>
         <translation>Файл не знайдено: {path}</translation>
+    </message>
+</context>
+<context>
+    <name>QGIS2Mapbender</name>
+    <message>
+        <source>Authentication failed. Please see logs under QGIS2Mapbender for more information.</source>
+        <translation>Не вдалося пройти автентифікацію. Докладні відомості див. у журналах QGIS2Mapbender.</translation>
+    </message>
+    <message>
+        <source>Failed to obtain a valid token. Authentication failed</source>
+        <translation>Не вдалося отримати дійсний токен. Помилка автентифікації</translation>
+    </message>
+    <message>
+        <source>The server response did not contain an authentication token.</source>
+        <translation>Відповідь сервера не містить токена автентифікації.</translation>
+    </message>
+    <message>
+        <source>Upload failed</source>
+        <translation>Помилка завантаження</translation>
+    </message>
+    <message>
+        <source>Upload to QGIS Server failed.&#10;&#10;{error}&#10;&#10;See the QGIS2Mapbender log for details.</source>
+        <translation>Не вдалося завантажити дані на QGIS Server.&#10;&#10;{error}&#10;&#10;Докладні відомості див. у журналі QGIS2Mapbender.</translation>
+    </message>
+    <message>
+        <source>The server response did not contain an upload directory.</source>
+        <translation>Відповідь сервера не містить каталогу завантаження.</translation>
+    </message>
+    <message>
+        <source>Upload to QGIS Server failed (HTTP {status_code}).&#10;&#10;{error}&#10;&#10;See the QGIS2Mapbender log for technical details.</source>
+        <translation>Не вдалося завантажити дані на QGIS Server (HTTP {status_code}).&#10;&#10;{error}&#10;&#10;Технічні відомості див. у журналі QGIS2Mapbender.</translation>
+    </message>
+    <message>
+        <source>The server returned an empty response.</source>
+        <translation>Сервер повернув порожню відповідь.</translation>
+    </message>
+    <message>
+        <source>The uploaded file</source>
+        <translation>Завантажений файл</translation>
+    </message>
+    <message>
+        <source>The server reported an internal error.</source>
+        <translation>Сервер повідомив про внутрішню помилку.</translation>
+    </message>
+    <message>
+        <source>No response received from server</source>
+        <translation>Від сервера не отримано відповіді</translation>
+    </message>
+    <message>
+        <source>No response received from server.</source>
+        <translation>Від сервера не отримано відповіді.</translation>
+    </message>
+    <message>
+        <source>The server response did not contain a source ID.</source>
+        <translation>Відповідь сервера не містить ідентифікатора джерела.</translation>
+    </message>
+    <message>
+        <source>Unknown error</source>
+        <translation>Невідома помилка</translation>
+    </message>
+    <message>
+        <source>Custom server configuration name without blank spaces</source>
+        <translation>Власна назва конфігурації сервера без пробілів</translation>
+    </message>
+    <message>
+        <source>Example: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi or [SERVER_NAME]/qgis/</source>
+        <translation>Приклад: [SERVER_NAME]/cgi-bin/qgis_mapserv.fcgi або [SERVER_NAME]/qgis/</translation>
+    </message>
+    <message>
+        <source>Example: [SERVER_NAME]/mapbender/index_dev.php/</source>
+        <translation>Приклад: [SERVER_NAME]/mapbender/index_dev.php/</translation>
+    </message>
+    <message>
+        <source>QGIS Server</source>
+        <translation>QGIS Server</translation>
+    </message>
+    <message>
+        <source>QGIS Server PostgreSQL wrapper</source>
+        <translation>Обгортка PostgreSQL для QGIS Server</translation>
+    </message>
+    <message>
+        <source>Connection to {server_name} was successful.</source>
+        <translation>З'єднання з {server_name} успішне.</translation>
+    </message>
+    <message>
+        <source>{server_name}/cgi-bin/qgis_mapserv.fcgi or {server_name}/qgis/</source>
+        <translation>{server_name}/cgi-bin/qgis_mapserv.fcgi або {server_name}/qgis/</translation>
+    </message>
+    <message>
+        <source>Authentication saved in database. Configuration: {authcfg}</source>
+        <translation>Облікові дані збережено в базі даних автентифікації. Конфігурація: {authcfg}</translation>
+    </message>
+    <message>
+        <source>Server configuration name already exists</source>
+        <translation>Назва конфігурації сервера вже існує</translation>
+    </message>
+    <message>
+        <source>Server configuration successfully saved</source>
+        <translation>Конфігурацію сервера успішно збережено</translation>
+    </message>
+    <message>
+        <source>There are unsaved changes.</source>
+        <translation>Є незбережені зміни.</translation>
+    </message>
+    <message>
+        <source>Do you want to save your changes before continuing?</source>
+        <translation>Зберегти зміни перед продовженням?</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Зберегти</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Скасувати</translation>
+    </message>
+    <message>
+        <source>Save failed</source>
+        <translation>Не вдалося зберегти</translation>
+    </message>
+    <message>
+        <source>Could not save the QGIS project.&#10;&#10;{error_message}</source>
+        <translation>Не вдалося зберегти проєкт QGIS.&#10;&#10;{error_message}</translation>
+    </message>
+    <message>
+        <source>Failed</source>
+        <translation>Помилка</translation>
+    </message>
+    <message>
+        <source>The QGIS project has not been saved. Please save the project before publishing or updating.</source>
+        <translation>Проєкт QGIS не збережено. Збережіть проєкт перед публікуванням або оновленням.</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Гаразд</translation>
+    </message>
+    <message>
+        <source>Yes</source>
+        <translation>Так</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Ні</translation>
+    </message>
+    <message>
+        <source>Success</source>
+        <translation>Успіх</translation>
+    </message>
+    <message>
+        <source>The QGIS project is stored in a database ({project_storage_type}).</source>
+        <translation>Проєкт QGIS зберігається у базі даних ({project_storage_type}).</translation>
+    </message>
+    <message>
+        <source>The QGIS project is stored locally and will be uploaded to the server. If the QGIS project already exists on the server, it will be overwritten</source>
+        <translation>Проєкт QGIS зберігається локально і буде завантажений на сервер. Якщо проєкт QGIS вже існує на сервері, його буде перезаписано</translation>
+    </message>
+    <message>
+        <source>The storage type of the current QGIS project ({project_storage_type}) is not supported.</source>
+        <translation>Тип сховища поточного проєкту QGIS ({project_storage_type}) не підтримується.</translation>
+    </message>
+    <message>
+        <source>Unsupported QGIS project storage</source>
+        <translation>Непідтримуване сховище проєкту QGIS</translation>
+    </message>
+    <message>
+        <source>An error occurred during Mapbender publish: {error}</source>
+        <translation>Під час публікування в Mapbender сталася помилка: {error}</translation>
+    </message>
+    <message>
+        <source>No source to update. WMS {wms_url} is not an existing source in Mapbender.</source>
+        <translation>Немає джерела для оновлення. WMS {wms_url} не є наявним джерелом у Mapbender.</translation>
+    </message>
+    <message>
+        <source>An error occurred during Mapbender update: {error}</source>
+        <translation>Під час оновлення в Mapbender сталася помилка: {error}</translation>
+    </message>
+    <message>
+        <source>WMS layer information on Mapbender could not be displayed. Error: {error}.&#10;&#10;WMS was successfully created/updated but Mapbender upload will be interrupted.&#10;&#10;Link to Capabilities:&#10;{wms_url}</source>
+        <translation>Не вдалося відобразити інформацію про шар WMS у Mapbender. Помилка: {error}.&#10;&#10;WMS успішно створено/оновлено, але завантаження до Mapbender буде перервано.&#10;&#10;Посилання на Capabilities:&#10;{wms_url}</translation>
+    </message>
+    <message>
+        <source>WMS was successfully created but Mapbender upload will be interrupted:&#10;&#10;Failed to add WMS source. Error: {error}.&#10;&#10;Link to Capabilities:&#10;{wms_url}</source>
+        <translation>WMS успішно створено, але завантаження до Mapbender буде перервано:&#10;&#10;Не вдалося додати джерело WMS. Помилка: {error}.&#10;&#10;Посилання на Capabilities:&#10;{wms_url}</translation>
+    </message>
+    <message>
+        <source>WMS was successfully updated on the server but Mapbender upload will be interrupted:&#10;&#10;WMS layer information on Mapbender could not be displayed. Error: {error}.&#10;&#10;Link to Capabilities:&#10;{wms_url}</source>
+        <translation>WMS успішно оновлено на сервері, але завантаження до Mapbender буде перервано:&#10;&#10;Не вдалося відобразити інформацію про шар WMS у Mapbender. Помилка: {error}.&#10;&#10;Посилання на Capabilities:&#10;{wms_url}</translation>
+    </message>
+    <message>
+        <source>WMS was successfully updated on the server.&#10;&#10;Failed to reload WMS with source ID #{source_id} in Mapbender. Error: {error}</source>
+        <translation>WMS успішно оновлено на сервері.&#10;&#10;Не вдалося перезавантажити WMS з ідентифікатором джерела #{source_id} у Mapbender. Помилка: {error}</translation>
+    </message>
+    <message>
+        <source>Reloaded sources: {source_ids}. WMS could not be reloaded in all sources in Mapbender.</source>
+        <translation>Перезавантажені джерела: {source_ids}. Не вдалося перезавантажити WMS в усіх джерелах Mapbender.</translation>
+    </message>
+    <message>
+        <source>WMS was successfully created/updated but Mapbender publishing failed:&#10;&#10;Failed to clone application '{template_slug}'. Error: {error}&#10;&#10;Link to Capabilities:&#10;{wms_url}</source>
+        <translation>WMS успішно створено/оновлено, але публікування в Mapbender не вдалося:&#10;&#10;Не вдалося клонувати застосунок '{template_slug}'. Помилка: {error}&#10;&#10;Посилання на Capabilities:&#10;{wms_url}</translation>
+    </message>
+    <message>
+        <source>WMS successfully created/updated and uploaded/reloaded to Mapbender as source #{source_id}.&#10;&#10;Failed to assign source #{source_id} to application '{slug}'. Error: {error}.&#10;&#10;Link to Capabilities:&#10;{wms_url}</source>
+        <translation>WMS успішно створено/оновлено та завантажено/перезавантажено до Mapbender як джерело #{source_id}.&#10;&#10;Не вдалося призначити джерело #{source_id} до застосунку '{slug}'. Помилка: {error}.&#10;&#10;Посилання на Capabilities:&#10;{wms_url}</translation>
+    </message>
+    <message>
+        <source>The response was not valid JSON.</source>
+        <translation>Відповідь не є дійсним JSON.</translation>
+    </message>
+    <message>
+        <source>The JSON response has an unsupported structure.</source>
+        <translation>Відповідь JSON має структуру, що не підтримується.</translation>
+    </message>
+    <message>
+        <source>The generated WMS URL is invalid.</source>
+        <translation>Згенерована URL-адреса WMS недійсна.</translation>
+    </message>
+    <message>
+        <source>The generated WMS URL could not be reached. Please see the QGIS2Mapbender log for more information.</source>
+        <translation>Не вдалося отримати доступ до згенерованої URL-адреси WMS. Додаткову інформацію див. у журналі QGIS2Mapbender.</translation>
+    </message>
+    <message>
+        <source>The generated WMS URL returned HTTP status {status_code}.</source>
+        <translation>Згенерована URL-адреса WMS повернула статус HTTP {status_code}.</translation>
+    </message>
+    <message>
+        <source>The server response is not a valid WMS capabilities document.</source>
+        <translation>Відповідь сервера не є дійсним документом WMS Capabilities.</translation>
+    </message>
+    <message>
+        <source>The generated WMS URL could not be validated. Please check the server configuration. Is the QGIS Server base URL correct?&#10;&#10;{error}&#10;&#10;The process was interrupted.&#10;&#10;Link to Capabilities:&#10;{wms_url}</source>
+        <translation>Не вдалося перевірити згенеровану URL-адресу WMS. Перевірте конфігурацію сервера. Чи правильна базова URL-адреса сервера QGIS?&#10;&#10;{error}&#10;&#10;Процес перервано.&#10;&#10;Посилання на Capabilities:&#10;{wms_url}</translation>
     </message>
 </context>
 </TS>
