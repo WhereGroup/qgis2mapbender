@@ -1,0 +1,49 @@
+name: Package and release QGIS plugin
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+env:
+  PLUGIN_DIRECTORY: "qgis2mapbender"
+  QGIS_PLUGIN_CI_VERSION: "2.9.*"
+
+jobs:
+  release:
+    name: Release plugin
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --generate-notes
+
+      - name: Install qgis-plugin-ci
+        run: |
+          python -m pip install \
+            "qgis-plugin-ci==${{ env.QGIS_PLUGIN_CI_VERSION }}"
+
+      - name: Publish plugin to QGIS
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OSGEO_USER: ${{ secrets.OSGEO_USER }}
+          OSGEO_PASSWORD: ${{ secrets.OSGEO_PASSWORD }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+
+          qgis-plugin-ci release "${VERSION}" \
+            --release-tag "${GITHUB_REF_NAME}" \
+            --github-token "${GITHUB_TOKEN}" \
+            --osgeo-username "${OSGEO_USER}" \
+            --osgeo-password "${OSGEO_PASSWORD}"

@@ -7,7 +7,8 @@
 * Added Polish translations ([#PR32](https://github.com/WhereGroup/qgis2mapbender/pull/32))
 * Added Dutch translations ([#PR33](https://github.com/WhereGroup/qgis2mapbender/pull/33))
 * Added ukrainian translations ([#PR34](https://github.com/WhereGroup/qgis2mapbender/pull/34))
-* Add Information about how to create translations to CONTRIBUTE.md ([#PR35](...))
+* Added Information about how to create translations to CONTRIBUTE.md ([#PR35](...))
+* Added automated QGIS plugin packaging and release workflow.
 
 ### Bugfixes:
 * Added QGIS4 fixes ([#PR36](...))

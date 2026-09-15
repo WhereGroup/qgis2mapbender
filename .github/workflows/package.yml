@@ -1,0 +1,86 @@
+name: Test QGIS plugin package
+
+on:
+  workflow_dispatch:
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/package.yml"
+      - "CHANGELOG.md"
+      - "pyproject.toml"
+      - "qgis2mapbender/**"
+
+permissions:
+  contents: read
+
+env:
+  PLUGIN_DIRECTORY: "qgis2mapbender"
+  QGIS_PLUGIN_CI_VERSION: "2.9.*"
+
+jobs:
+  package:
+    name: Package plugin without publishing
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install qgis-plugin-ci
+        run: |
+          python -m pip install \
+            "qgis-plugin-ci==${{ env.QGIS_PLUGIN_CI_VERSION }}"
+
+      - name: Remove generated Python files
+        run: |
+          find . -type d -name "__pycache__" -prune -exec rm -rf {} +
+          find . -type f \( -name "*.pyc" -o -name "*.pyo" \) -delete
+
+      - name: Package plugin
+        env:
+          PLUGIN_DIRECTORY: ${{ env.PLUGIN_DIRECTORY }}
+        run: |
+          PLUGIN_VERSION="$(sed -n 's/^version=\(.*\)$/\1/p' \
+            "${PLUGIN_DIRECTORY}/metadata.txt")"
+            
+          test -n "${PLUGIN_VERSION}"
+            
+          echo "Packaging version: ${PLUGIN_VERSION}"
+            
+          qgis-plugin-ci package "${PLUGIN_VERSION}" \
+            --allow-uncommitted-changes
+
+      - name: Inspect generated files
+        run: |
+          find . -type f \
+            \( -name "*.zip" -o -name "plugins.xml" \) \
+            -print
+
+      - name: Validate generated package
+        env:
+          PLUGIN_DIRECTORY: ${{ env.PLUGIN_DIRECTORY }}
+        run: |
+          PACKAGE="$(find . -type f -name "${PLUGIN_DIRECTORY}.*.zip" -print -quit)"
+
+          test -n "${PACKAGE}"
+
+          echo "Package found: ${PACKAGE}"
+          unzip -l "${PACKAGE}"
+
+          unzip -l "${PACKAGE}" | grep -q "${PLUGIN_DIRECTORY}/metadata.txt"
+          unzip -l "${PACKAGE}" | grep -q "${PLUGIN_DIRECTORY}/LICENSE"
+          
+          if unzip -l "${PACKAGE}" | grep -Eq '(^|/)__pycache__/|\.py[co]$'; then
+            echo "The package contains generated Python cache files."
+            exit 1
+          fi
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: qgis2mapbender-package
+          path: |
+            **/qgis2mapbender.[0-9]*.zip
+          if-no-files-found: error

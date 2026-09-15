@@ -1,0 +1,5 @@
+[tool.qgis-plugin-ci]
+plugin_path = "qgis2mapbender"
+github_organization_slug = "WhereGroup"
+project_slug = "qgis2mapbender"
+changelog_include = false

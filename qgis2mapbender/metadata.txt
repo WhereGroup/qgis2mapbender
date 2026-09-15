@@ -1,40 +1,72 @@
 [general]
+
 name=QGIS2Mapbender
-author=WhereGroup (Carmen Viesca, Paolo Favero, Peter Gipper, Christoph Welker, Dennis Davidsohn, Lena Hackenjos)
-email=info@wheregroup.com
 description=QGIS plugin to populate Mapbender with WMS services from QGIS Server using the Mapbender API.
 about=This QGIS plugin exports your QGIS project as a WMS served by QGIS Server and publishes it in a Mapbender application (https://mapbender.org).
- It supports both local QGIS projects and projects stored in PostgreSQL. Local projects are uploaded together with their local data to the configured server upload directory for QGIS Server to serve as a WMS. Projects stored in PostgreSQL remain in the database, a pg_service.conf file must be available to the QGIS instance opening the project and QGIS Server must also be able to access a corresponding server-side configuration.
+ It supports both local QGIS projects and projects stored in PostgreSQL, as well as local data and data stored in PostgreSQL.
 
- System requirements:
+ Requirements:
  - QGIS2Mapbender 1.0.0 or later requires Mapbender 4.1.2 or later.
+ - QGIS Server and Mapbender must be installed on the server. QGIS Server and Mapbender can also be run as Docker containers.
+ - Local projects must be saved in the same folder as their data. PostgreSQL projects or data sources require a local pg_service.conf file.
+ - Configure Mapbender's api_upload_dir, an application with a "main" layerset or the configured custom layerset, and the required user permissions. For further information, see the README.
 
- Local requirements:
- - Save local QGIS projects in the same folder as their data. The project folder and all files it contains are uploaded to the configured server upload directory.
- - For PostgreSQL projects or data sources, configure a local pg_service.conf file for QGIS.
+ Detailed documentation, including Apache, PHP and Docker configuration, is available at https://github.com/WhereGroup/QGIS2Mapbender/blob/main/README.md.
 
- Server requirements:
- - Install QGIS Server and Mapbender on your server.
- - Check the Apache and PHP settings described in the README.
- - Define the Mapbender upload directory api_upload_dir.
- - Create at least one template application in Mapbender that can be cloned to publish a new WMS, or an application that can be used directly to publish one. The application must include a layerset named "main" (the default layerset for new WMS services) or a custom-named layerset specified in the plugin.
- - Grant the required permissions to all Mapbender users and groups who should use QGIS2Mapbender.
- - For QGIS projects stored in PostgreSQL or projects using PostgreSQL data, configure a server-side pg_service.conf.
+category=Web
+tags=mapbender, qgis server, wms, ogc wms, webmap, webgis, publish, export, geoportal, sdi
+icon=resources/icons/qgis2mapbender.png
 
- Detailed documentation is available at https://github.com/WhereGroup/QGIS2Mapbender/blob/main/README.md.
-
- Docker: QGIS Server and Mapbender can also be run as Docker containers.
-
+# Maintainers and links
+author=WhereGroup (Carmen Viesca, Paolo Favero, Peter Gipper, Christoph Welker, Dennis Davidsohn, Lena Hackenjos)
+email=info@wheregroup.com
 homepage=https://github.com/WhereGroup/QGIS2Mapbender
 repository=https://github.com/WhereGroup/QGIS2Mapbender
 tracker=https://github.com/WhereGroup/QGIS2Mapbender/issues
 
-tags=mapbender, web, webmap, webmaps, webgis, publish, export, qgis server, wms, ogc wms, qgis, services, sdi, geoportal
-
-version=1.2.0
+# Compatibility and capabilities
 qgisMinimumVersion=3.2
 qgisMaximumVersion=4.99
-
-icon=resources/icons/qgis2mapbender.png
+hasProcessingProvider=no
+server=False
 experimental=False
 deprecated=False
+
+# Release information
+version=1.2.0
+changelog=Version 1.2.0:
+ Features:
+ - Added support for QGIS projects stored in PostgreSQL via pg_service.conf.
+ - Added request timeouts and improved handling of non-JSON API responses.
+ - Added Portuguese, Polish, Dutch and Ukrainian translations.
+
+ Bugfixes:
+ - Added QGIS 4 fixes.
+
+ Version 1.1.0:
+ Features:
+ - Added German, Spanish and Italian translations.
+ Bugfixes:
+ - Fixed server configuration names containing "/" deleting the whole server configuration.
+ - Fixed context manager imports and cleaned up PyQt5 and _core imports.
+
+ Version 1.0.0:
+ Features:
+ - Added connection to QGIS Server and Mapbender via the Mapbender API.
+ - Removed the direct SSH connection and all references to Fabric2.
+ - Set the GetMap format to image/png by default.
+ - Set the GetFeatureInfo format to text/html by default.
+ - Set the layer ordering to reverse (QGIS) by default.
+ - Simplified server configuration.
+ - Added links to the QGIS Server service and Mapbender application in the success dialog.
+
+ Version 0.9.2:
+ Features:
+ - Added a button to test the SSH connection and verify access to the Mapbender and QGIS Server URLs.
+ Fixes:
+ - Fixed an error on Windows that occurred when the Python console was closed.
+
+ Version 0.9.1:
+ Features:
+ - Added support for running QGIS Server and Mapbender as Docker containers.
+ - Added a button to test the SSH connection and verify access to the Mapbender and QGIS Server URLs.
