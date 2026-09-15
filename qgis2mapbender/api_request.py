@@ -5,7 +5,12 @@ from html import unescape
 
 from qgis.core import QgsMessageLog, Qgis
 
-from .settings import TAG, REQUEST_TIMEOUT_API, MAX_API_ERROR_MESSAGE_LENGTH
+from .settings import (
+    TAG,
+    REQUEST_TIMEOUT_API,
+    REQUEST_TIMEOUT_UPLOAD,
+    MAX_API_ERROR_MESSAGE_LENGTH,
+)
 from .helpers import show_fail_box, translate
 
 
@@ -104,13 +109,20 @@ class ApiRequest:
         """
         return self.token is not None
 
-    def _sendRequest(self, endpoint: str, method: str, **kwargs) -> Optional[requests.Response]:
+    def _sendRequest(
+        self,
+        endpoint: str,
+        method: str,
+        request_timeout=REQUEST_TIMEOUT_API,
+        **kwargs,
+    ) -> Optional[requests.Response]:
         """
         Sends an HTTP request to the API with the specified method and parameters.
 
         Args:
             endpoint (str): The API endpoint (e.g., "/upload/zip").
             method (str): The HTTP method ("GET", "POST".).
+            request_timeout: Timeout passed to requests as (connect, read) seconds.
             **kwargs: Additional arguments for the request (json,etc.).
 
         Returns:
@@ -121,7 +133,13 @@ class ApiRequest:
         if endpoint != "/login_check" and endpoint != "/upload/zip":
             QgsMessageLog.logMessage(f"Sending request to endpoint {endpoint} with kwargs: {kwargs}", TAG, level=Qgis.MessageLevel.Info)
         try:
-            response = self.session.request(method=method.upper(), url=url, headers= self.headers, timeout=REQUEST_TIMEOUT_API, **kwargs)
+            response = self.session.request(
+                method=method.upper(),
+                url=url,
+                headers=self.headers,
+                timeout=request_timeout,
+                **kwargs,
+            )
             return response
         except requests.exceptions.HTTPError as http_err:
             QgsMessageLog.logMessage(str(http_err), TAG, level=Qgis.MessageLevel.Critical)
@@ -158,7 +176,12 @@ class ApiRequest:
                 file_log = file.name if hasattr(file, "name") else str(file)
                 QgsMessageLog.logMessage(
                     f"Sending request to endpoint {endpoint} with file: {file_log}", TAG, level=Qgis.MessageLevel.Info)
-                response = self._sendRequest(endpoint, "post", files=files)
+                response = self._sendRequest(
+                    endpoint,
+                    "post",
+                    request_timeout=REQUEST_TIMEOUT_UPLOAD,
+                    files=files,
+                )
                 if response is None:
                     error_upload_zip = translate("No response received from server.")
                     QgsMessageLog.logMessage(
