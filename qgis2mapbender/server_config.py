@@ -128,8 +128,6 @@ class ServerConfig:
             username = conf.config('username', '')
             password = conf.config('password', '')
             return username, password
-        else:
-            username = ''
-            password = ''
-            QgsMessageLog.logMessage("No config id...", TAG, level=Qgis.MessageLevel.Warning)
-            return username, password
+
+        QgsMessageLog.logMessage("No config id...", TAG, level=Qgis.MessageLevel.Warning)
+        return '', ''

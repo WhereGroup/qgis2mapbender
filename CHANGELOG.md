@@ -1,3 +1,8 @@
+## v1.2.1
+
+### Bugfixes:
+* Fixed a false-positive security scan finding for empty authentication credentials.
+
 ## v1.2.0
 
 ### Features:
