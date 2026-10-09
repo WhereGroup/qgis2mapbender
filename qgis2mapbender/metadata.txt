@@ -33,8 +33,12 @@ experimental=False
 deprecated=False
 
 # Release information
-version=1.2.0
-changelog=Version 1.2.0:
+version=1.2.1
+changelog=Version 1.2.1:
+ Bugfixes:
+ - Fixed a false-positive security scan finding for empty authentication credentials.
+
+Version 1.2.0:
  Features:
  - Added support for QGIS projects stored in PostgreSQL via pg_service.conf.
  - Added request timeouts and improved handling of non-JSON API responses.
