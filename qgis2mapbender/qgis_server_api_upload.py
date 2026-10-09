@@ -1,10 +1,17 @@
 import os
 import shutil
 from typing import Optional
+from urllib.parse import urlencode
 
+from qgis.PyQt.QtCore import QCoreApplication
 from qgis.core import QgsMessageLog, Qgis
 
-from .helpers import waitCursor, get_size_and_unit
+from .helpers import (
+    append_query_to_url,
+    get_size_and_unit,
+    show_fail_box,
+    waitCursor,
+)
 from .server_config import ServerConfig
 from .settings import TAG
 
@@ -13,20 +20,20 @@ class QgisServerApiUpload:
     """
         Handles the process of zipping, uploading, and cleaning up QGIS project files for QGIS Server API integration.
     """
-    def __init__(self, api_request, paths) -> None:
+    def __init__(self, api_request, paths=None) -> None:
         """
             Initializes the QgisServerApiUpload object with necessary paths and API request handler.
 
             Args:
                 api_request: The API request handler for uploading the project.
-                paths: An object containing paths related to the QGIS project.
-            Returns:
-                None
+                paths: An object containing paths related to a local QGIS project.
+                Returns:
+                    None
         """
-        self.source_project_dir_path = paths.source_project_dir_path
-        self.source_project_dir_name = paths.source_project_dir_name
-        self.source_project_file_name = paths.source_project_file_name
-        self.source_project_zip_file_path = paths.source_project_zip_file_path
+        self.source_project_dir_path = paths.source_project_dir_path if paths else None
+        self.source_project_dir_name = paths.source_project_dir_name if paths else None
+        self.source_project_file_name = paths.source_project_file_name if paths else None
+        self.source_project_zip_file_path = paths.source_project_zip_file_path if paths else None
         self.api_request = api_request
 
     def get_wms_url(self, server_config: ServerConfig, upload_dir: str) -> str:
@@ -35,16 +42,20 @@ class QgisServerApiUpload:
 
             Args:
                 server_config: The server configuration object.
-                upload_dir: The directory where the project is uploaded.
+                upload_dir: The directory where a local project was uploaded.
 
             Returns:
                 str: The WMS URL.
         """
-        wms_service_version_request = "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities&map="
+
         server_project_dir = self.source_project_file_name.split('.')[0]
-        wms_url = (f'{server_config.qgis_server_path}'
-                   f'{wms_service_version_request}{upload_dir}{server_project_dir}/'
-                   f'{self.source_project_file_name}')
+        query = urlencode({
+            "SERVICE": "WMS",
+            "VERSION": "1.3.0",
+            "REQUEST": "GetCapabilities",
+            "map": f"{upload_dir}{server_project_dir}/{self.source_project_file_name}",
+        })
+        wms_url = append_query_to_url(server_config.qgis_server_path, query)
         QgsMessageLog.logMessage(f"WMS URL: {wms_url}", TAG, level=Qgis.MessageLevel.Info)
         return wms_url
 
@@ -61,11 +72,37 @@ class QgisServerApiUpload:
         if not self._zip_local_project_dir():
             QgsMessageLog.logMessage(f"Failed to create ZIP file for the project.", TAG,
                                      level=Qgis.MessageLevel.Critical)
+            show_fail_box(
+                QCoreApplication.translate("QgisServerApiUpload", "Upload failed"),
+                "\n\n".join((
+                    QCoreApplication.translate(
+                        "QgisServerApiUpload",
+                        "Failed to create ZIP file for the project."
+                    ),
+                    QCoreApplication.translate(
+                        "QgisServerApiUpload",
+                        "See the QGIS2Mapbender log for details."
+                    )
+                ))
+            )
 
         # Step 2: Upload the ZIP file
         elif not os.path.isfile(self.source_project_zip_file_path):
             QgsMessageLog.logMessage(f"File not found: {self.source_project_zip_file_path}", TAG,
                                      level=Qgis.MessageLevel.Critical)
+            show_fail_box(
+                QCoreApplication.translate("QgisServerApiUpload", "Upload failed"),
+                "\n\n".join((
+                    QCoreApplication.translate(
+                        "QgisServerApiUpload",
+                        "File not found: {path}"
+                    ).format(path=self.source_project_zip_file_path),
+                    QCoreApplication.translate(
+                        "QgisServerApiUpload",
+                        "See the QGIS2Mapbender log for details."
+                    )
+                ))
+            )
 
         elif self.api_request.token:
             status_code, upload_dir, error_upload_dir = self.api_request.uploadZip(self.source_project_zip_file_path)

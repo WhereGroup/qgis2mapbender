@@ -8,3 +8,12 @@ pb_tool.cfg
 *.iml
 *.ipr
 
+# VS Code
+.vscode
+.venv
+
+# scripts
+deploy_script/deploy_qgis_profiles.sh
+
+__pycache__/
+*.py[cod]
