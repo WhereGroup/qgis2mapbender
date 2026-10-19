@@ -62,6 +62,11 @@ jobs:
         env:
           PLUGIN_DIRECTORY: ${{ env.PLUGIN_DIRECTORY }}
         run: |
+          EXPECTED_VERSION="$(sed -n 's/^version=\(.*\)$/\1/p' \
+            "${PLUGIN_DIRECTORY}/metadata.txt")"
+
+          test -n "${EXPECTED_VERSION}"
+
           PACKAGE="$(find . -type f -name "${PLUGIN_DIRECTORY}.*.zip" -print -quit)"
 
           test -n "${PACKAGE}"
@@ -71,6 +76,30 @@ jobs:
 
           unzip -l "${PACKAGE}" | grep -q "${PLUGIN_DIRECTORY}/metadata.txt"
           unzip -l "${PACKAGE}" | grep -q "${PLUGIN_DIRECTORY}/LICENSE"
+
+          python - "${PACKAGE}" "${PLUGIN_DIRECTORY}" "${EXPECTED_VERSION}" <<'PY'
+          import configparser
+          import sys
+          import zipfile
+          from io import StringIO
+
+          package_path, plugin_directory, expected_version = sys.argv[1:]
+          metadata_path = f"{plugin_directory}/metadata.txt"
+
+          with zipfile.ZipFile(package_path) as package:
+              metadata = package.read(metadata_path).decode("utf-8")
+
+          parser = configparser.ConfigParser()
+          parser.optionxform = str
+          parser.read_file(StringIO(metadata))
+
+          actual_version = parser["general"]["version"].strip()
+          if actual_version != expected_version:
+              raise SystemExit(
+                  f"Package metadata version is {actual_version!r}, "
+                  f"expected {expected_version!r}."
+              )
+          PY
           
           if unzip -l "${PACKAGE}" | grep -Eq '(^|/)__pycache__/|\.py[co]$'; then
             echo "The package contains generated Python cache files."
