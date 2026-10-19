@@ -1,10 +1,5 @@
 ## v1.2.1
 
-### Bugfixes:
-* Fixed a false-positive security scan finding for empty authentication credentials.
-
-## v1.2.0
-
 ### Features:
 * Added support for QGIS projects stored in PostgreSQL via `pg_service.conf` ([#PR43](https://github.com/WhereGroup/qgis2mapbender/pull/43)) 
 * Added request timeouts and improved handling of non-JSON API responses ([#PR38](https://github.com/WhereGroup/qgis2mapbender/pull/38)) ([#PR44](https://github.com/WhereGroup/qgis2mapbender/pull/43)) 
@@ -15,16 +10,16 @@
 * Added Information about how to create translations to CONTRIBUTE.md ([#PR35](...))
 * Added automated QGIS plugin packaging and release workflow.
 
-### Bugfixes:
+### Fixes:
 * Added QGIS4 fixes ([#PR36](...))
-
+* Fixed a false-positive security scan finding for empty authentication credentials.
 
 ## v1.1.0
 
 ### Features:
 * Added german, spanish and italian translations ([#PR28](https://github.com/WhereGroup/qgis2mapbender/pull/28))
 
-### Bugfixes:
+### Fixes:
 * Server configuration name with "/" in name deletes whole server configuration ([#PR27](https://github.com/WhereGroup/qgis2mapbender/pull/27))
 * Fix import contextmanager and clean imports (PyQt5, _core) ([#PR26](https://github.com/WhereGroup/qgis2mapbender/pull/26))
 
