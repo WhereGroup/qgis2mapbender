@@ -8,6 +8,10 @@ on:
       - main
     paths:
       - ".github/workflows/package.yml"
+      - ".github/workflows/qgis-submit.yml"
+      - ".github/workflows/release.yml"
+      - ".github/qgis-quality.env"
+      - ".github/scripts/check-qgis-quality.sh"
       - "CHANGELOG.md"
       - "pyproject.toml"
       - "qgis2mapbender/**"
@@ -33,14 +37,14 @@ jobs:
           python -m pip install \
             "qgis-plugin-ci==${{ env.QGIS_PLUGIN_CI_VERSION }}" \
             "bandit~=1.9" \
+            "detect-secrets~=1.5" \
             "flake8~=7.3"
 
       - name: Run security and quality checks
         env:
           PLUGIN_DIRECTORY: ${{ env.PLUGIN_DIRECTORY }}
         run: |
-          bandit --recursive "${PLUGIN_DIRECTORY}"
-          flake8 "${PLUGIN_DIRECTORY}" --select=E711
+          bash .github/scripts/check-qgis-quality.sh "${PLUGIN_DIRECTORY}"
 
       - name: Remove generated Python files
         run: |
@@ -53,11 +57,11 @@ jobs:
         run: |
           PLUGIN_VERSION="$(sed -n 's/^version=\(.*\)$/\1/p' \
             "${PLUGIN_DIRECTORY}/metadata.txt")"
-            
+
           test -n "${PLUGIN_VERSION}"
-            
+
           echo "Packaging version: ${PLUGIN_VERSION}"
-            
+
           qgis-plugin-ci package "${PLUGIN_VERSION}" \
             --allow-uncommitted-changes
 
@@ -109,7 +113,7 @@ jobs:
                   f"expected {expected_version!r}."
               )
           PY
-          
+
           if unzip -l "${PACKAGE}" | grep -Eq '(^|/)__pycache__/|\.py[co]$'; then
             echo "The package contains generated Python cache files."
             exit 1
