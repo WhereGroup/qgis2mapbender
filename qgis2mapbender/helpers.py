@@ -1,11 +1,10 @@
 from typing import Optional
 from urllib.parse import urlparse
-from xml.etree import ElementTree
 
 import requests
 
 from qgis.PyQt.QtWidgets import QApplication
-from qgis.PyQt.QtCore import QCoreApplication, Qt
+from qgis.PyQt.QtCore import QByteArray, QCoreApplication, QXmlStreamReader, Qt
 from contextlib import contextmanager
 
 from qgis.PyQt.QtGui import QPixmap
@@ -19,6 +18,7 @@ from .settings import (
     QGIS_SERVER_POSTGRESQL_WRAPPER_PATH,
     REQUEST_TIMEOUT_SIMPLE,
     TAG,
+    WMS_CAPABILITIES_READ_CHUNK_SIZE,
     WMS_CAPABILITIES_ROOT_ELEMENTS,
 )
 
@@ -359,7 +359,11 @@ def check_wms_url(url: str) -> Optional[str]:
         return translate("The generated WMS URL is invalid.")
 
     try:
-        response = requests.get(url, timeout=REQUEST_TIMEOUT_SIMPLE)
+        response = requests.get(
+            url,
+            timeout=REQUEST_TIMEOUT_SIMPLE,
+            stream=True,
+        )
     except requests.exceptions.RequestException as error:
         QgsMessageLog.logMessage(
             f"Failed to validate WMS URL: {error}",
@@ -371,20 +375,41 @@ def check_wms_url(url: str) -> Optional[str]:
             "Please see the QGIS2Mapbender log for more information."
         )
 
-    if response.status_code != 200:
-        return translate(
-            "The generated WMS URL returned HTTP status {status_code}."
-        ).format(status_code=response.status_code)
-
     try:
-        capabilities = ElementTree.fromstring(response.content)
-    except (ElementTree.ParseError, TypeError):
-        return translate(
-            "The server response is not a valid WMS capabilities document."
-        )
+        if response.status_code != 200:
+            return translate(
+                "The generated WMS URL returned HTTP status {status_code}."
+            ).format(status_code=response.status_code)
 
-    root_name = capabilities.tag.rsplit("}", 1)[-1]
-    if root_name not in WMS_CAPABILITIES_ROOT_ELEMENTS:
+        response_content = bytearray()
+        try:
+            for chunk in response.iter_content(
+                chunk_size=WMS_CAPABILITIES_READ_CHUNK_SIZE
+            ):
+                response_content.extend(chunk)
+        except requests.exceptions.RequestException as error:
+            QgsMessageLog.logMessage(
+                f"Failed to read WMS capabilities response: {error}",
+                TAG,
+                level=Qgis.MessageLevel.Critical,
+            )
+            return translate(
+                "The generated WMS URL could not be reached. "
+                "Please see the QGIS2Mapbender log for more information."
+            )
+    finally:
+        response.close()
+
+    reader = QXmlStreamReader()
+    reader.addData(QByteArray(bytes(response_content)))
+    root_name = None
+
+    while not reader.atEnd():
+        reader.readNext()
+        if root_name is None and reader.isStartElement():
+            root_name = str(reader.name())
+
+    if reader.hasError() or root_name not in WMS_CAPABILITIES_ROOT_ELEMENTS:
         return translate(
             "The server response is not a valid WMS capabilities document."
         )
