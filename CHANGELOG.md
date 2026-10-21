@@ -1,4 +1,14 @@
+## v1.2.2
+
+### Security:
+* Replaced Python's `xml.etree.ElementTree` with Qt's `QXmlStreamReader` and read remote WMS capabilities responses in chunks before validation.
+
+### Fixes:
+* Fixed a comparison with `None` in API authentication handling.
+
 ## v1.2.1
+
+> This GitHub release was not accepted by the official QGIS plugin repository and is superseded by v1.2.2.
 
 ### Features:
 * Added support for QGIS projects stored in PostgreSQL via `pg_service.conf` ([#PR43](https://github.com/WhereGroup/qgis2mapbender/pull/43)) 
