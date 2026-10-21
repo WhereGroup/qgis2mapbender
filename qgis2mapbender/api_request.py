@@ -66,7 +66,7 @@ class ApiRequest:
         ERROR_MSG_TITLE = translate("Failed to obtain a valid token. Authentication failed")
 
         response = self._sendRequest(endpoint, "post", json=credentials)
-        if response == None:
+        if response is None:
             show_fail_box(ERROR_MSG_TITLE, ERROR_MSG_OTHER)
             return self.token
 

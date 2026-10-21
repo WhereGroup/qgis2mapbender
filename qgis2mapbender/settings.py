@@ -14,6 +14,7 @@ REQUEST_TIMEOUT_UPLOAD = (900, 900)
 WMS_CAPABILITIES_ROOT_ELEMENTS = frozenset((
     "WMS_Capabilities",
 ))
+WMS_CAPABILITIES_READ_CHUNK_SIZE = 64 * 1024
 
 # Maximum length of server error details shown in a message box
 MAX_API_ERROR_MESSAGE_LENGTH = 500

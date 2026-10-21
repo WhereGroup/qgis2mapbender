@@ -90,3 +90,9 @@ The plugin is licensed under the attached GNU General Public License.
 ## Translations
 
 Translation files are placed in the folder qgis2mapbender/i18n of the plugin. If you want to contribute a translation, please have a look at the CONTRIBUTE.md file.
+
+## Release process
+
+The maintainer release procedure is documented in
+[RELEASING.md](RELEASING.md). QGIS.org approval must be completed before a
+GitHub release is created.
