@@ -1,0 +1,155 @@
+name: Submit QGIS plugin version
+
+run-name: Submit QGIS plugin ${{ inputs.version }} from main
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Plugin version from qgis2mapbender/metadata.txt"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  PLUGIN_DIRECTORY: "qgis2mapbender"
+  QGIS_PLUGIN_CI_VERSION: "2.9.*"
+
+jobs:
+  submit:
+    name: Submit plugin to qgis.org
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check submission branch
+        run: |
+          if [[ "${GITHUB_REF_NAME}" != "main" ]]; then
+            echo "This workflow must be run from the main branch."
+            exit 1
+          fi
+
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Record submitted commit
+        run: |
+          SUBMITTED_COMMIT="$(git rev-parse HEAD)"
+          echo "Submitting commit: ${SUBMITTED_COMMIT}"
+          printf '%s\n' "${SUBMITTED_COMMIT}" > qgis-submission-commit.txt
+          {
+            echo "### Submitted commit"
+            echo "\`${SUBMITTED_COMMIT}\`"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Validate requested version
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+          PLUGIN_DIRECTORY: ${{ env.PLUGIN_DIRECTORY }}
+        run: |
+          if [[ ! "${REQUESTED_VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Unsupported plugin version: ${REQUESTED_VERSION}"
+            exit 1
+          fi
+
+          METADATA_VERSION="$(sed -n 's/^version=\(.*\)$/\1/p' \
+            "${PLUGIN_DIRECTORY}/metadata.txt")"
+
+          if [[ "${METADATA_VERSION}" != "${REQUESTED_VERSION}" ]]; then
+            echo "Requested version ${REQUESTED_VERSION} does not match metadata version ${METADATA_VERSION}."
+            exit 1
+          fi
+
+          echo "VERSION=${REQUESTED_VERSION}" >> "${GITHUB_ENV}"
+
+      - name: Install release and validation tools
+        run: |
+          python -m pip install \
+            "qgis-plugin-ci==${QGIS_PLUGIN_CI_VERSION}" \
+            "bandit~=1.9" \
+            "detect-secrets~=1.5" \
+            "flake8~=7.3"
+
+      - name: Run security and quality checks
+        env:
+          PLUGIN_DIRECTORY: ${{ env.PLUGIN_DIRECTORY }}
+        run: |
+          bash .github/scripts/check-qgis-quality.sh "${PLUGIN_DIRECTORY}"
+
+      - name: Remove generated Python files
+        run: |
+          find . -type d -name "__pycache__" -prune -exec rm -rf {} +
+          find . -type f \( -name "*.pyc" -o -name "*.pyo" \) -delete
+
+      - name: Package and validate plugin
+        env:
+          PLUGIN_DIRECTORY: ${{ env.PLUGIN_DIRECTORY }}
+        run: |
+          qgis-plugin-ci package "${VERSION}"
+
+          PACKAGE="$(find . -type f \
+            -name "${PLUGIN_DIRECTORY}.${VERSION}.zip" -print -quit)"
+
+          if [[ -z "${PACKAGE}" ]]; then
+            echo "The plugin package was not generated."
+            exit 1
+          fi
+
+          echo "Package found: ${PACKAGE}"
+          unzip -l "${PACKAGE}"
+
+          unzip -l "${PACKAGE}" | grep -q "${PLUGIN_DIRECTORY}/metadata.txt"
+          unzip -l "${PACKAGE}" | grep -q "${PLUGIN_DIRECTORY}/LICENSE"
+
+          python - "${PACKAGE}" "${PLUGIN_DIRECTORY}" "${VERSION}" <<'PY'
+          import configparser
+          import sys
+          import zipfile
+          from io import StringIO
+
+          package_path, plugin_directory, expected_version = sys.argv[1:]
+          metadata_path = f"{plugin_directory}/metadata.txt"
+
+          with zipfile.ZipFile(package_path) as package:
+              metadata = package.read(metadata_path).decode("utf-8")
+
+          parser = configparser.ConfigParser()
+          parser.optionxform = str
+          parser.read_file(StringIO(metadata))
+
+          actual_version = parser["general"]["version"].strip()
+          if actual_version != expected_version:
+              raise SystemExit(
+                  f"Package metadata version is {actual_version!r}, "
+                  f"expected {expected_version!r}."
+              )
+          PY
+
+          if unzip -l "${PACKAGE}" | grep -Eq '(^|/)__pycache__/|\.py[co]$'; then
+            echo "The package contains generated Python cache files."
+            exit 1
+          fi
+
+      - name: Submit plugin to QGIS.org
+        env:
+          OSGEO_USER: ${{ secrets.OSGEO_USER }}
+          OSGEO_PASSWORD: ${{ secrets.OSGEO_PASSWORD }}
+        run: |
+          qgis-plugin-ci release "${VERSION}" \
+            --release-tag "v${VERSION}" \
+            --osgeo-username "${OSGEO_USER}" \
+            --osgeo-password "${OSGEO_PASSWORD}"
+
+      - name: Store submitted package
+        uses: actions/upload-artifact@v7
+        with:
+          name: qgis2mapbender-${{ inputs.version }}-qgis-submission
+          path: |
+            qgis2mapbender.${{ inputs.version }}.zip
+            qgis-submission-commit.txt
+          if-no-files-found: error
+          retention-days: 90
