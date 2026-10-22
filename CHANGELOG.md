@@ -1,10 +1,16 @@
 ## v1.2.2
 
+
+> Corrected successor to the v1.2.1 feature release. This version
+> includes the v1.2.1 feature set and adds the security and validation
+> fixes required after the original package was rejected by QGIS.org.
+> v1.2.2 is the supported version published on QGIS.org.
+
 ### Security:
-* Replaced Python's `xml.etree.ElementTree` with Qt's `QXmlStreamReader` and read remote WMS capabilities responses in chunks before validation.
+* Replaced Python's xml.etree.ElementTree with Qt's QXmlStreamReader and read remote WMS capabilities responses in chunks before validation.
 
 ### Fixes:
-* Fixed a comparison with `None` in API authentication handling.
+* Fixed a comparison with None in API authentication handling.
 
 ## v1.2.1
 
